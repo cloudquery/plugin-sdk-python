@@ -17,5 +17,5 @@ class Plugin:
     def version(self) -> str:
         return self._version
 
-    def get_tables(self, tables: List[str], skip_tables: List[str]) -> List(Table):
+    def get_tables(self, tables: List[str], skip_tables: List[str]) -> List[Table]:
         raise NotImplementedError()

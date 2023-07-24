@@ -11,6 +11,7 @@ description = "CloudQuery Plugin SDK for Python"
 
 dependencies = [
     "plugin-pb-python==0.0.11",
+    "pyarrow==12.0.1",
 ]
 url = "https://github.com/cloudquery/plugin-sdk-python"
 
@@ -57,7 +58,7 @@ setuptools.setup(
     platforms="Posix; MacOS X; Windows",
     packages=packages,
     python_requires=">=3.7",
-    namespace_packages=["cloudquery"],
+    # namespace_packages=["cloudquery/sdk"],
     # namespace_packages=namespaces,
     install_requires=dependencies,
     include_package_data=True,
