@@ -1,6 +1,9 @@
-import pyarrow as pa
-from cloudquery.sdk.schema import Table
 from typing import List, Dict
+
+import pyarrow as pa
+
+from cloudquery.sdk.schema import Table
+
 
 def transform_list_of_dict(data: List[Dict], table: Table):
     """

@@ -1,6 +1,6 @@
-
 import pyarrow as pa
 from cloudquery.sdk.schema import Column
+
 
 def test_column():
     c = Column("test_column", pa.int32())
