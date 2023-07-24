@@ -1,0 +1,4 @@
+grpcio==1.56.2
+grpcio-tools==1.56.2
+plugin-pb-python==0.0.10
+protobuf==4.23.4
