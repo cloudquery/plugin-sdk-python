@@ -5,9 +5,11 @@ import grpc
 import sys
 
 from cloudquery.plugin_v3 import plugin_pb2_grpc
+from cloudquery.sdk.docs.generator import Generator
 from cloudquery.sdk.internal.servers.plugin_v3 import PluginServicer
 from cloudquery.sdk.plugin.plugin import Plugin
-from cloudquery.sdk.serve.docs import DOC_FORMATS
+
+DOC_FORMATS = ["json", "markdown"]
 
 
 class PluginCommand:
@@ -27,7 +29,18 @@ class PluginCommand:
         serve_parser.add_argument("--network", type=str, default="tcp", choices=["tcp", "unix"],
                                   help="network to serve on. can be tcp or unix")
 
-        doc_parser = subparsers.add_parser("doc", help="Generate plugin documentation")
+        doc_parser = subparsers.add_parser("doc", formatter_class=argparse.RawTextHelpFormatter,
+                                           help="Generate documentation for tables",
+                                           description="""Generate documentation for tables.
+
+If format is markdown, a destination directory will be created (if necessary) containing markdown files.
+Example:
+doc ./output 
+
+If format is JSON, a destination directory will be created (if necessary) with a single json file called __tables.json.
+Example:
+doc --format json .
+""")
         doc_parser.add_argument("directory", type=str)
         doc_parser.add_argument("--format", type=str, default="json",
                                 help="output format. one of: {}".format(",".join(DOC_FORMATS)))
@@ -52,5 +65,5 @@ class PluginCommand:
 
     def _generate_docs(self, args):
         print("Generating docs in format: " + args.format)
-
-        raise NotImplementedError()
+        generator = Generator(self._plugin.name(), self._plugin.get_tables([], []))
+        generator.generate(args.directory, args.format)
