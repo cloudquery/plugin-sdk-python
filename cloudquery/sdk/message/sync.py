@@ -1,13 +1,15 @@
-
 import pyarrow as pa
+
 
 class SyncMessage:
     pass
 
+
 class SyncInsertMessage:
     def __init__(self, record: pa.RecordBatch):
-        self._record = record
+        self.record = record
 
-class SyncMigrateMessage:
-    def __init__(self, record: pa.RecordBatch):
-      self._record = record
+
+class SyncMigrateTableMessage:
+    def __init__(self, table: pa.Schema):
+        self.table = table

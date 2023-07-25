@@ -1,1 +1,1 @@
-from sync import SyncMessage, SyncInsertMessage
+from .sync import SyncMessage, SyncInsertMessage, SyncMigrateTableMessage

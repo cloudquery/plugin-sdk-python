@@ -29,7 +29,7 @@ class Table:
     def incremental_keys(self):
         return [column.name for column in self.columns if column.incremental_key]
 
-    def to_arrow_schemas(self):
+    def to_arrow_schema(self):
         fields = []
         md = {
             arrow.METADATA_TABLE_NAME: self.name,
@@ -48,5 +48,5 @@ class Table:
 def tables_to_arrow_schemas(tables: List[Table]):
     schemas = []
     for table in tables:
-        schemas.append(table.to_arrow_schemas())
+        schemas.append(table.to_arrow_schema())
     return schemas

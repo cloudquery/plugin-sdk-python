@@ -1,7 +1,8 @@
 import pyarrow as pa
 
 from cloudquery.plugin_v3 import plugin_pb2, plugin_pb2_grpc
-from cloudquery.sdk.plugin.plugin import Plugin
+from cloudquery.sdk.message import SyncInsertMessage, SyncMigrateTableMessage
+from cloudquery.sdk.plugin.plugin import Plugin, SyncOptions
 from cloudquery.sdk.schema import tables_to_arrow_schemas
 
 
@@ -33,8 +34,31 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
         return plugin_pb2.GetTables.Response(tables=tablesBytes)
 
     def Sync(self, request, context):
-        plugin_pb2.Sync.Response()
-        return plugin_pb2.Sync.Response()
+        options = SyncOptions(
+            deterministic_cq_id=False,  # TODO
+            skip_dependent_tables=request.skip_dependent_tables,
+            skip_tables=request.skip_tables,
+            tables=request.tables,
+            backend_options=None,
+        )
+
+        for msg in self._plugin.sync(options):
+            if isinstance(msg, SyncInsertMessage):
+                sink = pa.BufferOutputStream()
+                writer = pa.ipc.new_stream(sink, msg.record.schema)
+                writer.write_batch(msg.record)
+                writer.close()
+                buf = sink.getvalue().to_pybytes()
+                yield plugin_pb2.Sync.Response(insert=plugin_pb2.Sync.MessageInsert(
+                    record=buf
+                ))
+            elif isinstance(msg, SyncMigrateTableMessage):
+                yield plugin_pb2.Sync.Response(migrate_table=plugin_pb2.Sync.MessageMigrateTable(
+                    table=msg.table.to_arrow_schema().serialize().to_pybytes()
+                ))
+            else:
+                # unknown sync message type
+                raise NotImplementedError()
 
     def Read(self, request, context):
         raise NotImplementedError()
