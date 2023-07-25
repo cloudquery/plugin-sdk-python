@@ -15,7 +15,7 @@ class Column:
         self.primary_key = primary_key
         self.not_null = not_null
         self.incremental_key = incremental_key
-        self.unique = unique
+        self.unique = unique  
 
     def to_arrow_field(self):
         metadata = {

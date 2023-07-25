@@ -29,6 +29,12 @@ class Table:
     def resolver(self, client: Client, parent=None) -> Generator[Any]:
       raise NotImplementedError()
 
+    def index_column(self, column_name: str) -> int:
+        for i, column in enumerate(self.columns):
+            if column.name == column_name:
+                return i
+        raise ValueError(f"Column {column_name} not found")
+
     @property
     def primary_keys(self):
         return [column.name for column in self.columns if column.primary_key]
