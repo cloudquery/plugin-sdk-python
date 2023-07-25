@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Generator, Any
 
 import pyarrow as pa
 
 from cloudquery.sdk.schema import arrow
 from .column import Column
 
+class Client:
+    pass
 
 class Table:
     def __init__(self, name: str, columns: List[Column], title: str = "", description: str = "",
@@ -20,6 +22,12 @@ class Table:
         self.parent = parent
         self.relations = relations
         self.is_incremental = is_incremental
+
+    def multiplex(self, client) -> List[Table]:
+      raise [client]
+
+    def resolver(self, client: Client, parent=None) -> Generator[Any]:
+      raise NotImplementedError()
 
     @property
     def primary_keys(self):
