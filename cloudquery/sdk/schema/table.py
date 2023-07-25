@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List
 
 import pyarrow as pa
@@ -8,13 +10,14 @@ from .column import Column
 
 class Table:
     def __init__(self, name: str, columns: List[Column], title: str = "", description: str = "",
-                 relations=None, is_incremental: bool = False) -> None:
+                 parent: Table = None, relations: List[Table] = None, is_incremental: bool = False) -> None:
         self.name = name
         self.columns = columns
         self.title = title
         self.description = description
         if relations is None:
             relations = []
+        self.parent = parent
         self.relations = relations
         self.is_incremental = is_incremental
 

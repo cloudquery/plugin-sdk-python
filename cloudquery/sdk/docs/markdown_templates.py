@@ -1,13 +1,13 @@
 ALL_TABLES = """# Source Plugin: {{ plugin_name }}
 ## Tables
-{% for table in tables %}
+{%- for table in tables %}
 {{ all_tables_entry(table) }}
-{% endfor %}"""
+{%- endfor %}"""
 
-ALL_TABLES_ENTRY = """{{ "" | indent(4) }}- [{{ table.name }}]({{ table.name }}.md){% if table.is_incremental %} (Incremental){% endif %}
-{% for rel in table.relations %}
-{{ all_tables_entry(rel) | indent(4) }}
-{% endfor %}"""
+ALL_TABLES_ENTRY = """{{ indent_table_to_depth(table) }}- [{{ table.name }}]({{ table.name }}.md){% if table.is_incremental %} (Incremental){% endif %}
+{%- for rel in table.relations %}
+{{ all_tables_entry(rel) }}
+{%- endfor %}"""
 
 TABLE = """# Table: {{ table.name }}
 
@@ -21,21 +21,20 @@ This table does not have a primary key.
 The primary key for this table is **{{ table.primary_keys[0] }}**.
 {% else %}
 The composite primary key for this table is (
-{% for index, pk in table.primary_keys %}
-    {{ "  ," if index else "" }} **{{ pk }}**
-{% endfor %}
+{%- for pk in table.primary_keys %}
+    {{- ", " if loop.index > 1 else "" }}**{{ pk }}**
+{%- endfor -%}
 ).
 {% endif %}
 
 {% if table.is_incremental %}
 It supports incremental syncs{% set ik_length = table.incremental_keys | length %}
-{% if ik_length == 1 %} based on the **{{ table.incremental_keys[0] }}** column{% else %}
- based on the (
-{% for index, pk in table.incremental_keys %}
-    {{ "  ," if index else "" }} **{{ pk }}**
-{% endfor %}
+{%- if ik_length == 1 %} based on the **{{ table.incremental_keys[0] }}** column{% else %} based on the (
+{%- for ik in table.incremental_keys %}
+    {{- ", " if loop.index > 1 else "" }}**{{ ik }}**
+{%- endfor -%}
 ) columns{% endif %}.
-{% endif %}
+{%- endif %}
 
 {% if table.relations or table.parent %}
 ## Relations

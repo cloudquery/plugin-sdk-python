@@ -98,28 +98,43 @@ class Generator:
             f.write(formatted_all_tables)
 
         for table in self._tables:
-            table_template = env.from_string(TABLE)
-            table_md = table_template.render(table=table)
-            formatted_table_md = self._format_markdown(table_md)
-            with open(os.path.join(directory, table.name + ".md"), "w") as f:
-                f.write(formatted_table_md)
+            self._render_table(directory, env, table)
+
+    def _render_table(self, directory: str, env: jinja2.Environment, table: Table):
+        table_template = env.from_string(TABLE)
+        table_md = table_template.render(table=table)
+        formatted_table_md = self._format_markdown(table_md)
+        with open(os.path.join(directory, table.name + ".md"), "w") as f:
+            f.write(formatted_table_md)
+        for relation in table.relations:
+            self._render_table(directory, env, relation)
 
     def _all_tables_entry(self, table: Table):
         env = jinja2.Environment()
         env.globals['indent_to_depth'] = self._indent_to_depth
         env.globals['all_tables_entry'] = self._all_tables_entry
+        env.globals['indent_table_to_depth'] = self._indent_table_to_depth
         entry_template = env.from_string(ALL_TABLES_ENTRY)
         return entry_template.render(table=table)
 
     @staticmethod
-    def _indent_to_depth(text: str, depth: int):
+    def _indent_table_to_depth(table: Table) -> str:
+        s = ""
+        t = table
+        while t.parent is not None:
+            s += "  "
+            t = t.parent
+        return s
+
+    @staticmethod
+    def _indent_to_depth(text: str, depth: int) -> str:
         indentation = depth * 4  # You can adjust the number of spaces as needed
         lines = text.split('\n')
         indented_lines = [(' ' * indentation) + line for line in lines]
         return '\n'.join(indented_lines)
 
     @staticmethod
-    def _format_markdown(text: str):
+    def _format_markdown(text: str) -> str:
         re_match_newlines = re.compile(r'\n{3,}')
         re_match_headers = re.compile(r'(#{1,6}.+)\n+')
 
