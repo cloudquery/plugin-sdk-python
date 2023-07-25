@@ -1,17 +1,13 @@
+import pyarrow as pa
 
-import grpc
-from concurrent import futures
-import logging
 from cloudquery.plugin_v3 import plugin_pb2, plugin_pb2_grpc
 from cloudquery.sdk.plugin.plugin import Plugin
 from cloudquery.sdk.schema import tables_to_arrow_schemas
-import pyarrow as pa
 
 
 class PluginServicer(plugin_pb2_grpc.PluginServicer):
     def __init__(self, plugin: Plugin):
         self._plugin = plugin
-        pass
 
     def GetName(self, request, context):
         return plugin_pb2.GetName.Response(name=self._plugin.name())
@@ -28,13 +24,13 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
         schema = tables_to_arrow_schemas(tables)
         tablesBytes = []
         for s in schema:
-          sink = pa.BufferOutputStream()
-          writer = pa.ipc.new_stream(sink, s)
-          writer.close()
-          buf = sink.getvalue().to_pybytes()
-          tablesBytes.append(buf)
+            sink = pa.BufferOutputStream()
+            writer = pa.ipc.new_stream(sink, s)
+            writer.close()
+            buf = sink.getvalue().to_pybytes()
+            tablesBytes.append(buf)
 
-        return plugin_pb2.GetTables.Response(tables=[])
+        return plugin_pb2.GetTables.Response(tables=tablesBytes)
 
     def Sync(self, request, context):
         plugin_pb2.Sync.Response()

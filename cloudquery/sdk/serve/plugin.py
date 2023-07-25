@@ -4,8 +4,10 @@ from concurrent import futures
 import grpc
 import sys
 
+from cloudquery.discovery_v1 import discovery_pb2_grpc
 from cloudquery.plugin_v3 import plugin_pb2_grpc
 from cloudquery.sdk.docs.generator import Generator
+from cloudquery.sdk.internal.servers.discovery_v1.discovery import DiscoveryServicer
 from cloudquery.sdk.internal.servers.plugin_v3 import PluginServicer
 from cloudquery.sdk.plugin.plugin import Plugin
 
@@ -56,6 +58,8 @@ doc --format json .
 
     def _serve(self, args):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        discovery_pb2_grpc.add_DiscoveryServicer_to_server(
+            DiscoveryServicer([3]), server)
         plugin_pb2_grpc.add_PluginServicer_to_server(
             PluginServicer(self._plugin), server)
         server.add_insecure_port(args.address)
@@ -65,5 +69,5 @@ doc --format json .
 
     def _generate_docs(self, args):
         print("Generating docs in format: " + args.format)
-        generator = Generator(self._plugin.name(), self._plugin.get_tables([], []))
+        generator = Generator(self._plugin.name(), self._plugin.get_tables(tables=["*"], skip_tables=[]))
         generator.generate(args.directory, args.format)
