@@ -11,6 +11,10 @@ class Binary(Scalar):
       if type(scalar) == Binary:
           return self._value == scalar._value and self._valid == scalar._valid
       return False
+
+    @property
+    def value(self):
+       return self._value
     
     def set(self, scalar):
       if scalar is None:

@@ -1,20 +1,20 @@
 
 from cloudquery.sdk.schema.table import Table
 from cloudquery.sdk.schema import Resource
-from typing import Any
+from typing import Any,Generator
 
 class TableResolver:
     def __init__(self, table: Table) -> None:
         self._table = table
     
     @property
-    def table(self):
+    def table(self) -> Table:
       return self._table
 
     def multiplex(self, client):
       return [client]
     
-    def resolve(self, client, parent_resource) -> Any:
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
       raise NotImplementedError()
 
     def pre_resource_resolve(self, client, resource):

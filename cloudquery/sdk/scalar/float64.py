@@ -11,6 +11,10 @@ class Float64(Scalar):
       if type(scalar) == Float64:
           return self._value == scalar._value and self._valid == scalar._valid
       return False
+
+    @property
+    def value(self):
+       return self._value
     
     def set(self, value):
       if value is None:

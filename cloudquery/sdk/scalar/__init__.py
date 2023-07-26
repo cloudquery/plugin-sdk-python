@@ -1,4 +1,5 @@
-from .scalar import Scalar, ScalarInvalidTypeError, ScalarFactory
+from .scalar import Scalar, ScalarInvalidTypeError
+from .scalar_factory import ScalarFactory
 from .binary import Binary
 from .bool import Bool
 from .date32 import Date32

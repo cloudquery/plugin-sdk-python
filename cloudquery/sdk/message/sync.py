@@ -11,5 +11,5 @@ class SyncInsertMessage:
 
 
 class SyncMigrateTableMessage:
-    def __init__(self, table: pa.Schema):
-        self.table = table
+    def __init__(self, schema: pa.Schema):
+        self.schema = schema
