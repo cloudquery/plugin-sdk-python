@@ -1,4 +1,5 @@
 from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError
+from .scalar import NULL_VALUE
 
 class Binary(Scalar):
     def __init__(self, valid: bool = False, value: bytes = None):
@@ -11,6 +12,9 @@ class Binary(Scalar):
       if type(scalar) == Binary:
           return self._value == scalar._value and self._valid == scalar._valid
       return False
+    
+    def __str__(self) -> str:
+       return str(self._value) if self._valid else NULL_VALUE
 
     @property
     def value(self):

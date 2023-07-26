@@ -1,4 +1,6 @@
 
+NULL_VALUE = "null"
+
 class ScalarInvalidTypeError(Exception):
   pass
 

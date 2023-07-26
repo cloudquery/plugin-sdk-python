@@ -1,5 +1,5 @@
 
-from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError
+from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError, NULL_VALUE
 from datetime import datetime, time
 from typing import Any
 
@@ -15,6 +15,9 @@ class Date32(Scalar):
           return self._value == scalar._value and self._valid == scalar._valid
       return False
 
+    def __str__(self) -> str:
+       return str(self._value) if self._valid else NULL_VALUE
+    
     @property
     def value(self):
        return self._value

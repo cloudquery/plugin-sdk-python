@@ -1,5 +1,5 @@
 
-from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError
+from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError, NULL_VALUE
 from typing import Any
 
 def parse_string_to_bool(input_string):
@@ -26,6 +26,9 @@ class Bool(Scalar):
       if type(scalar) == Bool:
           return self._value == scalar._value and self._valid == scalar._valid
       return False
+
+    def __str__(self) -> str:
+       return str(self._value) if self._valid else NULL_VALUE
 
     @property
     def value(self):
