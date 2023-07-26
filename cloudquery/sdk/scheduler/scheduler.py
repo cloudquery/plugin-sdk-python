@@ -2,6 +2,7 @@
 from typing import List, Generator, Any
 import queue
 import time
+import structlog
 from enum import Enum
 from cloudquery.sdk.schema import Table, Resource
 from cloudquery.sdk.message import SyncMessage, SyncInsertMessage, SyncMigrateTableMessage
@@ -12,30 +13,33 @@ import traceback
 
 QUEUE_PER_WORKER = 100
 
+
 class ThreadPoolExecutorWithQueueSizeLimit(futures.ThreadPoolExecutor):
     def __init__(self, maxsize, *args, **kwargs):
         super(ThreadPoolExecutorWithQueueSizeLimit, self).__init__(*args, **kwargs)
         self._work_queue = queue.Queue(maxsize=maxsize)
 
 
-class WorkerStatus:
-  def __init__(self, total_table_resolvers) -> None:
-    self._total_table_resolvers = total_table_resolvers
+class TableResolverStarted:
+  def __init__(self, count=1) -> None:
+    self._count = count
   
   @property
-  def total_table_resolvers(self):
-   return self._total_table_resolvers
+  def count(self):
+   return self._count
 
 
-class TableResolverStatus:
+class TableResolverFinished:
   def __init__(self) -> None:
       pass
 
 
 class Scheduler:
-    def __init__(self, concurrency: int, queue_size: int = 0, max_depth : int = 3):
+    def __init__(self, concurrency: int, queue_size: int = 0, max_depth : int = 3, logger=None):
         self._queue = queue.Queue()
         self._max_depth = max_depth
+        if logger is None:
+          self._logger = structlog.get_logger()
         if concurrency <= 0:
            raise ValueError("concurrency must be greater than 0")
         if max_depth <= 0:
@@ -49,34 +53,53 @@ class Scheduler:
           current_depth_concurrency = current_depth_concurrency // 2 if current_depth_concurrency > 1 else 1
           current_depth_queue_size = current_depth_queue_size // 2 if current_depth_queue_size > 1 else 1
     
+    def shutdown(self):
+      for pool in self._pools:
+        pool.shutdown()
+
     def resolve_resource(self, resolver: TableResolver, client, parent: Resource, item: Any) -> Resource:
-      resource = Resource(resolver.table, None, item)
+      resource = Resource(resolver.table, parent, item)
       resolver.pre_resource_resolve(client, resource)
       for column in resolver.table.columns:
         resolver.resolve_column(client, resource, column.name)
       resolver.post_resource_resolve(client, resource)
       return resource
 
-    def resolve_table(self, resolver: TableResolver, client, parent_item: Any, res: queue.Queue):
+    def resolve_table(self, resolver: TableResolver, depth: int, client, parent_item: Resource, res: queue.Queue):
+      table_resolvers_started = 0
       try:
+        if depth == 0:
+          self._logger.info("table resolver started", table=resolver.table.name, depth=depth)
+        else:
+          self._logger.debug("table resolver started", table=resolver.table.name, depth=depth)
+        total_resources = 0
         for item in resolver.resolve(client, parent_item):
           resource = self.resolve_resource(resolver, client, parent_item, item)
           res.put(SyncInsertMessage(resource.to_arrow_record()))
+          for child_resolvers in resolver.child_resolvers:
+            self._pools[depth + 1].submit(self.resolve_table, child_resolvers, depth + 1, client, resource, res)
+            table_resolvers_started += 1
+          total_resources += 1
+        if depth == 0:
+          self._logger.info("table resolver finished successfully", table=resolver.table.name, depth=depth)
+        else:
+          self._logger.debug("table resolver finished successfully", table=resolver.table.name, depth=depth)
       except Exception as e:
-        traceback.print_exc()
-        print("exception")
-        print(e)
+        self._logger.error("table resolver finished with error", table=resolver.table.name, depth=depth, exception=e)
       finally:
-        res.put(TableResolverStatus())
+        res.put(TableResolverStarted(count=table_resolvers_started))
+        res.put(TableResolverFinished())
     
     def _sync(self, client, resolvers: List[TableResolver], res: queue.Queue, deterministic_cq_id=False):
       total_table_resolvers = 0
-      for resolver in resolvers:
-        clients = resolver.multiplex(client)
-        for client in clients:
-          self._pools[0].submit(self.resolve_table, resolver, client, None, res)
-          total_table_resolvers += 1
-      res.put(WorkerStatus(total_table_resolvers))
+      try:
+        for resolver in resolvers:
+          clients = resolver.multiplex(client)
+          for client in clients:
+            self._pools[0].submit(self.resolve_table, resolver, 0, client, None, res)
+            total_table_resolvers += 1
+      finally:
+        res.put(TableResolverStarted(total_table_resolvers))
        
     def sync(self, client, resolvers: List[TableResolver], deterministic_cq_id=False) -> Generator[SyncMessage, None, None]:
       res = queue.Queue()
@@ -88,12 +111,12 @@ class Scheduler:
       finished_table_resovlers = 0
       while True:
         message = res.get()
-        if type(message) == WorkerStatus:
-          total_table_resolvers += message.total_table_resolvers
+        if type(message) == TableResolverStarted:
+          total_table_resolvers += message.count
           if total_table_resolvers == finished_table_resovlers:
             break
           continue
-        elif type(message) == TableResolverStatus:
+        elif type(message) == TableResolverFinished:
           finished_table_resovlers += 1
           if total_table_resolvers == finished_table_resovlers:       
             break

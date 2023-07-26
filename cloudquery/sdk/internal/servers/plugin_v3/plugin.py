@@ -1,4 +1,5 @@
 import pyarrow as pa
+import structlog
 
 from cloudquery.plugin_v3 import plugin_pb2, plugin_pb2_grpc
 from cloudquery.sdk.message import SyncInsertMessage, SyncMigrateTableMessage
@@ -7,7 +8,8 @@ from cloudquery.sdk.schema import tables_to_arrow_schemas
 
 
 class PluginServicer(plugin_pb2_grpc.PluginServicer):
-    def __init__(self, plugin: Plugin):
+    def __init__(self, plugin: Plugin, logger=None):
+        self._logger = logger if logger is not None else structlog.get_logger()
         self._plugin = plugin
 
     def GetName(self, request, context):

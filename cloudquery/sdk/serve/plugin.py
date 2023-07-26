@@ -1,4 +1,5 @@
 import argparse
+import structlog
 from concurrent import futures
 
 import grpc
@@ -13,6 +14,10 @@ from cloudquery.sdk.plugin.plugin import Plugin
 
 DOC_FORMATS = ["json", "markdown"]
 
+
+def get_logger(args):
+    log = structlog.get_logger()
+    return log
 
 class PluginCommand:
     def __init__(self, plugin: Plugin):
@@ -57,11 +62,12 @@ doc --format json .
             sys.exit(1)
 
     def _serve(self, args):
+        logger = get_logger(args)
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         discovery_pb2_grpc.add_DiscoveryServicer_to_server(
             DiscoveryServicer([3]), server)
         plugin_pb2_grpc.add_PluginServicer_to_server(
-            PluginServicer(self._plugin), server)
+            PluginServicer(self._plugin, logger), server)
         server.add_insecure_port(args.address)
         print("Starting server. Listening on " + args.address)
         server.start()
