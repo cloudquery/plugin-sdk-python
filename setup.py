@@ -10,7 +10,7 @@ name = "plugin-sdk-python"
 description = "CloudQuery Plugin SDK for Python"
 
 dependencies = [
-    "plugin-pb-python==0.0.11",
+    "plugin-pb-python==0.0.12",
     "pyarrow==12.0.1",
     "Jinja2==3.1.2",
 ]
