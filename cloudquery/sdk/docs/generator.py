@@ -24,7 +24,7 @@ class JsonTable:
             "title": self.title,
             "description": self.description,
             "columns": [col.to_dict() for col in self.columns],
-            "relations": [rel.to_dict() for rel in self.relations]
+            "relations": [rel.to_dict() for rel in self.relations],
         }
 
 
@@ -40,7 +40,7 @@ class JsonColumn:
             "name": self.name,
             "type": self.type,
             "is_primary_key": self.is_primary_key,
-            "is_incremental_key": self.is_incremental_key
+            "is_incremental_key": self.is_incremental_key,
         }
 
 
@@ -58,9 +58,9 @@ class Generator:
 
     def _generate_json(self, directory: str):
         json_tables = self._jsonify_tables(self._tables)
-        buffer = bytes(json.dumps(json_tables, indent=2, ensure_ascii=False), 'utf-8')
+        buffer = bytes(json.dumps(json_tables, indent=2, ensure_ascii=False), "utf-8")
         output_path = pathlib.Path(directory) / "__tables.json"
-        with output_path.open('wb') as f:
+        with output_path.open("wb") as f:
             f.write(buffer)
         return None
 
@@ -88,10 +88,12 @@ class Generator:
 
     def _generate_markdown(self, directory: str):
         env = jinja2.Environment()
-        env.globals['indent_to_depth'] = self._indent_to_depth
-        env.globals['all_tables_entry'] = self._all_tables_entry
+        env.globals["indent_to_depth"] = self._indent_to_depth
+        env.globals["all_tables_entry"] = self._all_tables_entry
         all_tables_template = env.from_string(ALL_TABLES)
-        rendered_all_tables = all_tables_template.render(plugin_name=self._plugin_name, tables=self._tables)
+        rendered_all_tables = all_tables_template.render(
+            plugin_name=self._plugin_name, tables=self._tables
+        )
         formatted_all_tables = self._format_markdown(rendered_all_tables)
 
         with open(os.path.join(directory, "README.md"), "w") as f:
@@ -111,9 +113,9 @@ class Generator:
 
     def _all_tables_entry(self, table: Table):
         env = jinja2.Environment()
-        env.globals['indent_to_depth'] = self._indent_to_depth
-        env.globals['all_tables_entry'] = self._all_tables_entry
-        env.globals['indent_table_to_depth'] = self._indent_table_to_depth
+        env.globals["indent_to_depth"] = self._indent_to_depth
+        env.globals["all_tables_entry"] = self._all_tables_entry
+        env.globals["indent_table_to_depth"] = self._indent_table_to_depth
         entry_template = env.from_string(ALL_TABLES_ENTRY)
         return entry_template.render(table=table)
 
@@ -129,15 +131,15 @@ class Generator:
     @staticmethod
     def _indent_to_depth(text: str, depth: int) -> str:
         indentation = depth * 4  # You can adjust the number of spaces as needed
-        lines = text.split('\n')
-        indented_lines = [(' ' * indentation) + line for line in lines]
-        return '\n'.join(indented_lines)
+        lines = text.split("\n")
+        indented_lines = [(" " * indentation) + line for line in lines]
+        return "\n".join(indented_lines)
 
     @staticmethod
     def _format_markdown(text: str) -> str:
-        re_match_newlines = re.compile(r'\n{3,}')
-        re_match_headers = re.compile(r'(#{1,6}.+)\n+')
+        re_match_newlines = re.compile(r"\n{3,}")
+        re_match_headers = re.compile(r"(#{1,6}.+)\n+")
 
-        text = re_match_newlines.sub(r'\n\n', text)
-        text = re_match_headers.sub(r'\1\n\n', text)
+        text = re_match_newlines.sub(r"\n\n", text)
+        text = re_match_headers.sub(r"\1\n\n", text)
         return text

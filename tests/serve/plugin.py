@@ -1,4 +1,3 @@
-
 import random
 import grpc
 import time
@@ -17,20 +16,20 @@ def test_plugin_serve():
     pool.submit(cmd.run, ["serve", "--address", f"[::]:{port}"])
     time.sleep(1)
     try:
-      with grpc.insecure_channel(f'localhost:{port}') as channel:
-          stub = plugin_pb2_grpc.PluginStub(channel)
-          response = stub.GetName(plugin_pb2.GetName.Request())
-          assert response.name == "memdb"
-          
-          response = stub.GetVersion(plugin_pb2.GetVersion.Request())
-          assert response.version == "development"
+        with grpc.insecure_channel(f"localhost:{port}") as channel:
+            stub = plugin_pb2_grpc.PluginStub(channel)
+            response = stub.GetName(plugin_pb2.GetName.Request())
+            assert response.name == "memdb"
 
-          response = stub.Init(plugin_pb2.Init.Request(spec=b""))
-          assert response is not None
+            response = stub.GetVersion(plugin_pb2.GetVersion.Request())
+            assert response.version == "development"
 
-          response = stub.GetTables(plugin_pb2.GetTables.Request())
-          print(response.tables)
-          assert response.tables is not None
+            response = stub.Init(plugin_pb2.Init.Request(spec=b""))
+            assert response is not None
+
+            response = stub.GetTables(plugin_pb2.GetTables.Request())
+            print(response.tables)
+            assert response.tables is not None
     finally:
-      cmd.stop()
-      pool.shutdown()
+        cmd.stop()
+        pool.shutdown()

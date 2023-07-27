@@ -7,12 +7,22 @@ import pyarrow as pa
 from cloudquery.sdk.schema import arrow
 from .column import Column
 
+
 class Client:
     pass
 
+
 class Table:
-    def __init__(self, name: str, columns: List[Column], title: str = "", description: str = "",
-                 parent: Table = None, relations: List[Table] = None, is_incremental: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        columns: List[Column],
+        title: str = "",
+        description: str = "",
+        parent: Table = None,
+        relations: List[Table] = None,
+        is_incremental: bool = False,
+    ) -> None:
         self.name = name
         self.columns = columns
         self.title = title
@@ -24,10 +34,10 @@ class Table:
         self.is_incremental = is_incremental
 
     def multiplex(self, client) -> List[Table]:
-      raise [client]
+        raise [client]
 
     def resolver(self, client: Client, parent=None) -> Generator[Any]:
-      raise NotImplementedError()
+        raise NotImplementedError()
 
     def index_column(self, column_name: str) -> int:
         for i, column in enumerate(self.columns):

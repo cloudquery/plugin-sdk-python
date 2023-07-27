@@ -25,26 +25,49 @@ def update_snapshot(name, content):
 class T(unittest.TestCase):
     def test_docs_generator_markdown(self):
         tables = [
-            Table(name="test_table", title="Test Table", columns=[
-                Column("string", pa.string(), primary_key=True),
-                Column("int32", pa.int32()),
-            ]),
-            Table(name="test_table_composite_pk", title="Composite PKs", is_incremental=True, columns=[
-                Column("pk1", pa.string(), primary_key=True, incremental_key=True),
-                Column("pk2", pa.string(), primary_key=True, incremental_key=True),
-                Column("int32", pa.int32()),
-            ]),
-            Table(name="test_table_relations", title="Table Relations", is_incremental=True, columns=[
-                Column("pk1", pa.string(), primary_key=True),
-            ], relations=[
-                Table(name="test_table_child", title="Child Table", columns=[
+            Table(
+                name="test_table",
+                title="Test Table",
+                columns=[
+                    Column("string", pa.string(), primary_key=True),
+                    Column("int32", pa.int32()),
+                ],
+            ),
+            Table(
+                name="test_table_composite_pk",
+                title="Composite PKs",
+                is_incremental=True,
+                columns=[
+                    Column("pk1", pa.string(), primary_key=True, incremental_key=True),
+                    Column("pk2", pa.string(), primary_key=True, incremental_key=True),
+                    Column("int32", pa.int32()),
+                ],
+            ),
+            Table(
+                name="test_table_relations",
+                title="Table Relations",
+                is_incremental=True,
+                columns=[
                     Column("pk1", pa.string(), primary_key=True),
-                    Column("fk1", pa.string()),
-                ], relations=[
-                    Table(name="test_table_grandchild", title="Grandchild Table", columns=[
-                        Column("pk1", pa.string(), primary_key=True)])
-                ])
-            ]),
+                ],
+                relations=[
+                    Table(
+                        name="test_table_child",
+                        title="Child Table",
+                        columns=[
+                            Column("pk1", pa.string(), primary_key=True),
+                            Column("fk1", pa.string()),
+                        ],
+                        relations=[
+                            Table(
+                                name="test_table_grandchild",
+                                title="Grandchild Table",
+                                columns=[Column("pk1", pa.string(), primary_key=True)],
+                            )
+                        ],
+                    )
+                ],
+            ),
         ]
 
         # set parent relations
@@ -57,14 +80,16 @@ class T(unittest.TestCase):
 
             files = glob.glob(os.path.join(d, "*.md"))
             file_names = [os.path.basename(f) for f in files]
-            assert sorted(file_names) == sorted([
-                "README.md",
-                "test_table_composite_pk.md",
-                "test_table.md",
-                "test_table_relations.md",
-                "test_table_child.md",
-                "test_table_grandchild.md",
-            ])
+            assert sorted(file_names) == sorted(
+                [
+                    "README.md",
+                    "test_table_composite_pk.md",
+                    "test_table.md",
+                    "test_table_relations.md",
+                    "test_table_child.md",
+                    "test_table_grandchild.md",
+                ]
+            )
 
             updated_snapshots = False
             for file_name in file_names:
