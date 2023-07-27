@@ -3,7 +3,7 @@ import structlog
 
 from cloudquery.plugin_v3 import plugin_pb2, plugin_pb2_grpc
 from cloudquery.sdk.message import SyncInsertMessage, SyncMigrateTableMessage
-from cloudquery.sdk.plugin.plugin import Plugin, SyncOptions
+from cloudquery.sdk.plugin.plugin import Plugin, SyncOptions, TableOptions
 from cloudquery.sdk.schema import tables_to_arrow_schemas
 
 
@@ -23,7 +23,7 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
         return plugin_pb2.Init.Response()
 
     def GetTables(self, request: plugin_pb2.GetTables.Request, context):
-        tables = self._plugin.get_tables(request.tables, request.skip_tables)
+        tables = self._plugin.get_tables(TableOptions(tables=request.tables, skip_tables=request.skip_tables))
         schema = tables_to_arrow_schemas(tables)
         tablesBytes = []
         for s in schema:
