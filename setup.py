@@ -13,7 +13,7 @@ dependencies = [
     "plugin-pb-python==0.0.13",
     "pyarrow==12.0.1",
     "Jinja2==3.1.2",
-    "structlog==23.1.0"
+    "structlog==23.1.0",
 ]
 url = "https://github.com/cloudquery/plugin-sdk-python"
 
