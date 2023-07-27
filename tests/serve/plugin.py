@@ -3,8 +3,7 @@ import grpc
 import time
 from concurrent import futures
 from cloudquery.sdk import serve
-from cloudquery.sdk import plugin
-from cloudquery.plugin_v3 import plugin_pb2_grpc, plugin_pb2
+from cloudquery.plugin_v3 import plugin_pb2_grpc, plugin_pb2, arrow
 from cloudquery.sdk.internal.memdb import MemDB
 
 
@@ -28,8 +27,8 @@ def test_plugin_serve():
             assert response is not None
 
             response = stub.GetTables(plugin_pb2.GetTables.Request())
-            print(response.tables)
-            assert response.tables is not None
+            schemas = arrow.new_schemas_from_bytes(response.tables)
+            assert len(schemas) == 1
     finally:
         cmd.stop()
         pool.shutdown()
