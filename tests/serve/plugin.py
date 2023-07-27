@@ -35,8 +35,8 @@ def test_plugin_serve():
             total_records = 0
             for msg in response:
                 if msg.insert is not None:
-                  rec = arrow.new_record_from_bytes(msg.insert.record)
-                  total_records += 1
+                    rec = arrow.new_record_from_bytes(msg.insert.record)
+                    total_records += 1
             assert total_records == 1
     finally:
         cmd.stop()
