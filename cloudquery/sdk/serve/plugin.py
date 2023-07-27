@@ -63,15 +63,18 @@ doc --format json .
 
     def _serve(self, args):
         logger = get_logger(args)
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        self._server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         discovery_pb2_grpc.add_DiscoveryServicer_to_server(
-            DiscoveryServicer([3]), server)
+            DiscoveryServicer([3]), self._server)
         plugin_pb2_grpc.add_PluginServicer_to_server(
-            PluginServicer(self._plugin, logger), server)
-        server.add_insecure_port(args.address)
+            PluginServicer(self._plugin, logger), self._server)
+        self._server.add_insecure_port(args.address)
         print("Starting server. Listening on " + args.address)
-        server.start()
-        server.wait_for_termination()
+        self._server.start()
+        self._server.wait_for_termination()
+    
+    def stop(self):
+        self._server.stop(5)
 
     def _generate_docs(self, args):
         print("Generating docs in format: " + args.format)

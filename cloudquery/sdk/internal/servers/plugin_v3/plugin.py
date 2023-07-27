@@ -16,7 +16,7 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
         return plugin_pb2.GetName.Response(name=self._plugin.name())
 
     def GetVersion(self, request, context):
-        return plugin_pb2.GetVersion.Response(name=self._plugin.version())
+        return plugin_pb2.GetVersion.Response(version=self._plugin.version())
 
     def Init(self, request: plugin_pb2.Init.Request, context):
         self._plugin.init(request.spec)
