@@ -47,7 +47,7 @@ class Table:
         fields = []
         md = {
             arrow.METADATA_TABLE_NAME: self.name,
-            arrow.MATADATA_TABLE_DESCRIPTION: self.description,
+            arrow.METADATA_TABLE_DESCRIPTION: self.description,
             # arrow.METADATA_CONSTRAINT_NAME:
         }
         for column in self.columns:

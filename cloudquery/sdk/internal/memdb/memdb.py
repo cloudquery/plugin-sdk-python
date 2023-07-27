@@ -22,4 +22,3 @@ class MemDB(plugin.Plugin):
     def sync(self, options: plugin.SyncOptions) -> Generator[message.SyncMessage, None, None]:
       for table, record in self._memory_db.items():
         yield message.SyncInsertMessage(record)
-      

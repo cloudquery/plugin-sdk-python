@@ -25,4 +25,3 @@ class Resource:
     
     def to_arrow_record(self):
        return pa.record_batch(self.to_list_of_arr(), schema=self._table.to_arrow_schema())
-    
