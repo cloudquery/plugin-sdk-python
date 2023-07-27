@@ -23,7 +23,9 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
         return plugin_pb2.Init.Response()
 
     def GetTables(self, request: plugin_pb2.GetTables.Request, context):
-        tables = self._plugin.get_tables(TableOptions(tables=request.tables, skip_tables=request.skip_tables))
+        tables = self._plugin.get_tables(
+            TableOptions(tables=request.tables, skip_tables=request.skip_tables)
+        )
         schema = tables_to_arrow_schemas(tables)
         tablesBytes = []
         for s in schema:
@@ -51,13 +53,15 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
                 writer.write_batch(msg.record)
                 writer.close()
                 buf = sink.getvalue().to_pybytes()
-                yield plugin_pb2.Sync.Response(insert=plugin_pb2.Sync.MessageInsert(
-                    record=buf
-                ))
+                yield plugin_pb2.Sync.Response(
+                    insert=plugin_pb2.Sync.MessageInsert(record=buf)
+                )
             elif isinstance(msg, SyncMigrateTableMessage):
-                yield plugin_pb2.Sync.Response(migrate_table=plugin_pb2.Sync.MessageMigrateTable(
-                    table=msg.table.to_arrow_schema().serialize().to_pybytes()
-                ))
+                yield plugin_pb2.Sync.Response(
+                    migrate_table=plugin_pb2.Sync.MessageMigrateTable(
+                        table=msg.table.to_arrow_schema().serialize().to_pybytes()
+                    )
+                )
             else:
                 # unknown sync message type
                 raise NotImplementedError()

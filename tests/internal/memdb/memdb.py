@@ -1,6 +1,6 @@
-
 from cloudquery.sdk.internal import memdb
 from cloudquery.sdk.plugin import SyncOptions
+
 
 def test_memdb():
     p = memdb.MemDB()
