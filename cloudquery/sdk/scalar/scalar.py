@@ -12,5 +12,3 @@ class Scalar:
     @property
     def value(self):
        raise NotImplementedError("Scalar value not implemented")
-
-

@@ -108,17 +108,17 @@ class Scheduler:
       thread = futures.ThreadPoolExecutor()
       thread.submit(self._sync, client, resolvers, res, deterministic_cq_id)
       total_table_resolvers = 0
-      finished_table_resovlers = 0
+      finished_table_resolvers = 0
       while True:
         message = res.get()
         if type(message) == TableResolverStarted:
           total_table_resolvers += message.count
-          if total_table_resolvers == finished_table_resovlers:
+          if total_table_resolvers == finished_table_resolvers:
             break
           continue
         elif type(message) == TableResolverFinished:
-          finished_table_resovlers += 1
-          if total_table_resolvers == finished_table_resovlers:       
+          finished_table_resolvers += 1
+          if total_table_resolvers == finished_table_resolvers:
             break
           continue
         yield message
