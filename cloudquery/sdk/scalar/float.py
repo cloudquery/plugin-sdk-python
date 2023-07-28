@@ -1,13 +1,21 @@
 from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError
 
 
-class Float64(Scalar):
+class Float(Scalar):
+    def __init__(self, valid: bool = False, value: any = None, bitwidth: int = 64):
+        super().__init__(valid, value)
+        self._bitwidth = bitwidth
+
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if type(scalar) == Float64:
+        if type(scalar) == Float and self._bitwidth == scalar.bitwidth:
             return self._value == scalar._value and self._valid == scalar._valid
         return False
+
+    @property
+    def bitwidth(self):
+        return self._bitwidth
 
     @property
     def value(self):
@@ -26,9 +34,11 @@ class Float64(Scalar):
             try:
                 self._value = float(value)
             except ValueError:
-                raise ScalarInvalidTypeError("Invalid type for Float64 scalar")
+                raise ScalarInvalidTypeError(
+                    "Invalid type for Float{} scalar".format(self._bitwidth)
+                )
         else:
             raise ScalarInvalidTypeError(
-                "Invalid type {} for Float64 scalar".format(type(value))
+                "Invalid type {} for Float{} scalar".format(type(value), self._bitwidth)
             )
         self._valid = True
