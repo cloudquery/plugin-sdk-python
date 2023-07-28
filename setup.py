@@ -5,7 +5,7 @@ import setuptools  # type: ignore
 
 package_root = os.path.abspath(os.path.dirname(__file__))
 
-name = "plugin-sdk-python"
+name = "cloudquery-plugin-sdk"
 
 description = "CloudQuery Plugin SDK for Python"
 
@@ -36,7 +36,7 @@ packages = [
 ]
 setuptools.setup(
     name=name,
-    version="0.0.3",
+    version="0.0.4",
     description=description,
     long_description=long_description,
     author="CloudQuery LTD",
