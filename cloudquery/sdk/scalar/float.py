@@ -35,7 +35,7 @@ class Float(Scalar):
                 self._value = float(value)
             except ValueError:
                 raise ScalarInvalidTypeError(
-                    "Invalid type for Float{} scalar".format(self._bitwidth)
+                    "Invalid value for Float{} scalar".format(self._bitwidth)
                 )
         else:
             raise ScalarInvalidTypeError(

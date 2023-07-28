@@ -7,6 +7,7 @@ from .date64 import Date64
 from .float import Float
 from .int import Int
 from .string import String
+from .timestamp import Timestamp
 from .uint import Uint
 from .uuid import UUID
 
@@ -41,53 +42,53 @@ class ScalarFactory:
             return Date32()
         elif dt_id == pa.types.lib.Type_DATE64:
             return Date64()
-        # elif dt_id == pa.types.lib.Type_DECIMAL128 :
+        # elif dt_id == pa.types.lib.Type_DECIMAL128:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_DECIMAL256 :
+        # elif dt_id == pa.types.lib.Type_DECIMAL256:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_DENSE_UNION :
+        # elif dt_id == pa.types.lib.Type_DENSE_UNION:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_DICTIONARY :
+        # elif dt_id == pa.types.lib.Type_DICTIONARY:
         #     return ()
         elif dt_id == pa.types.lib.Type_DOUBLE:
             return Float(bitwidth=64)
-        # elif dt_id == pa.types.lib.Type_DURATION :
+        # elif dt_id == pa.types.lib.Type_DURATION:
         #     return ()
         elif dt_id == pa.types.lib.Type_FIXED_SIZE_BINARY:
             return Binary()
-        # elif dt_id == pa.types.lib.Type_FIXED_SIZE_LIST :
+        # elif dt_id == pa.types.lib.Type_FIXED_SIZE_LIST:
         #     return ()
         elif dt_id == pa.types.lib.Type_FLOAT:
             return Float(bitwidth=32)
         elif dt_id == pa.types.lib.Type_HALF_FLOAT:
             return Float(bitwidth=16)
-        # elif dt_id == pa.types.lib.Type_INTERVAL_MONTH_DAY_NANO :
+        # elif dt_id == pa.types.lib.Type_INTERVAL_MONTH_DAY_NANO:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_LARGE_BINARY :
+        # elif dt_id == pa.types.lib.Type_LARGE_BINARY:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_LARGE_LIST :
+        # elif dt_id == pa.types.lib.Type_LARGE_LIST:
         #     return ()
         elif dt_id == pa.types.lib.Type_LARGE_STRING:
             return String()
-        # elif dt_id == pa.types.lib.Type_LIST :
+        # elif dt_id == pa.types.lib.Type_LIST:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_MAP :
+        # elif dt_id == pa.types.lib.Type_MAP:
         #     return ()
         # elif dt_id == pa.types.lib.Type_NA:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_RUN_END_ENCODED :
+        # elif dt_id == pa.types.lib.Type_RUN_END_ENCODED:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_SPARSE_UNION :
+        # elif dt_id == pa.types.lib.Type_SPARSE_UNION:
         #     return ()
         elif dt_id == pa.types.lib.Type_STRING:
             return String()
-        # elif dt_id == pa.types.lib.Type_STRUCT :
+        # elif dt_id == pa.types.lib.Type_STRUCT:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_TIME32 :
+        # elif dt_id == pa.types.lib.Type_TIME32:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_TIME64 :
+        # elif dt_id == pa.types.lib.Type_TIME64:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_TIMESTAMP :
-        #     return ()
+        elif dt_id == pa.types.lib.Type_TIMESTAMP:
+            return Timestamp()
         else:
             raise ScalarInvalidTypeError("Invalid type {} for scalar".format(dt))

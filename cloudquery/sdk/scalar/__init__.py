@@ -8,5 +8,6 @@ from .date64 import Date64
 from .float import Float
 from .int import Int
 from .string import String
+from .timestamp import Timestamp
 from .uint import Uint
 from .uuid import UUID

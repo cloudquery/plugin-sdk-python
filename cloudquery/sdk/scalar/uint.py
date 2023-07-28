@@ -35,7 +35,7 @@ class Uint(Scalar):
                 val = int(value)
             except ValueError as e:
                 raise ScalarInvalidTypeError(
-                    "Invalid type for Int{} scalar".format(self._bitwidth)
+                    "Invalid value for Int{} scalar".format(self._bitwidth)
                 ) from e
         else:
             raise ScalarInvalidTypeError(
