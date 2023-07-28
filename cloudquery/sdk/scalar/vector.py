@@ -1,6 +1,7 @@
 from .scalar import Scalar
 from typing import Type
 
+
 class Vector:
     def __init__(self, type: Type[Scalar] = None, *args):
         self.data = []
@@ -26,8 +27,8 @@ class Vector:
         if len(self) != len(other):
             return False
 
-        for i in range(len(self)):
-            if self[i] != other[i]:
+        for self_item, other_item in zip(self.data, other.data):
+            if self_item != other_item:
                 return False
 
         return True
