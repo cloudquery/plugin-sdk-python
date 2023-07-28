@@ -11,7 +11,7 @@ from cloudquery.sdk.scalar import Bool
         ("false", Bool(True, False)),
     ],
 )
-def test_binary_set(input_value, expected_scalar):
+def test_bool_set(input_value, expected_scalar):
     b = Bool()
     b.set(input_value)
     assert b == expected_scalar

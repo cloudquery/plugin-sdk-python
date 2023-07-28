@@ -43,8 +43,6 @@ class Uint(Scalar):
             )
 
         if val < 0:
-            raise ScalarInvalidTypeError(
-                "Invalid Uint{} scalar".format(self._bitwidth)
-            )
+            raise ScalarInvalidTypeError("Invalid Uint{} scalar".format(self._bitwidth))
         self._value = val
         self._valid = True

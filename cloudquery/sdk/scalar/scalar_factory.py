@@ -4,9 +4,10 @@ from .binary import Binary
 from .bool import Bool
 from .date32 import Date32
 from .date64 import Date64
-from .int import Int
-from .uint import Uint
 from .float import Float
+from .int import Int
+from .string import String
+from .uint import Uint
 from .uuid import UUID
 
 
@@ -52,8 +53,8 @@ class ScalarFactory:
             return Float(bitwidth=64)
         # elif dt_id == pa.types.lib.Type_DURATION :
         #     return ()
-        # elif dt_id == pa.types.lib.Type_FIXED_SIZE_BINARY :
-        #     return ()
+        elif dt_id == pa.types.lib.Type_FIXED_SIZE_BINARY:
+            return Binary()
         # elif dt_id == pa.types.lib.Type_FIXED_SIZE_LIST :
         #     return ()
         elif dt_id == pa.types.lib.Type_FLOAT:
@@ -66,8 +67,8 @@ class ScalarFactory:
         #     return ()
         # elif dt_id == pa.types.lib.Type_LARGE_LIST :
         #     return ()
-        # elif dt_id == pa.types.lib.Type_LARGE_STRING :
-        #     return ()
+        elif dt_id == pa.types.lib.Type_LARGE_STRING:
+            return String()
         # elif dt_id == pa.types.lib.Type_LIST :
         #     return ()
         # elif dt_id == pa.types.lib.Type_MAP :
@@ -78,8 +79,8 @@ class ScalarFactory:
         #     return ()
         # elif dt_id == pa.types.lib.Type_SPARSE_UNION :
         #     return ()
-        # elif dt_id == pa.types.lib.Type_STRING :
-        #     return ()
+        elif dt_id == pa.types.lib.Type_STRING:
+            return String()
         # elif dt_id == pa.types.lib.Type_STRUCT :
         #     return ()
         # elif dt_id == pa.types.lib.Type_TIME32 :
