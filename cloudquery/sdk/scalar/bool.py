@@ -38,6 +38,8 @@ class Bool(Scalar):
         elif type(value) == str:
             self._value = parse_string_to_bool(value)
         else:
-            raise ScalarInvalidTypeError("Invalid type for Bool scalar")
+            raise ScalarInvalidTypeError(
+                "Invalid type {} for Bool scalar".format(type(value))
+            )
 
         self._valid = True

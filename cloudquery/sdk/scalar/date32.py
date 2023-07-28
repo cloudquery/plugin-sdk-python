@@ -27,6 +27,8 @@ class Date32(Scalar):
         elif type(value) == time:
             self._value = datetime.combine(datetime.today(), value)
         else:
-            raise ScalarInvalidTypeError("Invalid type for Bool scalar")
+            raise ScalarInvalidTypeError(
+                "Invalid type {} for Date32 scalar".format(type(value))
+            )
 
         self._valid = True

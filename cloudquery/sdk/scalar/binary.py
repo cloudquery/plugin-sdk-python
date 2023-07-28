@@ -14,16 +14,18 @@ class Binary(Scalar):
     def value(self):
         return self._value
 
-    def set(self, scalar):
-        if scalar is None:
+    def set(self, value: any):
+        if value is None:
             self._valid = False
             return
 
-        if type(scalar) == bytes:
+        if type(value) == bytes:
             self._valid = True
-            self._value = scalar
-        elif type(scalar) == str:
+            self._value = value
+        elif type(value) == str:
             self._valid = True
-            self._value = scalar.encode()
+            self._value = value.encode()
         else:
-            raise ScalarInvalidTypeError("Invalid type for Binary scalar")
+            raise ScalarInvalidTypeError(
+                "Invalid type {} for Binary scalar".format(type(value))
+            )

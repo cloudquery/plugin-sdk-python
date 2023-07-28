@@ -13,7 +13,7 @@ class Float64(Scalar):
     def value(self):
         return self._value
 
-    def set(self, value):
+    def set(self, value: any):
         if value is None:
             self._valid = False
             return
@@ -28,5 +28,7 @@ class Float64(Scalar):
             except ValueError:
                 raise ScalarInvalidTypeError("Invalid type for Float64 scalar")
         else:
-            raise ScalarInvalidTypeError("Invalid type for Binary scalar")
+            raise ScalarInvalidTypeError(
+                "Invalid type {} for Float64 scalar".format(type(value))
+            )
         self._valid = True

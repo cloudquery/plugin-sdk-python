@@ -13,7 +13,7 @@ class Int64(Scalar):
     def value(self):
         return self._value
 
-    def set(self, value):
+    def set(self, value: any):
         if value is None:
             self._valid = False
             return
