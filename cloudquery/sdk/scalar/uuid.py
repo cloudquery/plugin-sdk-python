@@ -22,6 +22,11 @@ class UUID(Scalar):
             self._valid = False
             return
 
+        if isinstance(value, UUID):
+            self._valid = value.is_valid
+            self._value = value.value
+            return
+
         if type(value) == uuid.UUID:
             self._value = value
         elif type(value) == str:

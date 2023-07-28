@@ -21,6 +21,11 @@ class Timestamp(Scalar):
             self._valid = False
             return
 
+        if isinstance(value, Timestamp):
+            self._valid = value.is_valid
+            self._value = value.value
+            return
+
         if isinstance(value, pd.Timestamp):
             self._value = value
         elif type(value) == datetime:

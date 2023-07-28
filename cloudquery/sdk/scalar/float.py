@@ -26,6 +26,11 @@ class Float(Scalar):
             self._valid = False
             return
 
+        if isinstance(value, Float) and value.bitwidth == self._bitwidth:
+            self._valid = value.is_valid
+            self._value = value.value
+            return
+
         if type(value) == int:
             self._value = float(value)
         elif type(value) == float:

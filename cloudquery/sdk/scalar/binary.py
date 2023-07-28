@@ -19,6 +19,11 @@ class Binary(Scalar):
             self._valid = False
             return
 
+        if isinstance(value, Binary):
+            self._valid = value.is_valid
+            self._value = value.value
+            return
+
         if type(value) == bytes:
             self._valid = True
             self._value = value

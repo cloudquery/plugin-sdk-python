@@ -19,6 +19,11 @@ class String(Scalar):
             self._valid = False
             return
 
+        if isinstance(value, String):
+            self._valid = value._valid
+            self._value = value.value
+            return
+
         if type(value) == str:
             self._valid = True
             self._value = value

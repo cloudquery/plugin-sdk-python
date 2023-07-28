@@ -6,6 +6,7 @@ from .date32 import Date32
 from .date64 import Date64
 from .float import Float
 from .int import Int
+from .list import List
 from .string import String
 from .timestamp import Timestamp
 from .uint import Uint
@@ -16,7 +17,7 @@ class ScalarFactory:
     def __init__(self):
         pass
 
-    def new_scalar(self, dt):
+    def new_scalar(self, dt: pa.DataType):
         dt_id = dt.id
         if dt_id == pa.types.lib.Type_INT64:
             return Int(bitwidth=64)
@@ -62,8 +63,13 @@ class ScalarFactory:
             return Float(bitwidth=16)
         # elif dt_id == pa.types.lib.Type_INTERVAL_MONTH_DAY_NANO:
         #     return ()
-        # elif dt_id == pa.types.lib.Type_LIST or dt_id == pa.types.lib.Type_LARGE_LIST or dt_id == pa.types.lib.Type_FIXED_SIZE_LIST:
-        #     return List()
+        elif (
+            dt_id == pa.types.lib.Type_LIST
+            or dt_id == pa.types.lib.Type_LARGE_LIST
+            or dt_id == pa.types.lib.Type_FIXED_SIZE_LIST
+        ):
+            item = ScalarFactory.new_scalar(dt.field(0).type)
+            return List(type(item))
         # elif dt_id == pa.types.lib.Type_MAP:
         #     return ()
         elif (

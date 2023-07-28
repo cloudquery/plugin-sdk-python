@@ -26,6 +26,11 @@ class Uint(Scalar):
             self._valid = False
             return
 
+        if isinstance(value, Uint) and value.bitwidth == self._bitwidth:
+            self._valid = value.is_valid
+            self._value = value.value
+            return
+
         if type(value) == int:
             val = value
         elif type(value) == float:

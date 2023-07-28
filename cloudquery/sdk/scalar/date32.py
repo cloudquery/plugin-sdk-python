@@ -20,6 +20,11 @@ class Date32(Scalar):
             self._valid = False
             return
 
+        if isinstance(value, Date32):
+            self._valid = value.is_valid
+            self._value = value.value
+            return
+
         if type(value) == datetime:
             self._value = value
         elif type(value) == str:

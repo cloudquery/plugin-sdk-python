@@ -33,6 +33,11 @@ class Bool(Scalar):
             self._valid = False
             return
 
+        if isinstance(value, Bool):
+            self._valid = value.is_valid
+            self._value = value.value
+            return
+
         if type(value) == bool:
             self._value = value
         elif type(value) == str:
