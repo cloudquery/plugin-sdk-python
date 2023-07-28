@@ -2,10 +2,6 @@ from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError
 
 
 class Int64(Scalar):
-    def __init__(self, valid: bool = False, value: float = None):
-        self._valid = valid
-        self._value = value
-
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
@@ -19,6 +15,7 @@ class Int64(Scalar):
 
     def set(self, value):
         if value is None:
+            self._valid = False
             return
 
         if type(value) == int:
