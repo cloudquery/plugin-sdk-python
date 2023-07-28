@@ -43,3 +43,16 @@ def test_vector_ineq():
     v2.append(String(True, "another string"))
 
     assert v1 != v2
+
+
+def test_vector_ineq_order():
+    s = type(String())
+    v1 = Vector(s)
+    v1.append(String(True, "a"))
+    v1.append(String(True, "b"))
+
+    v2 = Vector(s)
+    v2.append(String(True, "b"))
+    v2.append(String(True, "a"))
+
+    assert v1 != v2
