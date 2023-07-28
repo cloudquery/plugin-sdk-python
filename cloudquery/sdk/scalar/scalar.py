@@ -6,9 +6,9 @@ class ScalarInvalidTypeError(Exception):
 
 
 class Scalar:
-    def __init__(self, valid: bool = False):
+    def __init__(self, valid: bool = False, value: any = None):
         self._valid = valid
-        self._value = None
+        self._value = value
 
     @property
     def is_valid(self) -> bool:
