@@ -10,7 +10,7 @@ name = "cloudquery-plugin-sdk"
 description = "CloudQuery Plugin SDK for Python"
 
 dependencies = [
-    "plugin-pb-python==0.0.13",
+    "cloudquery-plugin-pb==0.0.14",
     "pyarrow==12.0.1",
     "Jinja2==3.1.2",
     "structlog==23.1.0",
@@ -36,7 +36,7 @@ packages = [
 ]
 setuptools.setup(
     name=name,
-    version="0.0.4",
+    version="0.0.5",
     description=description,
     long_description=long_description,
     author="CloudQuery LTD",
