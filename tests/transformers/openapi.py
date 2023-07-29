@@ -36,7 +36,7 @@ OAPI_SPEC = {
                 },
                 "array": {
                     "type": "array",
-                    "items": {"$ref": "#/definitions/SomeDefinition"},  
+                    "items": {"$ref": "#/definitions/SomeDefinition"},
                 },
             },
         },
@@ -46,12 +46,12 @@ OAPI_SPEC = {
 
 def test_oapi_properties_to_columns():
     expected_columns = [
-        Column("string", pa.string() , description=None),
-        Column("number", pa.int64() , description=None),
-        Column("integer", pa.int64() , description=None),
-        Column("boolean", pa.bool_() , description=None),
-        Column("object", JSONType() , description=None),
-        Column("array", JSONType() , description=None),
+        Column("string", pa.string(), description=None),
+        Column("number", pa.int64(), description=None),
+        Column("integer", pa.int64(), description=None),
+        Column("boolean", pa.bool_(), description=None),
+        Column("object", JSONType(), description=None),
+        Column("array", JSONType(), description=None),
     ]
     columns = oapi_definition_to_columns(OAPI_SPEC["definitions"]["TestDefinition"])
     assert expected_columns == columns

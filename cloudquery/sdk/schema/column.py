@@ -23,22 +23,24 @@ class Column:
         self.not_null = not_null
         self.incremental_key = incremental_key
         self.unique = unique
-    
+
     def __str__(self) -> str:
         return f"Column(name={self.name}, type={self.type}, description={self.description}, primary_key={self.primary_key}, not_null={self.not_null}, incremental_key={self.incremental_key}, unique={self.unique})"
-    
+
     def __repr__(self) -> str:
         return f"Column(name={self.name}, type={self.type}, description={self.description}, primary_key={self.primary_key}, not_null={self.not_null}, incremental_key={self.incremental_key}, unique={self.unique})"
-    
+
     def __eq__(self, __value: object) -> bool:
         if type(__value) == Column:
-            return (self.name == __value.name 
-                    and self.type == __value.type 
-                    and self.description == __value.description 
-                    and self.primary_key == __value.primary_key 
-                    and self.not_null == __value.not_null 
-                    and self.incremental_key == __value.incremental_key 
-                    and self.unique == __value.unique)
+            return (
+                self.name == __value.name
+                and self.type == __value.type
+                and self.description == __value.description
+                and self.primary_key == __value.primary_key
+                and self.not_null == __value.not_null
+                and self.incremental_key == __value.incremental_key
+                and self.unique == __value.unique
+            )
         return False
 
     def to_arrow_field(self):
