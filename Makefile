@@ -2,5 +2,7 @@ test:
 	pytest .
 
 fmt:
-	pip install -q black
 	black .
+
+fmt-check:
+	black --check .

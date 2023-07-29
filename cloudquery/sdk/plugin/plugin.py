@@ -1,8 +1,9 @@
 import queue
 from dataclasses import dataclass
-from typing import List
+from typing import List, Generator
 
 from cloudquery.sdk.schema import Table
+from cloudquery.sdk import message
 
 MIGRATE_MODE_STRINGS = ["safe", "force"]
 
@@ -46,7 +47,7 @@ class Plugin:
     def get_tables(self, options: TableOptions) -> List[Table]:
         raise NotImplementedError()
 
-    def sync(self, options: SyncOptions, results: queue.Queue) -> None:
+    def sync(self, options: SyncOptions) -> Generator[message.SyncMessage, None, None]:
         raise NotImplementedError()
 
     def close(self) -> None:

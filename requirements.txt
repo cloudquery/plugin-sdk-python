@@ -1,5 +1,6 @@
 cloudquery-plugin-pb==0.0.14
 exceptiongroup==1.1.2
+black==23.7.0
 grpcio==1.56.2
 grpcio-tools==1.56.2
 iniconfig==2.0.0

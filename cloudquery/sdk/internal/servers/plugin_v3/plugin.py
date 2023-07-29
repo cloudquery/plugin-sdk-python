@@ -1,7 +1,7 @@
 import pyarrow as pa
 import structlog
 
-from cloudquery.plugin_v3 import plugin_pb2, plugin_pb2_grpc
+from cloudquery.plugin_v3 import plugin_pb2, plugin_pb2_grpc, arrow
 from cloudquery.sdk.message import SyncInsertMessage, SyncMigrateTableMessage
 from cloudquery.sdk.plugin.plugin import Plugin, SyncOptions, TableOptions
 from cloudquery.sdk.schema import tables_to_arrow_schemas
@@ -48,19 +48,14 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
 
         for msg in self._plugin.sync(options):
             if isinstance(msg, SyncInsertMessage):
-                sink = pa.BufferOutputStream()
-                writer = pa.ipc.new_stream(sink, msg.record.schema)
-                writer.write_batch(msg.record)
-                writer.close()
-                buf = sink.getvalue().to_pybytes()
+                buf = arrow.record_to_bytes(msg.record)
                 yield plugin_pb2.Sync.Response(
                     insert=plugin_pb2.Sync.MessageInsert(record=buf)
                 )
             elif isinstance(msg, SyncMigrateTableMessage):
+                buf = arrow.schema_to_bytes(msg.schema)
                 yield plugin_pb2.Sync.Response(
-                    migrate_table=plugin_pb2.Sync.MessageMigrateTable(
-                        table=msg.table.to_arrow_schema().serialize().to_pybytes()
-                    )
+                    migrate_table=plugin_pb2.Sync.MessageMigrateTable(table=buf)
                 )
             else:
                 # unknown sync message type
