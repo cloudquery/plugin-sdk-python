@@ -4,8 +4,7 @@ from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError
 
 class UUID(Scalar):
     def __init__(self, valid: bool = False, value: uuid.UUID = None):
-        self._valid = valid
-        self._value = value
+        super().__init__(valid, value)
 
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
@@ -18,8 +17,14 @@ class UUID(Scalar):
     def value(self):
         return self._value
 
-    def set(self, value):
+    def set(self, value: any):
         if value is None:
+            self._valid = False
+            return
+
+        if isinstance(value, UUID):
+            self._valid = value.is_valid
+            self._value = value.value
             return
 
         if type(value) == uuid.UUID:

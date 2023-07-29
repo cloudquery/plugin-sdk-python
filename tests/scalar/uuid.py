@@ -12,7 +12,7 @@ from cloudquery.sdk.scalar import UUID
         ),
     ],
 )
-def test_binary_set(input_value, expected_scalar):
+def test_uuid_set(input_value, expected_scalar):
     b = UUID()
     b.set(input_value)
     assert b == expected_scalar
