@@ -23,8 +23,8 @@ class Scalar:
     @property
     @abstractmethod
     def value(self):
-        raise NotImplementedError("Scalar value not implemented")
+        pass
 
     @abstractmethod
     def set(self, value: any):
-        raise NotImplementedError("Scalar set not implemented")
+        pass

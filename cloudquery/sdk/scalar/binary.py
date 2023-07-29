@@ -16,7 +16,6 @@ class Binary(Scalar):
 
     def set(self, value: any):
         if value is None:
-            self._valid = False
             return
 
         if isinstance(value, Binary):

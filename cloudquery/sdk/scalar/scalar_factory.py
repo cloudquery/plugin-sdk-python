@@ -11,6 +11,7 @@ from .string import String
 from .timestamp import Timestamp
 from .uint import Uint
 from .uuid import UUID
+from cloudquery.sdk.types import UUIDType, JSONType
 
 
 class ScalarFactory:
@@ -84,5 +85,9 @@ class ScalarFactory:
         #     return ()
         elif dt_id == pa.types.lib.Type_TIMESTAMP:
             return Timestamp()
+        elif dt == UUIDType:
+            return UUID()
+        elif dt == JSONType:
+            return String()
         else:
             raise ScalarInvalidTypeError("Invalid type {} for scalar".format(dt))

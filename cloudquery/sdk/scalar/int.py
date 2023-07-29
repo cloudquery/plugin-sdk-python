@@ -3,8 +3,10 @@ from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError
 
 class Int(Scalar):
     def __init__(self, valid: bool = False, value: any = None, bitwidth: int = 64):
-        super().__init__(valid, value)
         self._bitwidth = bitwidth
+        self._min = -(2 ** (bitwidth - 1))
+        self._max = 2 ** (bitwidth - 1)
+        super().__init__(valid, value)
 
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
@@ -32,12 +34,12 @@ class Int(Scalar):
             return
 
         if type(value) == int:
-            self._value = value
+            val = value
         elif type(value) == float:
-            self._value = int(value)
+            val = int(value)
         elif type(value) == str:
             try:
-                self._value = int(value)
+                val = int(value)
             except ValueError as e:
                 raise ScalarInvalidTypeError(
                     "Invalid type for Int{} scalar".format(self._bitwidth)
@@ -46,4 +48,9 @@ class Int(Scalar):
             raise ScalarInvalidTypeError(
                 "Invalid type {} for Int{} scalar".format(type(value), self._bitwidth)
             )
+        if val < self._min or val >= self._max:
+            raise ScalarInvalidTypeError(
+                "Invalid Int{} scalar with value {}".format(self._bitwidth, val)
+            )
+        self._value = val
         self._valid = True

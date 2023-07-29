@@ -1,12 +1,12 @@
+import json
 from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError
-from .scalar import NULL_VALUE
 
 
-class String(Scalar):
+class JSON(Scalar):
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if type(scalar) == String:
+        if type(scalar) == JSON:
             return self._value == scalar._value and self._valid == scalar._valid
         return False
 
@@ -18,15 +18,10 @@ class String(Scalar):
         if value is None:
             return
 
-        if isinstance(value, String):
-            self._valid = value._valid
-            self._value = value.value
-            return
-
-        if type(value) == str:
-            self._valid = True
+        if type(value) == str or type(value) == bytes:
+            # test if it is a valid json
+            json.loads(value)
             self._value = value
         else:
-            raise ScalarInvalidTypeError(
-                "Invalid type {} for String scalar".format(type(value))
-            )
+            self._value = json.dumps(value)
+        self._valid = True
