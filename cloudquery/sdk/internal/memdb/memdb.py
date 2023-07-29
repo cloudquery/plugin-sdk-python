@@ -11,18 +11,30 @@ VERSION = "development"
 class MemDB(plugin.Plugin):
     def __init__(self) -> None:
         super().__init__(NAME, VERSION)
-        self._tables: List[schema.Table] = [
-            schema.Table("test_table", [schema.Column("test_column", pa.int64())])
-        ]
-        self._memory_db: Dict[str, pa.record] = {
-            "test_table": pa.record_batch([pa.array([1, 2, 3])], names=["test_column"])
-        }
+        self._db: Dict[str, pa.RecordBatch] = {}
+        self._tables: Dict[str, schema.Table] = {}
 
     def get_tables(self, options: plugin.TableOptions = None) -> List[plugin.Table]:
-        return self._tables
+        tables = list(self._tables.values())
+        return schema.filter_dfs(tables, options.tables, options.skip_tables)
 
     def sync(
         self, options: plugin.SyncOptions
     ) -> Generator[message.SyncMessage, None, None]:
-        for table, record in self._memory_db.items():
+        for table, record in self._db.items():
             yield message.SyncInsertMessage(record)
+
+    def write(self, msg_iterator: Generator[message.WriteMessage, None, None]) -> None:
+        for msg in msg_iterator:
+            if type(msg) == message.WriteMigrateTableMessage:
+                if msg.table.name not in self._db:
+                    self._db[msg.table.name] = msg.table
+                    self._tables[msg.table.name] = msg.table
+            elif type(msg) == message.WriteInsertMessage:
+                table = schema.Table.from_arrow_schema(msg.record.schema)
+                self._db[table.name] = msg.record
+            else:
+                raise NotImplementedError(f"Unknown message type {type(msg)}")
+
+    def close(self) -> None:
+        self._db = {}

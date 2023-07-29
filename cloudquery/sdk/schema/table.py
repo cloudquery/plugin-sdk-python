@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import List, Generator, Any
-
+import fnmatch
 import pyarrow as pa
 
 from cloudquery.sdk.schema import arrow
@@ -53,6 +53,19 @@ class Table:
     def incremental_keys(self):
         return [column.name for column in self.columns if column.incremental_key]
 
+    @classmethod
+    def from_arrow_schema(cls, schema: pa.Schema) -> Table:
+        columns = []
+        for field in schema:
+            columns.append(Column.from_arrow_field(field))
+        return cls(
+            name=schema.metadata[arrow.METADATA_TABLE_NAME].decode("utf-8"),
+            columns=columns,
+            description=schema.metadata.get(arrow.METADATA_TABLE_DESCRIPTION).decode(
+                "utf-8"
+            ),
+        )
+
     def to_arrow_schema(self):
         fields = []
         md = {
@@ -74,3 +87,20 @@ def tables_to_arrow_schemas(tables: List[Table]):
     for table in tables:
         schemas.append(table.to_arrow_schema())
     return schemas
+
+
+def filter_dfs(
+    tables: List[Table], include_tables: List[str], skip_tables: List[str]
+) -> List[Table]:
+    filtered: List[Table] = []
+    for table in tables:
+        matched = False
+        for include_table in include_tables:
+            if fnmatch.fnmatch(table.name, include_table):
+                matched = True
+        for skip_table in skip_tables:
+            if fnmatch.fnmatch(table.name, skip_table):
+                matched = False
+        if matched:
+            filtered.append(table)
+    return filtered

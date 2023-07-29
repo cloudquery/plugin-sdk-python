@@ -50,5 +50,8 @@ class Plugin:
     def sync(self, options: SyncOptions) -> Generator[message.SyncMessage, None, None]:
         raise NotImplementedError()
 
+    def write(self, writer: Generator[message.WriteMessage, None, None]) -> None:
+        raise NotImplementedError()
+
     def close(self) -> None:
-        pass
+        raise NotImplementedError()

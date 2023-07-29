@@ -103,7 +103,18 @@ class Scheduler:
                 )
             total_resources = 0
             for item in resolver.resolve(client, parent_item):
-                resource = self.resolve_resource(resolver, client, parent_item, item)
+                try:
+                    resource = self.resolve_resource(
+                        resolver, client, parent_item, item
+                    )
+                except Exception as e:
+                    self._logger.error(
+                        "failed to resolve resource",
+                        table=resolver.table.name,
+                        depth=depth,
+                        exception=e,
+                    )
+                    continue
                 res.put(SyncInsertMessage(resource.to_arrow_record()))
                 for child_resolvers in resolver.child_resolvers:
                     self._pools[depth + 1].submit(

@@ -1,10 +1,18 @@
 import pyarrow as pa
 import structlog
 
+from typing import Generator
 from cloudquery.plugin_v3 import plugin_pb2, plugin_pb2_grpc, arrow
-from cloudquery.sdk.message import SyncInsertMessage, SyncMigrateTableMessage
+from cloudquery.sdk.message import (
+    SyncInsertMessage,
+    SyncMigrateTableMessage,
+    WriteInsertMessage,
+    WriteMigrateTableMessage,
+    WriteMessage,
+    WriteDeleteStale,
+)
 from cloudquery.sdk.plugin.plugin import Plugin, SyncOptions, TableOptions
-from cloudquery.sdk.schema import tables_to_arrow_schemas
+from cloudquery.sdk.schema import tables_to_arrow_schemas, Table
 
 
 class PluginServicer(plugin_pb2_grpc.PluginServicer):
@@ -64,8 +72,34 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
     def Read(self, request, context):
         raise NotImplementedError()
 
-    def Write(self, request_iterator, context):
-        raise NotImplementedError()
+    def Write(
+        self, request_iterator: Generator[plugin_pb2.Write.Request, None, None], context
+    ):
+        def msg_iterator() -> Generator[WriteMessage, None, None]:
+            for msg in request_iterator:
+                field = msg.WhichOneof("message")
+                if field == "migrate_table":
+                    sc = arrow.new_schema_from_bytes(msg.migrate_table.table)
+                    table = Table.from_arrow_schema(sc)
+                    yield WriteMigrateTableMessage(table=table)
+                elif field == "insert":
+                    yield WriteInsertMessage(
+                        record=arrow.new_record_from_bytes(msg.insert.record)
+                    )
+                elif field == "delete":
+                    yield WriteDeleteStale(
+                        table_name=msg.delete.table_name,
+                        source_name=msg.delete.source_name,
+                        sync_time=msg.delete.sync_time.ToDatetime(),
+                    )
+                elif field is None:
+                    continue
+                else:
+                    raise NotImplementedError(f"unknown write message type {field}")
+
+        self._plugin.write(msg_iterator())
+        return plugin_pb2.Write.Response()
 
     def Close(self, request, context):
+        self._plugin.close()
         return plugin_pb2.Close.Response()

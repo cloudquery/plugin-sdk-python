@@ -1,11 +1,21 @@
 import random
 import grpc
 import time
+import pyarrow as pa
 from concurrent import futures
+from cloudquery.sdk.schema import Table, Column
 from cloudquery.sdk import serve
 from cloudquery.sdk import message
 from cloudquery.plugin_v3 import plugin_pb2_grpc, plugin_pb2, arrow
 from cloudquery.sdk.internal.memdb import MemDB
+
+test_table = Table(
+    "test",
+    [
+        Column("id", pa.int64()),
+        Column("name", pa.string()),
+    ],
+)
 
 
 def test_plugin_serve():
@@ -27,11 +37,31 @@ def test_plugin_serve():
             response = stub.Init(plugin_pb2.Init.Request(spec=b""))
             assert response is not None
 
-            response = stub.GetTables(plugin_pb2.GetTables.Request())
+            def writer_iterator():
+                buf = arrow.schema_to_bytes(test_table.to_arrow_schema())
+                yield plugin_pb2.Write.Request(
+                    migrate_table=plugin_pb2.Write.MessageMigrateTable(table=buf)
+                )
+                record = pa.RecordBatch.from_arrays(
+                    [
+                        pa.array([1, 2, 3]),
+                        pa.array(["a", "b", "c"]),
+                    ],
+                    schema=test_table.to_arrow_schema(),
+                )
+                yield plugin_pb2.Write.Request(
+                    insert=plugin_pb2.Write.MessageInsert(
+                        record=arrow.record_to_bytes(record)
+                    )
+                )
+
+            stub.Write(writer_iterator())
+
+            response = stub.GetTables(plugin_pb2.GetTables.Request(tables=["*"]))
             schemas = arrow.new_schemas_from_bytes(response.tables)
             assert len(schemas) == 1
 
-            response = stub.Sync(plugin_pb2.Sync.Request())
+            response = stub.Sync(plugin_pb2.Sync.Request(tables=["*"]))
             total_records = 0
             for msg in response:
                 if msg.insert is not None:
