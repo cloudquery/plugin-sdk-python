@@ -14,6 +14,7 @@ dependencies = [
     "pyarrow==12.0.1",
     "Jinja2==3.1.2",
     "structlog==23.1.0",
+    "pandas==2.0.3",
 ]
 url = "https://github.com/cloudquery/plugin-sdk-python"
 
