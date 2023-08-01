@@ -1,9 +1,11 @@
 import pyarrow as pa
 
 
-class UUIDType(pa.PyExtensionType):
+class UUIDType(pa.ExtensionType):
     def __init__(self):
-        pa.PyExtensionType.__init__(self, pa.binary(16))
+        pa.ExtensionType.__init__(
+            self, extension_name="uuid", storage_type=pa.binary(16)
+        )
 
     def __reduce__(self):
         return UUIDType, ()
