@@ -93,7 +93,7 @@ class Scheduler:
         try:
             if depth == 0:
                 self._logger.info(
-                    "table resolver started", table=resolver.table.name, depth=depth
+                    "table resolver started what", table=resolver.table.name, depth=depth
                 )
             else:
                 self._logger.debug(
@@ -101,6 +101,7 @@ class Scheduler:
                 )
             total_resources = 0
             for item in resolver.resolve(client, parent_item):
+                self._logger.info("resolving resource")
                 try:
                     resource = self.resolve_resource(
                         resolver, client, parent_item, item
@@ -113,6 +114,7 @@ class Scheduler:
                         exception=e,
                     )
                     continue
+                self._logger.info("resolved resource")
                 res.put(SyncInsertMessage(resource.to_arrow_record()))
                 for child_resolvers in resolver.child_resolvers:
                     self._pools[depth + 1].submit(
@@ -125,6 +127,7 @@ class Scheduler:
                     )
                     table_resolvers_started += 1
                 total_resources += 1
+            self._logger.info("what end")
             if depth == 0:
                 self._logger.info(
                     "table resolver finished successfully",
@@ -132,18 +135,18 @@ class Scheduler:
                     depth=depth,
                 )
             else:
-                self._logger.debug(
+                self._logger.info(
                     "table resolver finished successfully",
                     table=resolver.table.name,
                     depth=depth,
                 )
         except Exception as e:
-            self._logger.error(
-                "table resolver finished with error",
-                table=resolver.table.name,
-                depth=depth,
-                exception=e,
-            )
+          self._logger.error(
+              "table resolver finished with error",
+              table=resolver.table.name,
+              depth=depth,
+              exec_info=e,
+          )
         finally:
             res.put(TableResolverStarted(count=table_resolvers_started))
             res.put(TableResolverFinished())
@@ -182,11 +185,13 @@ class Scheduler:
             if type(message) == TableResolverStarted:
                 total_table_resolvers += message.count
                 if total_table_resolvers == finished_table_resolvers:
+                    self._logger.info("started: all table resolvers finished", total_table_resolvers=total_table_resolvers, finished_table_resolvers=finished_table_resolvers)
                     break
                 continue
             elif type(message) == TableResolverFinished:
                 finished_table_resolvers += 1
                 if total_table_resolvers == finished_table_resolvers:
+                    self._logger.info("finished: all table resolvers finished", total_table_resolvers=total_table_resolvers, finished_table_resolvers=finished_table_resolvers)
                     break
                 continue
             yield message
