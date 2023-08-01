@@ -1,18 +1,16 @@
-from typing import List, Generator, Any
 import queue
-import time
+from concurrent import futures
+from typing import List, Generator, Any
+
 import structlog
-from enum import Enum
-from cloudquery.sdk.schema import Table, Resource
+
 from cloudquery.sdk.message import (
     SyncMessage,
     SyncInsertMessage,
     SyncMigrateTableMessage,
 )
-from concurrent import futures
-from typing import Generator
+from cloudquery.sdk.schema import Resource
 from .table_resolver import TableResolver
-import traceback
 
 QUEUE_PER_WORKER = 100
 
@@ -192,4 +190,4 @@ class Scheduler:
                     break
                 continue
             yield message
-        thread.shutdown()
+        thread.shutdown(wait=True)
