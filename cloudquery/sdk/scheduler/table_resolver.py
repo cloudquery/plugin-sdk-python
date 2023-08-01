@@ -7,6 +7,7 @@ class Client:
     def id(self) -> str:
         raise NotImplementedError()
 
+
 from cloudquery.sdk.schema import Resource
 from cloudquery.sdk.schema.table import Table
 
