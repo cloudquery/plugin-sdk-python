@@ -22,12 +22,8 @@ class ThreadPoolExecutorWithQueueSizeLimit(futures.ThreadPoolExecutor):
 
 
 class TableResolverStarted:
-    def __init__(self, count=1) -> None:
-        self._count = count
-
-    @property
-    def count(self):
-        return self._count
+    def __init__(self) -> None:
+        pass
 
 
 class TableResolverFinished:
@@ -37,7 +33,7 @@ class TableResolverFinished:
 
 class Scheduler:
     def __init__(
-        self, concurrency: int, queue_size: int = 0, max_depth: int = 3, logger=None
+            self, concurrency: int, queue_size: int = 0, max_depth: int = 3, logger=None
     ):
         self._queue = queue.Queue()
         self._max_depth = max_depth
@@ -72,7 +68,7 @@ class Scheduler:
             pool.shutdown()
 
     def resolve_resource(
-        self, resolver: TableResolver, client, parent: Resource, item: Any
+            self, resolver: TableResolver, client, parent: Resource, item: Any
     ) -> Resource:
         resource = Resource(resolver.table, parent, item)
         resolver.pre_resource_resolve(client, resource)
@@ -82,14 +78,13 @@ class Scheduler:
         return resource
 
     def resolve_table(
-        self,
-        resolver: TableResolver,
-        depth: int,
-        client,
-        parent_item: Resource,
-        res: queue.Queue,
+            self,
+            resolver: TableResolver,
+            depth: int,
+            client,
+            parent_item: Resource,
+            res: queue.Queue,
     ):
-        table_resolvers_started = 0
         try:
             if depth == 0:
                 self._logger.info(
@@ -115,6 +110,7 @@ class Scheduler:
                     continue
                 res.put(SyncInsertMessage(resource.to_arrow_record()))
                 for child_resolvers in resolver.child_resolvers:
+                    res.put(TableResolverStarted())
                     self._pools[depth + 1].submit(
                         self.resolve_table,
                         child_resolvers,
@@ -123,7 +119,6 @@ class Scheduler:
                         resource,
                         res,
                     )
-                    table_resolvers_started += 1
                 total_resources += 1
             if depth == 0:
                 self._logger.info(
@@ -145,30 +140,25 @@ class Scheduler:
                 exc_info=True,
             )
         finally:
-            res.put(TableResolverStarted(count=table_resolvers_started))
             res.put(TableResolverFinished())
 
     def _sync(
-        self,
-        client,
-        resolvers: List[TableResolver],
-        res: queue.Queue,
-        deterministic_cq_id=False,
+            self,
+            client,
+            resolvers: List[TableResolver],
+            res: queue.Queue,
+            deterministic_cq_id=False,
     ):
-        total_table_resolvers = 0
-        try:
-            for resolver in resolvers:
-                clients = resolver.multiplex(client)
-                for client in clients:
-                    self._pools[0].submit(
-                        self.resolve_table, resolver, 0, client, None, res
-                    )
-                    total_table_resolvers += 1
-        finally:
-            res.put(TableResolverStarted(total_table_resolvers))
+        for resolver in resolvers:
+            clients = resolver.multiplex(client)
+            for client in clients:
+                res.put(TableResolverStarted())
+                self._pools[0].submit(
+                    self.resolve_table, resolver, 0, client, None, res
+                )
 
     def sync(
-        self, client, resolvers: List[TableResolver], deterministic_cq_id=False
+            self, client, resolvers: List[TableResolver], deterministic_cq_id=False
     ) -> Generator[SyncMessage, None, None]:
         res = queue.Queue()
         yield from self._send_migrate_table_messages(resolvers)
@@ -180,7 +170,7 @@ class Scheduler:
         while True:
             message = res.get()
             if type(message) == TableResolverStarted:
-                total_table_resolvers += message.count
+                total_table_resolvers += 1
                 if total_table_resolvers == finished_table_resolvers:
                     break
                 continue
@@ -193,7 +183,7 @@ class Scheduler:
         thread.shutdown(wait=True)
 
     def _send_migrate_table_messages(
-        self, resolvers: List[TableResolver]
+            self, resolvers: List[TableResolver]
     ) -> Generator[SyncMessage, None, None]:
         for resolver in resolvers:
             yield SyncMigrateTableMessage(table=resolver.table.to_arrow_schema())
