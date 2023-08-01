@@ -5,11 +5,11 @@ class SyncMessage:
     pass
 
 
-class SyncInsertMessage:
+class SyncInsertMessage(SyncMessage):
     def __init__(self, record: pa.RecordBatch):
         self.record = record
 
 
-class SyncMigrateTableMessage:
-    def __init__(self, schema: pa.Schema):
-        self.schema = schema
+class SyncMigrateTableMessage(SyncMessage):
+    def __init__(self, table: pa.Schema):
+        self.table = table
