@@ -1,5 +1,6 @@
 import pyarrow as pa
 
+
 class SyncMessage:
     pass
 
