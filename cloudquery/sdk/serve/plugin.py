@@ -4,6 +4,7 @@ from concurrent import futures
 
 import grpc
 import sys
+import os
 
 from cloudquery.discovery_v1 import discovery_pb2_grpc
 from cloudquery.plugin_v3 import plugin_pb2_grpc
@@ -15,8 +16,48 @@ from cloudquery.sdk.plugin.plugin import Plugin
 DOC_FORMATS = ["json", "markdown"]
 
 
+_IS_WINDOWS = sys.platform == "win32"
+
+try:
+    import colorama
+except ImportError:
+    colorama = None
+
+if _IS_WINDOWS:  # pragma: no cover
+    # On Windows, use colors by default only if Colorama is installed.
+    _has_colors = colorama is not None
+else:
+    # On other OSes, use colors by default.
+    _has_colors = True
+
+
 def get_logger(args):
-    log = structlog.get_logger(processors=[structlog.processors.JSONRenderer()])
+    processors = [
+      structlog.contextvars.merge_contextvars,
+      structlog.processors.add_log_level,
+      structlog.processors.StackInfoRenderer(),
+      structlog.dev.set_exc_info,
+      structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S", utc=False),
+    ]
+    if args.log_format == "text":
+      processors.append(structlog.dev.ConsoleRenderer(
+        colors=os.environ.get("NO_COLOR", "") == ""
+        and (
+            os.environ.get("FORCE_COLOR", "") != ""
+            or (
+                _has_colors
+                and sys.stdout is not None
+                and hasattr(sys.stdout, "isatty")
+                and sys.stdout.isatty()
+            )
+        )
+      ))
+    else:
+      processors.append(structlog.processors.JSONRenderer())
+        
+    # if args.log_format == "json":
+    #     processors.append(structlog.processors.JSONRenderer())
+    log = structlog.get_logger(processors=processors)
     return log
 
 
@@ -87,6 +128,7 @@ doc --format json .
 
     def _serve(self, args):
         logger = get_logger(args)
+        self._plugin.set_logger(logger)
         self._server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         discovery_pb2_grpc.add_DiscoveryServicer_to_server(
             DiscoveryServicer([3]), self._server

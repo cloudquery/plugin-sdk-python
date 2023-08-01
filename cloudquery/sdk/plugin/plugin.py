@@ -37,6 +37,9 @@ class Plugin:
 
     def init(self, spec: bytes) -> None:
         pass
+    
+    def set_logger(self, logger) -> None:
+        pass
 
     def name(self) -> str:
         return self._name
