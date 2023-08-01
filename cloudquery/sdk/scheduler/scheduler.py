@@ -171,8 +171,8 @@ class Scheduler:
         self, client, resolvers: List[TableResolver], deterministic_cq_id=False
     ) -> Generator[SyncMessage, None, None]:
         res = queue.Queue()
-        for resolver in resolvers:
-            yield SyncMigrateTableMessage(table=resolver.table.to_arrow_schema())
+        yield from self._send_migrate_table_messages(resolvers)
+
         thread = futures.ThreadPoolExecutor()
         thread.submit(self._sync, client, resolvers, res, deterministic_cq_id)
         total_table_resolvers = 0
@@ -191,3 +191,11 @@ class Scheduler:
                 continue
             yield message
         thread.shutdown(wait=True)
+
+    def _send_migrate_table_messages(
+        self, resolvers: List[TableResolver]
+    ) -> Generator[SyncMessage, None, None]:
+        for resolver in resolvers:
+            yield SyncMigrateTableMessage(table=resolver.table.to_arrow_schema())
+            if resolver.child_resolvers:
+                yield from self._send_migrate_table_messages(resolver.child_resolvers)
