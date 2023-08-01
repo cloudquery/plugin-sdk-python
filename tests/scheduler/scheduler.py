@@ -37,7 +37,8 @@ class SchedulerTestChildTableResolver(TableResolver):
 
 
 class TestClient:
-    pass
+    def id(self):
+        return "test_client"
 
 
 def test_scheduler():
