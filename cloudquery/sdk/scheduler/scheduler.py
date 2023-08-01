@@ -142,7 +142,7 @@ class Scheduler:
                 "table resolver finished with error",
                 table=resolver.table.name,
                 depth=depth,
-                exception=e,
+                exec_info=e,
             )
         finally:
             res.put(TableResolverStarted(count=table_resolvers_started))
