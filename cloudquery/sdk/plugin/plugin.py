@@ -37,7 +37,7 @@ class Plugin:
 
     def init(self, spec: bytes) -> None:
         pass
-    
+
     def set_logger(self, logger) -> None:
         pass
 

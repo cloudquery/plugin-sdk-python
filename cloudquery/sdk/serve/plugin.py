@@ -33,28 +33,30 @@ else:
 
 def get_logger(args):
     processors = [
-      structlog.contextvars.merge_contextvars,
-      structlog.processors.add_log_level,
-      structlog.processors.StackInfoRenderer(),
-      structlog.dev.set_exc_info,
-      structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S", utc=False),
+        structlog.contextvars.merge_contextvars,
+        structlog.processors.add_log_level,
+        structlog.processors.StackInfoRenderer(),
+        structlog.dev.set_exc_info,
+        structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S", utc=False),
     ]
     if args.log_format == "text":
-      processors.append(structlog.dev.ConsoleRenderer(
-        colors=os.environ.get("NO_COLOR", "") == ""
-        and (
-            os.environ.get("FORCE_COLOR", "") != ""
-            or (
-                _has_colors
-                and sys.stdout is not None
-                and hasattr(sys.stdout, "isatty")
-                and sys.stdout.isatty()
+        processors.append(
+            structlog.dev.ConsoleRenderer(
+                colors=os.environ.get("NO_COLOR", "") == ""
+                and (
+                    os.environ.get("FORCE_COLOR", "") != ""
+                    or (
+                        _has_colors
+                        and sys.stdout is not None
+                        and hasattr(sys.stdout, "isatty")
+                        and sys.stdout.isatty()
+                    )
+                )
             )
         )
-      ))
     else:
-      processors.append(structlog.processors.JSONRenderer())
-        
+        processors.append(structlog.processors.JSONRenderer())
+
     # if args.log_format == "json":
     #     processors.append(structlog.processors.JSONRenderer())
     log = structlog.get_logger(processors=processors)
