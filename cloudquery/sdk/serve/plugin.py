@@ -16,7 +16,7 @@ DOC_FORMATS = ["json", "markdown"]
 
 
 def get_logger(args):
-    log = structlog.get_logger()
+    log = structlog.get_logger(processors=[structlog.processors.JSONRenderer()])
     return log
 
 
