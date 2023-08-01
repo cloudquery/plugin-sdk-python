@@ -1,18 +1,15 @@
 import queue
-import structlog
-import time
-import traceback
 from concurrent import futures
-from enum import Enum
-from typing import Generator
 from typing import List, Generator, Any
+
+import structlog
 
 from cloudquery.sdk.message import (
     SyncMessage,
     SyncInsertMessage,
     SyncMigrateTableMessage,
 )
-from cloudquery.sdk.schema import Table, Resource
+from cloudquery.sdk.schema import Resource
 from .table_resolver import TableResolver
 
 QUEUE_PER_WORKER = 100
@@ -40,7 +37,7 @@ class TableResolverFinished:
 
 class Scheduler:
     def __init__(
-        self, concurrency: int, queue_size: int = 0, max_depth: int = 3, logger=None
+            self, concurrency: int, queue_size: int = 0, max_depth: int = 3, logger=None
     ):
         self._queue = queue.Queue()
         self._max_depth = max_depth
@@ -75,7 +72,7 @@ class Scheduler:
             pool.shutdown()
 
     def resolve_resource(
-        self, resolver: TableResolver, client, parent: Resource, item: Any
+            self, resolver: TableResolver, client, parent: Resource, item: Any
     ) -> Resource:
         resource = Resource(resolver.table, parent, item)
         resolver.pre_resource_resolve(client, resource)
@@ -85,12 +82,12 @@ class Scheduler:
         return resource
 
     def resolve_table(
-        self,
-        resolver: TableResolver,
-        depth: int,
-        client,
-        parent_item: Resource,
-        res: queue.Queue,
+            self,
+            resolver: TableResolver,
+            depth: int,
+            client,
+            parent_item: Resource,
+            res: queue.Queue,
     ):
         table_resolvers_started = 0
         try:
@@ -104,13 +101,11 @@ class Scheduler:
                 )
             total_resources = 0
             for item in resolver.resolve(client, parent_item):
-                print("item", item)
                 try:
                     resource = self.resolve_resource(
                         resolver, client, parent_item, item
                     )
                 except Exception as e:
-                    print("exception", e)
                     self._logger.error(
                         "failed to resolve resource",
                         table=resolver.table.name,
@@ -154,11 +149,11 @@ class Scheduler:
             res.put(TableResolverFinished())
 
     def _sync(
-        self,
-        client,
-        resolvers: List[TableResolver],
-        res: queue.Queue,
-        deterministic_cq_id=False,
+            self,
+            client,
+            resolvers: List[TableResolver],
+            res: queue.Queue,
+            deterministic_cq_id=False,
     ):
         total_table_resolvers = 0
         try:
@@ -173,7 +168,7 @@ class Scheduler:
             res.put(TableResolverStarted(total_table_resolvers))
 
     def sync(
-        self, client, resolvers: List[TableResolver], deterministic_cq_id=False
+            self, client, resolvers: List[TableResolver], deterministic_cq_id=False
     ) -> Generator[SyncMessage, None, None]:
         res = queue.Queue()
         for resolver in resolvers:
@@ -184,7 +179,6 @@ class Scheduler:
         finished_table_resolvers = 0
         while True:
             message = res.get()
-            print("got message", message)
             if type(message) == TableResolverStarted:
                 total_table_resolvers += message.count
                 if total_table_resolvers == finished_table_resolvers:
@@ -196,5 +190,4 @@ class Scheduler:
                     break
                 continue
             yield message
-        print("shutting down thread")
         thread.shutdown(wait=True)
