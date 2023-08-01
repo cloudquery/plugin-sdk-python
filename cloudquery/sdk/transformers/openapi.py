@@ -24,7 +24,7 @@ def oapi_type_to_arrow_type(field) -> pa.DataType:
         return pa.string()
 
 
-def get_column_by_name(columns: List[Column], name: str) -> Column:
+def get_column_by_name(columns: List[Column], name: str) -> Optional[Column]:
     for column in columns:
         if column.name == name:
             return column
