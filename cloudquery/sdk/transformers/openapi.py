@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 import pyarrow as pa
 from cloudquery.sdk.types import JSONType
 from cloudquery.sdk.schema import Column
