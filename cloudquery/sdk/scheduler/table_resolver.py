@@ -2,6 +2,7 @@ from cloudquery.sdk.schema.table import Table
 from cloudquery.sdk.schema import Resource
 from typing import Any, Generator, List
 
+
 class Client:
     def id(self):
         raise NotImplementedError()

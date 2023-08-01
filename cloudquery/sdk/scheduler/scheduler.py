@@ -93,11 +93,17 @@ class Scheduler:
         try:
             if depth == 0:
                 self._logger.info(
-                    "table resolver started",  client_id=client.id(), table=resolver.table.name, depth=depth
+                    "table resolver started",
+                    client_id=client.id(),
+                    table=resolver.table.name,
+                    depth=depth,
                 )
             else:
                 self._logger.debug(
-                    "table resolver started",  client_id=client.id(), table=resolver.table.name, depth=depth
+                    "table resolver started",
+                    client_id=client.id(),
+                    table=resolver.table.name,
+                    depth=depth,
                 )
             total_resources = 0
             for item in resolver.resolve(client, parent_item):
