@@ -38,9 +38,9 @@ class ScalarFactory:
         elif dt_id == pa.types.lib.Type_UINT8:
             return Uint(bitwidth=8)
         elif (
-                dt_id == pa.types.lib.Type_BINARY
-                or dt_id == pa.types.lib.Type_LARGE_BINARY
-                or dt_id == pa.types.lib.Type_FIXED_SIZE_BINARY
+            dt_id == pa.types.lib.Type_BINARY
+            or dt_id == pa.types.lib.Type_LARGE_BINARY
+            or dt_id == pa.types.lib.Type_FIXED_SIZE_BINARY
         ):
             return Binary()
         elif dt_id == pa.types.lib.Type_BOOL:
@@ -66,16 +66,16 @@ class ScalarFactory:
         # elif dt_id == pa.types.lib.Type_INTERVAL_MONTH_DAY_NANO:
         #     return ()
         elif (
-                dt_id == pa.types.lib.Type_LIST
-                or dt_id == pa.types.lib.Type_LARGE_LIST
-                or dt_id == pa.types.lib.Type_FIXED_SIZE_LIST
+            dt_id == pa.types.lib.Type_LIST
+            or dt_id == pa.types.lib.Type_LARGE_LIST
+            or dt_id == pa.types.lib.Type_FIXED_SIZE_LIST
         ):
             item = ScalarFactory.new_scalar(dt.field(0).type)
             return List(type(item))
         # elif dt_id == pa.types.lib.Type_MAP:
         #     return ()
         elif (
-                dt_id == pa.types.lib.Type_STRING or dt_id == pa.types.lib.Type_LARGE_STRING
+            dt_id == pa.types.lib.Type_STRING or dt_id == pa.types.lib.Type_LARGE_STRING
         ):
             return String()
         # elif dt_id == pa.types.lib.Type_STRUCT:
