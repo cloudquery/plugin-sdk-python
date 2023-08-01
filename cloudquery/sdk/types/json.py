@@ -1,9 +1,9 @@
 import pyarrow as pa
 
 
-class JSONType(pa.PyExtensionType):
+class JSONType(pa.ExtensionType):
     def __init__(self):
-        pa.PyExtensionType.__init__(self, pa.binary())
+        pa.ExtensionType.__init__(self, extension_name="json", storage_type=pa.binary())
 
     def __reduce__(self):
         return JSONType, ()
