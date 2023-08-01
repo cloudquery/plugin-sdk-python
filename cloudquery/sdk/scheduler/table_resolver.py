@@ -4,7 +4,7 @@ from typing import Any, Generator, List
 
 
 class Client:
-    def id(self):
+    def id(self) -> str:
         raise NotImplementedError()
 
 from cloudquery.sdk.schema import Resource
