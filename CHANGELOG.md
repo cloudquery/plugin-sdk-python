@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.8](https://github.com/cloudquery/plugin-sdk-python/compare/v0.0.7...v0.0.8) (2023-08-01)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency numpy to v1.25.2 ([#11](https://github.com/cloudquery/plugin-sdk-python/issues/11)) ([0d05fc8](https://github.com/cloudquery/plugin-sdk-python/commit/0d05fc8205c9d6f2c35b82647babef25dfd550c5))
+* Fix JSON and UUID type checking, add JSON test, consolidate setup.py ([#14](https://github.com/cloudquery/plugin-sdk-python/issues/14)) ([7927d1a](https://github.com/cloudquery/plugin-sdk-python/commit/7927d1aa4ca0f34252e7bfcccacc92d4a0975d46))
+* Remove resolver() from schema.Table ([#15](https://github.com/cloudquery/plugin-sdk-python/issues/15)) ([c61a774](https://github.com/cloudquery/plugin-sdk-python/commit/c61a7741a8a8c6d88e10cc91b15b41e5b83bccf0))
+* SyncMigrateTableMessage should have the `pa.Schema` argument named as "table" ([#13](https://github.com/cloudquery/plugin-sdk-python/issues/13)) ([a50f0e7](https://github.com/cloudquery/plugin-sdk-python/commit/a50f0e7a82b314a870f8195278ebe2bf9eb5442a))
+
 ## [0.0.7](https://github.com/cloudquery/plugin-sdk-python/compare/v0.0.6...v0.0.7) (2023-07-29)
 
 
