@@ -53,7 +53,7 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
                     insert=plugin_pb2.Sync.MessageInsert(record=buf)
                 )
             elif isinstance(msg, SyncMigrateTableMessage):
-                buf = arrow.schema_to_bytes(msg.schema)
+                buf = arrow.schema_to_bytes(msg.table)
                 yield plugin_pb2.Sync.Response(
                     migrate_table=plugin_pb2.Sync.MessageMigrateTable(table=buf)
                 )
