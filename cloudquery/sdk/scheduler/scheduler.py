@@ -177,7 +177,7 @@ class Scheduler:
     ) -> Generator[SyncMessage, None, None]:
         res = queue.Queue()
         for resolver in resolvers:
-            yield SyncMigrateTableMessage(schema=resolver.table.to_arrow_schema())
+            yield SyncMigrateTableMessage(table=resolver.table.to_arrow_schema())
         thread = futures.ThreadPoolExecutor()
         thread.submit(self._sync, client, resolvers, res, deterministic_cq_id)
         total_table_resolvers = 0
