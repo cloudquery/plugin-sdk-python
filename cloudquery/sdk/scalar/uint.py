@@ -4,7 +4,7 @@ from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError
 class Uint(Scalar):
     def __init__(self, valid: bool = False, value: any = None, bitwidth: int = 64):
         self._bitwidth = bitwidth
-        self._max = 2 ** bitwidth
+        self._max = 2**bitwidth
         super().__init__(valid, value)
 
     def __eq__(self, scalar: Scalar) -> bool:
