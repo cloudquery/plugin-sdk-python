@@ -36,9 +36,6 @@ class Table:
     def multiplex(self, client) -> List[Table]:
         raise [client]
 
-    def resolver(self, client: Client, parent=None) -> Generator[Any]:
-        raise NotImplementedError()
-
     def index_column(self, column_name: str) -> int:
         for i, column in enumerate(self.columns):
             if column.name == column_name:
