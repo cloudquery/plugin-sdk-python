@@ -138,12 +138,12 @@ class Scheduler:
                     depth=depth,
                 )
         except Exception as e:
-          self._logger.error(
-              "table resolver finished with error",
-              table=resolver.table.name,
-              depth=depth,
-              exec_info=e,
-          )
+            self._logger.error(
+                "table resolver finished with error",
+                table=resolver.table.name,
+                depth=depth,
+                exec_info=e,
+            )
         finally:
             res.put(TableResolverStarted(count=table_resolvers_started))
             res.put(TableResolverFinished())
