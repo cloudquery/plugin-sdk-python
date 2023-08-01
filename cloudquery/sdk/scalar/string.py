@@ -1,5 +1,4 @@
 from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError
-from .scalar import NULL_VALUE
 
 
 class String(Scalar):

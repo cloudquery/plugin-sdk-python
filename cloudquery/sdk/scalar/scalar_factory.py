@@ -7,6 +7,7 @@ from .date32 import Date32
 from .date64 import Date64
 from .float import Float
 from .int import Int
+from .json import JSON
 from .list import List
 from .scalar import ScalarInvalidTypeError
 from .string import String
@@ -89,6 +90,6 @@ class ScalarFactory:
         elif dt == UUIDType():
             return UUID()
         elif dt == JSONType():
-            return String()
+            return JSON()
         else:
             raise ScalarInvalidTypeError("Invalid type {} for scalar".format(dt))
