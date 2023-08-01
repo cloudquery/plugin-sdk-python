@@ -93,7 +93,7 @@ class Scheduler:
         try:
             if depth == 0:
                 self._logger.info(
-                    "table resolver started what", table=resolver.table.name, depth=depth
+                    "table resolver started", table=resolver.table.name, depth=depth
                 )
             else:
                 self._logger.debug(
@@ -185,13 +185,11 @@ class Scheduler:
             if type(message) == TableResolverStarted:
                 total_table_resolvers += message.count
                 if total_table_resolvers == finished_table_resolvers:
-                    self._logger.info("started: all table resolvers finished", total_table_resolvers=total_table_resolvers, finished_table_resolvers=finished_table_resolvers)
                     break
                 continue
             elif type(message) == TableResolverFinished:
                 finished_table_resolvers += 1
                 if total_table_resolvers == finished_table_resolvers:
-                    self._logger.info("finished: all table resolvers finished", total_table_resolvers=total_table_resolvers, finished_table_resolvers=finished_table_resolvers)
                     break
                 continue
             yield message
