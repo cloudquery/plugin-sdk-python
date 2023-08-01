@@ -32,7 +32,7 @@ class TableResolver:
                 resource.set(column_name, resource.item[column_name])
         else:
             if hasattr(resource.item, column_name):
-                resource.set(column_name, resource.item.column_name)
+                resource.set(column_name, getattr(resource.item, column_name))
 
     def post_resource_resolve(self, client, resource):
         return
