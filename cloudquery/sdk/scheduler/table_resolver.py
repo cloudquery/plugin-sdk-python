@@ -7,6 +7,9 @@ class Client:
     def id(self):
         raise NotImplementedError()
 
+from cloudquery.sdk.schema import Resource
+from cloudquery.sdk.schema.table import Table
+
 
 class TableResolver:
     def __init__(self, table: Table, child_resolvers=[]) -> None:
@@ -36,7 +39,7 @@ class TableResolver:
                 resource.set(column_name, resource.item[column_name])
         else:
             if hasattr(resource.item, column_name):
-                resource.set(column_name, resource.item[column_name])
+                resource.set(column_name, getattr(resource.item, column_name))
 
     def post_resource_resolve(self, client: Client, resource):
         return
