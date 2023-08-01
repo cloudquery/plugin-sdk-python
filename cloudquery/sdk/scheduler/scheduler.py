@@ -110,7 +110,7 @@ class Scheduler:
                         "failed to resolve resource",
                         table=resolver.table.name,
                         depth=depth,
-                        exception=e,
+                        exc_info=True,
                     )
                     continue
                 res.put(SyncInsertMessage(resource.to_arrow_record()))
@@ -142,7 +142,7 @@ class Scheduler:
                 "table resolver finished with error",
                 table=resolver.table.name,
                 depth=depth,
-                exec_info=e,
+                exc_info=True,
             )
         finally:
             res.put(TableResolverStarted(count=table_resolvers_started))
