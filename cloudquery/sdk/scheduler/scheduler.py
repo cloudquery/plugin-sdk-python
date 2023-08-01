@@ -132,7 +132,7 @@ class Scheduler:
                     depth=depth,
                 )
             else:
-                self._logger.info(
+                self._logger.debug(
                     "table resolver finished successfully",
                     table=resolver.table.name,
                     depth=depth,
