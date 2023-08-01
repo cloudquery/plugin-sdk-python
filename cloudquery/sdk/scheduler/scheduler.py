@@ -33,7 +33,7 @@ class TableResolverFinished:
 
 class Scheduler:
     def __init__(
-            self, concurrency: int, queue_size: int = 0, max_depth: int = 3, logger=None
+        self, concurrency: int, queue_size: int = 0, max_depth: int = 3, logger=None
     ):
         self._queue = queue.Queue()
         self._max_depth = max_depth
@@ -68,7 +68,7 @@ class Scheduler:
             pool.shutdown()
 
     def resolve_resource(
-            self, resolver: TableResolver, client, parent: Resource, item: Any
+        self, resolver: TableResolver, client, parent: Resource, item: Any
     ) -> Resource:
         resource = Resource(resolver.table, parent, item)
         resolver.pre_resource_resolve(client, resource)
@@ -78,12 +78,12 @@ class Scheduler:
         return resource
 
     def resolve_table(
-            self,
-            resolver: TableResolver,
-            depth: int,
-            client,
-            parent_item: Resource,
-            res: queue.Queue,
+        self,
+        resolver: TableResolver,
+        depth: int,
+        client,
+        parent_item: Resource,
+        res: queue.Queue,
     ):
         try:
             if depth == 0:
@@ -143,11 +143,11 @@ class Scheduler:
             res.put(TableResolverFinished())
 
     def _sync(
-            self,
-            client,
-            resolvers: List[TableResolver],
-            res: queue.Queue,
-            deterministic_cq_id=False,
+        self,
+        client,
+        resolvers: List[TableResolver],
+        res: queue.Queue,
+        deterministic_cq_id=False,
     ):
         for resolver in resolvers:
             clients = resolver.multiplex(client)
@@ -158,7 +158,7 @@ class Scheduler:
                 )
 
     def sync(
-            self, client, resolvers: List[TableResolver], deterministic_cq_id=False
+        self, client, resolvers: List[TableResolver], deterministic_cq_id=False
     ) -> Generator[SyncMessage, None, None]:
         res = queue.Queue()
         yield from self._send_migrate_table_messages(resolvers)
@@ -183,7 +183,7 @@ class Scheduler:
         thread.shutdown(wait=True)
 
     def _send_migrate_table_messages(
-            self, resolvers: List[TableResolver]
+        self, resolvers: List[TableResolver]
     ) -> Generator[SyncMessage, None, None]:
         for resolver in resolvers:
             yield SyncMigrateTableMessage(table=resolver.table.to_arrow_schema())
