@@ -101,7 +101,6 @@ class Scheduler:
                 )
             total_resources = 0
             for item in resolver.resolve(client, parent_item):
-                self._logger.info("resolving resource")
                 try:
                     resource = self.resolve_resource(
                         resolver, client, parent_item, item
@@ -114,7 +113,6 @@ class Scheduler:
                         exception=e,
                     )
                     continue
-                self._logger.info("resolved resource")
                 res.put(SyncInsertMessage(resource.to_arrow_record()))
                 for child_resolvers in resolver.child_resolvers:
                     self._pools[depth + 1].submit(
@@ -127,7 +125,6 @@ class Scheduler:
                     )
                     table_resolvers_started += 1
                 total_resources += 1
-            self._logger.info("what end")
             if depth == 0:
                 self._logger.info(
                     "table resolver finished successfully",
