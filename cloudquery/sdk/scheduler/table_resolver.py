@@ -1,6 +1,10 @@
 from cloudquery.sdk.schema.table import Table
 from cloudquery.sdk.schema import Resource
-from typing import Any, Generator
+from typing import Any, Generator, List
+
+class Client:
+    def id(self):
+        raise NotImplementedError()
 
 
 class TableResolver:
@@ -16,16 +20,16 @@ class TableResolver:
     def child_resolvers(self):
         return self._child_resolvers
 
-    def multiplex(self, client):
+    def multiplex(self, client: Client) -> List[Client]:
         return [client]
 
     def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
         raise NotImplementedError()
 
-    def pre_resource_resolve(self, client, resource):
+    def pre_resource_resolve(self, client: Client, resource):
         return
 
-    def resolve_column(self, client, resource: Resource, column_name: str):
+    def resolve_column(self, client: Client, resource: Resource, column_name: str):
         if type(resource.item) is dict:
             if column_name in resource.item:
                 resource.set(column_name, resource.item[column_name])
@@ -33,5 +37,5 @@ class TableResolver:
             if hasattr(resource.item, column_name):
                 resource.set(column_name, resource.item[column_name])
 
-    def post_resource_resolve(self, client, resource):
+    def post_resource_resolve(self, client: Client, resource):
         return

@@ -10,7 +10,7 @@ from cloudquery.sdk.message import (
     SyncMigrateTableMessage,
 )
 from cloudquery.sdk.schema import Resource
-from .table_resolver import TableResolver
+from .table_resolver import TableResolver, Client
 
 QUEUE_PER_WORKER = 100
 
@@ -72,7 +72,7 @@ class Scheduler:
             pool.shutdown()
 
     def resolve_resource(
-        self, resolver: TableResolver, client, parent: Resource, item: Any
+        self, resolver: TableResolver, client: Client, parent: Resource, item: Any
     ) -> Resource:
         resource = Resource(resolver.table, parent, item)
         resolver.pre_resource_resolve(client, resource)
@@ -85,7 +85,7 @@ class Scheduler:
         self,
         resolver: TableResolver,
         depth: int,
-        client,
+        client: Client,
         parent_item: Resource,
         res: queue.Queue,
     ):
@@ -93,11 +93,11 @@ class Scheduler:
         try:
             if depth == 0:
                 self._logger.info(
-                    "table resolver started", table=resolver.table.name, depth=depth
+                    "table resolver started",  client_id=client.id(), table=resolver.table.name, depth=depth
                 )
             else:
                 self._logger.debug(
-                    "table resolver started", table=resolver.table.name, depth=depth
+                    "table resolver started",  client_id=client.id(), table=resolver.table.name, depth=depth
                 )
             total_resources = 0
             for item in resolver.resolve(client, parent_item):
@@ -108,6 +108,7 @@ class Scheduler:
                 except Exception as e:
                     self._logger.error(
                         "failed to resolve resource",
+                        client_id=client.id(),
                         table=resolver.table.name,
                         depth=depth,
                         exc_info=True,
@@ -128,19 +129,25 @@ class Scheduler:
             if depth == 0:
                 self._logger.info(
                     "table resolver finished successfully",
+                    client_id=client.id(),
                     table=resolver.table.name,
+                    resources=total_resources,
                     depth=depth,
                 )
             else:
                 self._logger.debug(
                     "table resolver finished successfully",
+                    client_id=client.id(),
                     table=resolver.table.name,
+                    resources=total_resources,
                     depth=depth,
                 )
         except Exception as e:
             self._logger.error(
                 "table resolver finished with error",
+                client_id=client.id(),
                 table=resolver.table.name,
+                resources=total_resources,
                 depth=depth,
                 exc_info=True,
             )
