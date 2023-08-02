@@ -1,17 +1,18 @@
 import argparse
-import structlog
 from concurrent import futures
 
 import grpc
+import structlog
 import sys
 import os
 
 from cloudquery.discovery_v1 import discovery_pb2_grpc
 from cloudquery.plugin_v3 import plugin_pb2_grpc
+
 from cloudquery.sdk.docs.generator import Generator
 from cloudquery.sdk.internal.servers.discovery_v1.discovery import DiscoveryServicer
 from cloudquery.sdk.internal.servers.plugin_v3 import PluginServicer
-from cloudquery.sdk.plugin.plugin import Plugin
+from cloudquery.sdk.plugin.plugin import Plugin, TableOptions
 
 DOC_FORMATS = ["json", "markdown"]
 
@@ -149,6 +150,13 @@ doc --format json .
     def _generate_docs(self, args):
         print("Generating docs in format: " + args.format)
         generator = Generator(
-            self._plugin.name(), self._plugin.get_tables(tables=["*"], skip_tables=[])
+            self._plugin.name(),
+            self._plugin.get_tables(
+                options=TableOptions(
+                    tables=["*"],
+                    skip_tables=[],
+                    skip_dependent_tables=False,
+                )
+            ),
         )
         generator.generate(args.directory, args.format)
