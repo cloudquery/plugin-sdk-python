@@ -38,6 +38,21 @@ def add_timestamp(_, __, event_dict):
     return event_dict
 
 
+_IS_WINDOWS = sys.platform == "win32"
+
+try:
+    import colorama
+except ImportError:
+    colorama = None
+
+if _IS_WINDOWS:  # pragma: no cover
+    # On Windows, use colors by default only if Colorama is installed.
+    _has_colors = colorama is not None
+else:
+    # On other OSes, use colors by default.
+    _has_colors = True
+
+
 def get_logger(args):
     log_level_map = {
         "debug": logging.DEBUG,
@@ -56,6 +71,7 @@ def get_logger(args):
     processors = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
+        structlog.processors.StackInfoRenderer(),
         structlog.dev.set_exc_info,
         structlog.stdlib.filter_by_level,
         structlog.processors.TimeStamper(fmt="%Y-%m-%dT%H:%M:%SZ", utc=True),
@@ -64,15 +80,15 @@ def get_logger(args):
         processors.append(
             structlog.dev.ConsoleRenderer(
                 colors=os.environ.get("NO_COLOR", "") == ""
-                and (
-                    os.environ.get("FORCE_COLOR", "") != ""
-                    or (
-                        _has_colors
-                        and sys.stdout is not None
-                        and hasattr(sys.stdout, "isatty")
-                        and sys.stdout.isatty()
-                    )
-                )
+                       and (
+                               os.environ.get("FORCE_COLOR", "") != ""
+                               or (
+                                       _has_colors
+                                       and sys.stdout is not None
+                                       and hasattr(sys.stdout, "isatty")
+                                       and sys.stdout.isatty()
+                               )
+                       )
             )
         )
     else:
