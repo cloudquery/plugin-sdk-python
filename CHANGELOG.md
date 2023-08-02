@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.0.9](https://github.com/cloudquery/plugin-sdk-python/compare/v0.0.8...v0.0.9) (2023-08-02)
+
+
+### Features
+
+* Add override_columns to openapi transformer ([#22](https://github.com/cloudquery/plugin-sdk-python/issues/22)) ([a53bb0e](https://github.com/cloudquery/plugin-sdk-python/commit/a53bb0e0e1eda99705fc96c0c7d0ac79e814a8d7))
+* Wire logging with cli flags ([#26](https://github.com/cloudquery/plugin-sdk-python/issues/26)) ([106781b](https://github.com/cloudquery/plugin-sdk-python/commit/106781b0ddfa5d5be77890fc0f9b3fe1cee10848))
+
+
+### Bug Fixes
+
+* Add better logging for scheduler ([#24](https://github.com/cloudquery/plugin-sdk-python/issues/24)) ([505f94b](https://github.com/cloudquery/plugin-sdk-python/commit/505f94bf67f9835cc3463df854943c6f00c2d281))
+* Add more command-line args, use standard logging ([#29](https://github.com/cloudquery/plugin-sdk-python/issues/29)) ([5d52af9](https://github.com/cloudquery/plugin-sdk-python/commit/5d52af99cb98906faee1485ea10edf05c09155e5))
+* Emit migrate messages for child relations ([#21](https://github.com/cloudquery/plugin-sdk-python/issues/21)) ([536e163](https://github.com/cloudquery/plugin-sdk-python/commit/536e16303a0ac18f37a468d9e2b97b4438bc596e))
+* Fix column resolver resource set ([#23](https://github.com/cloudquery/plugin-sdk-python/issues/23)) ([9936ced](https://github.com/cloudquery/plugin-sdk-python/commit/9936ced487ba387c21385c372f163557bd46ba69))
+* Fix exception logging ([#18](https://github.com/cloudquery/plugin-sdk-python/issues/18)) ([2a5996b](https://github.com/cloudquery/plugin-sdk-python/commit/2a5996b553e9cbb4b1e8dc95d22872a866d32c8b))
+* Fix extension type definitions ([#20](https://github.com/cloudquery/plugin-sdk-python/issues/20)) ([146c549](https://github.com/cloudquery/plugin-sdk-python/commit/146c5498cb1ecf54a55bb5a60ce2cb0a0228c2ed))
+* Fix JSON type handling ([#19](https://github.com/cloudquery/plugin-sdk-python/issues/19)) ([c0cdf55](https://github.com/cloudquery/plugin-sdk-python/commit/c0cdf55a49ebbb1c8ed51022d4a5910f51378e74))
+* Fix race in scheduler ([#25](https://github.com/cloudquery/plugin-sdk-python/issues/25)) ([17fee27](https://github.com/cloudquery/plugin-sdk-python/commit/17fee278f05449584c6a781f6560c7f5faf431c6))
+* Log error on table resolver exception/error ([#16](https://github.com/cloudquery/plugin-sdk-python/issues/16)) ([a1b07e8](https://github.com/cloudquery/plugin-sdk-python/commit/a1b07e8624a335c7ffc37f58913ec103305fd46a))
+
 ## [0.0.8](https://github.com/cloudquery/plugin-sdk-python/compare/v0.0.7...v0.0.8) (2023-08-01)
 
 
