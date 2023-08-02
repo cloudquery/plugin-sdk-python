@@ -59,15 +59,15 @@ def get_logger(args):
         processors.append(
             structlog.dev.ConsoleRenderer(
                 colors=os.environ.get("NO_COLOR", "") == ""
-                and (
-                    os.environ.get("FORCE_COLOR", "") != ""
-                    or (
-                        _has_colors
-                        and sys.stdout is not None
-                        and hasattr(sys.stdout, "isatty")
-                        and sys.stdout.isatty()
-                    )
-                )
+                       and (
+                               os.environ.get("FORCE_COLOR", "") != ""
+                               or (
+                                       _has_colors
+                                       and sys.stdout is not None
+                                       and hasattr(sys.stdout, "isatty")
+                                       and sys.stdout.isatty()
+                               )
+                       )
             )
         )
     else:
@@ -187,8 +187,6 @@ doc --format json .
         self._server.stop(5)
 
     def _generate_docs(self, args):
-        logger = get_logger(args)
-        logger.info("Generating docs", format=args.format)
         generator = Generator(
             self._plugin.name(),
             self._plugin.get_tables(
