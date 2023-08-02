@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.10](https://github.com/cloudquery/plugin-sdk-python/compare/v0.0.9...v0.0.10) (2023-08-02)
+
+
+### Bug Fixes
+
+* Fix generate docs command ([#30](https://github.com/cloudquery/plugin-sdk-python/issues/30)) ([11cfb94](https://github.com/cloudquery/plugin-sdk-python/commit/11cfb94266a9e66880a10e37db8e9efb15ce9721))
+
 ## [0.0.9](https://github.com/cloudquery/plugin-sdk-python/compare/v0.0.8...v0.0.9) (2023-08-02)
 
 
