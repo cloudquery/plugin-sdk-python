@@ -1,5 +1,4 @@
 import argparse
-import datetime
 import logging
 import os
 from concurrent import futures
@@ -17,26 +16,6 @@ from cloudquery.sdk.internal.servers.plugin_v3 import PluginServicer
 from cloudquery.sdk.plugin.plugin import Plugin, TableOptions
 
 DOC_FORMATS = ["json", "markdown"]
-
-_IS_WINDOWS = sys.platform == "win32"
-
-try:
-    import colorama
-except ImportError:
-    colorama = None
-
-if _IS_WINDOWS:  # pragma: no cover
-    # On Windows, use colors by default only if Colorama is installed.
-    _has_colors = colorama is not None
-else:
-    # On other OSes, use colors by default.
-    _has_colors = True
-
-
-def add_timestamp(_, __, event_dict):
-    event_dict["timestamp"] = datetime.datetime.utcnow().isoformat()
-    return event_dict
-
 
 _IS_WINDOWS = sys.platform == "win32"
 
@@ -80,15 +59,15 @@ def get_logger(args):
         processors.append(
             structlog.dev.ConsoleRenderer(
                 colors=os.environ.get("NO_COLOR", "") == ""
-                       and (
-                               os.environ.get("FORCE_COLOR", "") != ""
-                               or (
-                                       _has_colors
-                                       and sys.stdout is not None
-                                       and hasattr(sys.stdout, "isatty")
-                                       and sys.stdout.isatty()
-                               )
-                       )
+                and (
+                    os.environ.get("FORCE_COLOR", "") != ""
+                    or (
+                        _has_colors
+                        and sys.stdout is not None
+                        and hasattr(sys.stdout, "isatty")
+                        and sys.stdout.isatty()
+                    )
+                )
             )
         )
     else:
@@ -121,20 +100,26 @@ class PluginCommand:
             choices=["trace", "debug", "info", "warn", "error"],
             help="log level",
         )
+
+        # ignored for now
         serve_parser.add_argument(
-            "--no-sentry", action="store_true", help="disable sentry"
+            "--no-sentry",
+            action="store_true",
+            help="disable sentry (placeholder for future use)",
         )
+        # ignored for now
         serve_parser.add_argument(
             "--otel-endpoint",
             type=str,
             default="",
-            help="Open Telemetry HTTP collector endpoint",
+            help="Open Telemetry HTTP collector endpoint (placeholder for future use)",
         )
+        # ignored for now
         serve_parser.add_argument(
             "--otel-endpoint-insecure",
             type=str,
             default="",
-            help="Open Telemetry HTTP collector endpoint (for development only)",
+            help="Open Telemetry HTTP collector endpoint (for development only) (placeholder for future use)",
         )
 
         serve_parser.add_argument(
@@ -184,17 +169,17 @@ doc --format json .
             sys.exit(1)
 
     def _serve(self, args):
-        log = get_logger(args)
-        self._plugin.set_logger(log)
+        logger = get_logger(args)
+        self._plugin.set_logger(logger)
         self._server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         discovery_pb2_grpc.add_DiscoveryServicer_to_server(
             DiscoveryServicer([3]), self._server
         )
         plugin_pb2_grpc.add_PluginServicer_to_server(
-            PluginServicer(self._plugin, log), self._server
+            PluginServicer(self._plugin, logger), self._server
         )
         self._server.add_insecure_port(args.address)
-        log.info("Starting server", address=args.address)
+        logger.info("Starting server", address=args.address)
         self._server.start()
         self._server.wait_for_termination()
 
