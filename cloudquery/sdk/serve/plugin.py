@@ -187,8 +187,6 @@ doc --format json .
         self._server.stop(5)
 
     def _generate_docs(self, args):
-        logger = get_logger(args)
-        logger.info("Generating docs", format=args.format)
         generator = Generator(
             self._plugin.name(),
             self._plugin.get_tables(
