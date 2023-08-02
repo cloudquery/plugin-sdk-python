@@ -64,24 +64,21 @@ def get_logger(args):
         processors.append(
             structlog.dev.ConsoleRenderer(
                 colors=os.environ.get("NO_COLOR", "") == ""
-                       and (
-                               os.environ.get("FORCE_COLOR", "") != ""
-                               or (
-                                       _has_colors
-                                       and sys.stdout is not None
-                                       and hasattr(sys.stdout, "isatty")
-                                       and sys.stdout.isatty()
-                               )
-                       )
+                and (
+                    os.environ.get("FORCE_COLOR", "") != ""
+                    or (
+                        _has_colors
+                        and sys.stdout is not None
+                        and hasattr(sys.stdout, "isatty")
+                        and sys.stdout.isatty()
+                    )
+                )
             )
         )
     else:
         processors.append(structlog.processors.JSONRenderer())
 
-    log = wrap_logger(
-        logging.getLogger(),
-        processors=processors
-    )
+    log = wrap_logger(logging.getLogger(), processors=processors)
     return log
 
 
@@ -95,7 +92,11 @@ class PluginCommand:
 
         serve_parser = subparsers.add_parser("serve", help="Start plugin server")
         serve_parser.add_argument(
-            "--log-format", type=str, default="text", choices=["text", "json"], help="logging format"
+            "--log-format",
+            type=str,
+            default="text",
+            choices=["text", "json"],
+            help="logging format",
         )
         serve_parser.add_argument(
             "--log-level",
@@ -108,11 +109,16 @@ class PluginCommand:
             "--no-sentry", action="store_true", help="disable sentry"
         )
         serve_parser.add_argument(
-            "--otel-endpoint", type=str, default="", help="Open Telemetry HTTP collector endpoint"
+            "--otel-endpoint",
+            type=str,
+            default="",
+            help="Open Telemetry HTTP collector endpoint",
         )
         serve_parser.add_argument(
-            "--otel-endpoint-insecure", type=str, default="",
-            help="Open Telemetry HTTP collector endpoint (for development only)"
+            "--otel-endpoint-insecure",
+            type=str,
+            default="",
+            help="Open Telemetry HTTP collector endpoint (for development only)",
         )
 
         serve_parser.add_argument(
