@@ -1,13 +1,14 @@
 import argparse
+import logging
+import os
 from concurrent import futures
 
 import grpc
 import structlog
 import sys
-import os
-
 from cloudquery.discovery_v1 import discovery_pb2_grpc
 from cloudquery.plugin_v3 import plugin_pb2_grpc
+from structlog import wrap_logger
 
 from cloudquery.sdk.docs.generator import Generator
 from cloudquery.sdk.internal.servers.discovery_v1.discovery import DiscoveryServicer
@@ -15,7 +16,6 @@ from cloudquery.sdk.internal.servers.plugin_v3 import PluginServicer
 from cloudquery.sdk.plugin.plugin import Plugin, TableOptions
 
 DOC_FORMATS = ["json", "markdown"]
-
 
 _IS_WINDOWS = sys.platform == "win32"
 
@@ -33,12 +33,27 @@ else:
 
 
 def get_logger(args):
+    log_level_map = {
+        "debug": logging.DEBUG,
+        "info": logging.INFO,
+        "warning": logging.WARNING,
+        "error": logging.ERROR,
+        "critical": logging.CRITICAL,
+    }
+
+    logging.basicConfig(
+        format="%(message)s",
+        stream=sys.stdout,
+        level=log_level_map.get(args.log_level.lower(), logging.INFO),
+    )
+
     processors = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
         structlog.processors.StackInfoRenderer(),
         structlog.dev.set_exc_info,
-        structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S", utc=False),
+        structlog.stdlib.filter_by_level,
+        structlog.processors.TimeStamper(fmt="%Y-%m-%dT%H:%M:%SZ", utc=True),
     ]
     if args.log_format == "text":
         processors.append(
@@ -58,9 +73,7 @@ def get_logger(args):
     else:
         processors.append(structlog.processors.JSONRenderer())
 
-    # if args.log_format == "json":
-    #     processors.append(structlog.processors.JSONRenderer())
-    log = structlog.get_logger(processors=processors)
+    log = wrap_logger(logging.getLogger(), processors=processors)
     return log
 
 
@@ -74,15 +87,41 @@ class PluginCommand:
 
         serve_parser = subparsers.add_parser("serve", help="Start plugin server")
         serve_parser.add_argument(
+            "--log-format",
+            type=str,
+            default="text",
+            choices=["text", "json"],
+            help="logging format",
+        )
+        serve_parser.add_argument(
             "--log-level",
             type=str,
             default="info",
             choices=["trace", "debug", "info", "warn", "error"],
             help="log level",
         )
+
+        # ignored for now
         serve_parser.add_argument(
-            "--log-format", type=str, default="text", choices=["text", "json"]
+            "--no-sentry",
+            action="store_true",
+            help="disable sentry (placeholder for future use)",
         )
+        # ignored for now
+        serve_parser.add_argument(
+            "--otel-endpoint",
+            type=str,
+            default="",
+            help="Open Telemetry HTTP collector endpoint (placeholder for future use)",
+        )
+        # ignored for now
+        serve_parser.add_argument(
+            "--otel-endpoint-insecure",
+            type=str,
+            default="",
+            help="Open Telemetry HTTP collector endpoint (for development only) (placeholder for future use)",
+        )
+
         serve_parser.add_argument(
             "--address",
             type=str,
@@ -140,7 +179,7 @@ doc --format json .
             PluginServicer(self._plugin, logger), self._server
         )
         self._server.add_insecure_port(args.address)
-        print("Starting server. Listening on " + args.address)
+        logger.info("Starting server", address=args.address)
         self._server.start()
         self._server.wait_for_termination()
 
@@ -148,7 +187,8 @@ doc --format json .
         self._server.stop(5)
 
     def _generate_docs(self, args):
-        print("Generating docs in format: " + args.format)
+        logger = get_logger(args)
+        logger.info("Generating docs", format=args.format)
         generator = Generator(
             self._plugin.name(),
             self._plugin.get_tables(
