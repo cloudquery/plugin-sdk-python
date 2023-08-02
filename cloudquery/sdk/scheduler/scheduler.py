@@ -39,6 +39,8 @@ class Scheduler:
         self._max_depth = max_depth
         if logger is None:
             self._logger = structlog.get_logger()
+        else:
+            self._logger = logger
         if concurrency <= 0:
             raise ValueError("concurrency must be greater than 0")
         if max_depth <= 0:
