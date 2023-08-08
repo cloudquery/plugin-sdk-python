@@ -32,7 +32,11 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
 
     def GetTables(self, request: plugin_pb2.GetTables.Request, context):
         tables = self._plugin.get_tables(
-            TableOptions(tables=request.tables, skip_tables=request.skip_tables)
+            TableOptions(
+                tables=request.tables,
+                skip_tables=request.skip_tables,
+                skip_dependent_tables=request.skip_dependent_tables,
+            )
         )
         schema = tables_to_arrow_schemas(tables)
         tablesBytes = []
