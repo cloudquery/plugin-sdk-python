@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.11](https://github.com/cloudquery/plugin-sdk-python/compare/v0.0.10...v0.0.11) (2023-08-08)
+
+
+### Bug Fixes
+
+* **plugin-tables:** Add missing `skip_dependent_tables` ([#33](https://github.com/cloudquery/plugin-sdk-python/issues/33)) ([a592763](https://github.com/cloudquery/plugin-sdk-python/commit/a5927636505c5d6a36591d4592664a396f07f76c))
+
 ## [0.0.10](https://github.com/cloudquery/plugin-sdk-python/compare/v0.0.9...v0.0.10) (2023-08-02)
 
 
