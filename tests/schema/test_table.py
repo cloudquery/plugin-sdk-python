@@ -22,12 +22,20 @@ def test_filter_dfs_warns_no_matches():
 
 def test_filter_dfs():
     table_grandchild = Table("test_grandchild", [Column("test_column", pa.int32())])
-    table_child = Table("test_child", [Column("test_column", pa.int32())], relations=[
-        table_grandchild,
-    ])
-    table_top1 = Table("test_top1", [Column("test_column", pa.int32())], relations=[
-        table_child,
-    ])
+    table_child = Table(
+        "test_child",
+        [Column("test_column", pa.int32())],
+        relations=[
+            table_grandchild,
+        ],
+    )
+    table_top1 = Table(
+        "test_top1",
+        [Column("test_column", pa.int32())],
+        relations=[
+            table_child,
+        ],
+    )
     table_top2 = Table("test_top2", [Column("test_column", pa.int32())])
 
     tables = [table_top1, table_top2]
@@ -38,7 +46,12 @@ def test_filter_dfs():
             "skip_tables": [],
             "skip_dependent_tables": False,
             "expect_top": ["test_top1", "test_top2"],
-            "expect_flattened": ["test_top1", "test_top2", "test_child", "test_grandchild"],
+            "expect_flattened": [
+                "test_top1",
+                "test_top2",
+                "test_child",
+                "test_grandchild",
+            ],
         },
         {
             "include_tables": ["*"],

@@ -16,14 +16,14 @@ class Client:
 
 class Table:
     def __init__(
-            self,
-            name: str,
-            columns: List[Column],
-            title: str = "",
-            description: str = "",
-            parent: Table = None,
-            relations: List[Table] = None,
-            is_incremental: bool = False,
+        self,
+        name: str,
+        columns: List[Column],
+        title: str = "",
+        description: str = "",
+        parent: Table = None,
+        relations: List[Table] = None,
+        is_incremental: bool = False,
     ) -> None:
         self.name = name
         self.columns = columns
@@ -89,27 +89,40 @@ def tables_to_arrow_schemas(tables: List[Table]):
 
 
 def filter_dfs(
-        tables: List[Table],
-        include_tables: List[str],
-        skip_tables: List[str],
-        skip_dependent_tables: bool = False
+    tables: List[Table],
+    include_tables: List[str],
+    skip_tables: List[str],
+    skip_dependent_tables: bool = False,
 ) -> List[Table]:
     flattened_tables = flatten_tables(tables)
     for include_pattern in include_tables:
-        matched = any(fnmatch.fnmatch(table.name, include_pattern) for table in flattened_tables)
+        matched = any(
+            fnmatch.fnmatch(table.name, include_pattern) for table in flattened_tables
+        )
         if not matched:
-            raise ValueError(f"tables include a pattern {include_pattern} with no matches")
+            raise ValueError(
+                f"tables include a pattern {include_pattern} with no matches"
+            )
 
     for exclude_pattern in skip_tables:
-        matched = any(fnmatch.fnmatch(table.name, exclude_pattern) for table in flattened_tables)
+        matched = any(
+            fnmatch.fnmatch(table.name, exclude_pattern) for table in flattened_tables
+        )
         if not matched:
-            raise ValueError(f"skip_tables include a pattern {exclude_pattern} with no matches")
+            raise ValueError(
+                f"skip_tables include a pattern {exclude_pattern} with no matches"
+            )
 
     def include_func(t):
-        return any(fnmatch.fnmatch(t.name, include_pattern) for include_pattern in include_tables)
+        return any(
+            fnmatch.fnmatch(t.name, include_pattern)
+            for include_pattern in include_tables
+        )
 
     def exclude_func(t):
-        return any(fnmatch.fnmatch(t.name, exclude_pattern) for exclude_pattern in skip_tables)
+        return any(
+            fnmatch.fnmatch(t.name, exclude_pattern) for exclude_pattern in skip_tables
+        )
 
     return filter_dfs_func(tables, include_func, exclude_func, skip_dependent_tables)
 
@@ -118,7 +131,9 @@ def filter_dfs_func(tt: List[Table], include, exclude, skip_dependent_tables: bo
     filtered_tables = []
     for t in tt:
         filtered_table = copy.deepcopy(t)
-        filtered_table = _filter_dfs_impl(filtered_table, False, include, exclude, skip_dependent_tables)
+        filtered_table = _filter_dfs_impl(
+            filtered_table, False, include, exclude, skip_dependent_tables
+        )
         if filtered_table is not None:
             filtered_tables.append(filtered_table)
     return filtered_tables
@@ -126,7 +141,9 @@ def filter_dfs_func(tt: List[Table], include, exclude, skip_dependent_tables: bo
 
 def _filter_dfs_impl(t, parent_matched, include, exclude, skip_dependent_tables):
     def filter_dfs_child(r, matched, include, exclude, skip_dependent_tables):
-        filtered_child = _filter_dfs_impl(r, matched, include, exclude, skip_dependent_tables)
+        filtered_child = _filter_dfs_impl(
+            r, matched, include, exclude, skip_dependent_tables
+        )
         if filtered_child is not None:
             return True, r
         return matched, None
@@ -140,7 +157,9 @@ def _filter_dfs_impl(t, parent_matched, include, exclude, skip_dependent_tables)
 
     filtered_relations = []
     for r in t.relations:
-        matched, filtered_child = filter_dfs_child(r, matched, include, exclude, skip_dependent_tables)
+        matched, filtered_child = filter_dfs_child(
+            r, matched, include, exclude, skip_dependent_tables
+        )
         if filtered_child is not None:
             filtered_relations.append(filtered_child)
 
