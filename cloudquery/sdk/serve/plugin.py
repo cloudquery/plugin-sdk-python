@@ -10,12 +10,9 @@ from cloudquery.discovery_v1 import discovery_pb2_grpc
 from cloudquery.plugin_v3 import plugin_pb2_grpc
 from structlog import wrap_logger
 
-from cloudquery.sdk.docs.generator import Generator
 from cloudquery.sdk.internal.servers.discovery_v1.discovery import DiscoveryServicer
 from cloudquery.sdk.internal.servers.plugin_v3 import PluginServicer
-from cloudquery.sdk.plugin.plugin import Plugin, TableOptions
-
-DOC_FORMATS = ["json", "markdown"]
+from cloudquery.sdk.plugin.plugin import Plugin
 
 _IS_WINDOWS = sys.platform == "win32"
 
@@ -136,34 +133,10 @@ class PluginCommand:
             help="network to serve on. can be tcp or unix",
         )
 
-        doc_parser = subparsers.add_parser(
-            "doc",
-            formatter_class=argparse.RawTextHelpFormatter,
-            help="Generate documentation for tables",
-            description="""Generate documentation for tables.
-
-If format is markdown, a destination directory will be created (if necessary) containing markdown files.
-Example:
-doc ./output 
-
-If format is JSON, a destination directory will be created (if necessary) with a single json file called __tables.json.
-Example:
-doc --format json .
-""",
-        )
-        doc_parser.add_argument("directory", type=str)
-        doc_parser.add_argument(
-            "--format",
-            type=str,
-            default="json",
-            help="output format. one of: {}".format(",".join(DOC_FORMATS)),
-        )
         parsed_args = parser.parse_args(args)
 
         if parsed_args.command == "serve":
             self._serve(parsed_args)
-        elif parsed_args.command == "doc":
-            self._generate_docs(parsed_args)
         else:
             parser.print_help()
             sys.exit(1)
@@ -185,16 +158,3 @@ doc --format json .
 
     def stop(self):
         self._server.stop(5)
-
-    def _generate_docs(self, args):
-        generator = Generator(
-            self._plugin.name(),
-            self._plugin.get_tables(
-                options=TableOptions(
-                    tables=["*"],
-                    skip_tables=[],
-                    skip_dependent_tables=False,
-                )
-            ),
-        )
-        generator.generate(args.directory, args.format)
