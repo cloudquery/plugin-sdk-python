@@ -1,8 +1,9 @@
+from typing import Generator
+
 import pyarrow as pa
 import structlog
-
-from typing import Generator
 from cloudquery.plugin_v3 import plugin_pb2, plugin_pb2_grpc, arrow
+
 from cloudquery.sdk.message import (
     SyncInsertMessage,
     SyncMigrateTableMessage,
@@ -27,7 +28,7 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
         return plugin_pb2.GetVersion.Response(version=self._plugin.version())
 
     def Init(self, request: plugin_pb2.Init.Request, context):
-        self._plugin.init(request.spec)
+        self._plugin.init(request.spec, no_connection=request.no_connection)
         return plugin_pb2.Init.Response()
 
     def GetTables(self, request: plugin_pb2.GetTables.Request, context):
