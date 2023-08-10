@@ -20,9 +20,7 @@ def test_table_resolver_resolve_column():
         ],
     )
     resource_dict = Resource(table=test_table, parent=None, item={"test_column": 1})
-    resource_obj = Resource(
-        table=test_table, parent=None, item=Item(test_column2=2)
-    )
+    resource_obj = Resource(table=test_table, parent=None, item=Item(test_column2=2))
     test_resolver = TableResolver(table=test_table, child_resolvers=[])
     test_resolver.resolve_column(
         client=None, resource=resource_dict, column_name="test_column"
