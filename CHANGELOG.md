@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.0...v0.1.1) (2023-08-14)
+
+
+### Bug Fixes
+
+* Flatten tables in plugin server getTables call ([#41](https://github.com/cloudquery/plugin-sdk-python/issues/41)) ([37b7bf2](https://github.com/cloudquery/plugin-sdk-python/commit/37b7bf2464d807f33e7e39e96bcb6a1aa68e4e39))
+
 ## [0.1.0](https://github.com/cloudquery/plugin-sdk-python/compare/v0.0.11...v0.1.0) (2023-08-14)
 
 
