@@ -14,6 +14,7 @@ from cloudquery.sdk.message import (
 )
 from cloudquery.sdk.plugin.plugin import Plugin, SyncOptions, TableOptions
 from cloudquery.sdk.schema import tables_to_arrow_schemas, Table
+from cloudquery.sdk.schema.table import flatten_tables
 
 
 class PluginServicer(plugin_pb2_grpc.PluginServicer):
@@ -39,7 +40,8 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
                 skip_dependent_tables=request.skip_dependent_tables,
             )
         )
-        schema = tables_to_arrow_schemas(tables)
+        flattened_tables = flatten_tables(tables)
+        schema = tables_to_arrow_schemas(flattened_tables)
         tablesBytes = []
         for s in schema:
             sink = pa.BufferOutputStream()
