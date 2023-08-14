@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.0](https://github.com/cloudquery/plugin-sdk-python/compare/v0.0.11...v0.1.0) (2023-08-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove docs generation ([#36](https://github.com/cloudquery/plugin-sdk-python/issues/36))
+
+### Features
+
+* Remove docs generation ([#36](https://github.com/cloudquery/plugin-sdk-python/issues/36)) ([a72df48](https://github.com/cloudquery/plugin-sdk-python/commit/a72df48f3b44dc48fca9707b7937748b0dc77b10))
+
+
+### Bug Fixes
+
+* Add missing metadata fields ([#40](https://github.com/cloudquery/plugin-sdk-python/issues/40)) ([0003c40](https://github.com/cloudquery/plugin-sdk-python/commit/0003c405cac2c57c8d436499e8ba576ab5d04f3b))
+* Fix filter_dfs to be recursive, add support for skip_dependent_tables ([#39](https://github.com/cloudquery/plugin-sdk-python/issues/39)) ([149c699](https://github.com/cloudquery/plugin-sdk-python/commit/149c69974c1fd36d7f41ed36e6b545352b29ce5b))
+
 ## [0.0.11](https://github.com/cloudquery/plugin-sdk-python/compare/v0.0.10...v0.0.11) (2023-08-08)
 
 
