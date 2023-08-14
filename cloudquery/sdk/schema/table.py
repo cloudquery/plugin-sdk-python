@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Generator, Any
+import copy
 import fnmatch
+from typing import List
+
 import pyarrow as pa
 
 from cloudquery.sdk.schema import arrow
@@ -87,17 +89,90 @@ def tables_to_arrow_schemas(tables: List[Table]):
 
 
 def filter_dfs(
-    tables: List[Table], include_tables: List[str], skip_tables: List[str]
+    tables: List[Table],
+    include_tables: List[str],
+    skip_tables: List[str],
+    skip_dependent_tables: bool = False,
 ) -> List[Table]:
-    filtered: List[Table] = []
+    flattened_tables = flatten_tables(tables)
+    for include_pattern in include_tables:
+        matched = any(
+            fnmatch.fnmatch(table.name, include_pattern) for table in flattened_tables
+        )
+        if not matched:
+            raise ValueError(
+                f"tables include a pattern {include_pattern} with no matches"
+            )
+
+    for exclude_pattern in skip_tables:
+        matched = any(
+            fnmatch.fnmatch(table.name, exclude_pattern) for table in flattened_tables
+        )
+        if not matched:
+            raise ValueError(
+                f"skip_tables include a pattern {exclude_pattern} with no matches"
+            )
+
+    def include_func(t):
+        return any(
+            fnmatch.fnmatch(t.name, include_pattern)
+            for include_pattern in include_tables
+        )
+
+    def exclude_func(t):
+        return any(
+            fnmatch.fnmatch(t.name, exclude_pattern) for exclude_pattern in skip_tables
+        )
+
+    return filter_dfs_func(tables, include_func, exclude_func, skip_dependent_tables)
+
+
+def filter_dfs_func(tt: List[Table], include, exclude, skip_dependent_tables: bool):
+    filtered_tables = []
+    for t in tt:
+        filtered_table = copy.deepcopy(t)
+        filtered_table = _filter_dfs_impl(
+            filtered_table, False, include, exclude, skip_dependent_tables
+        )
+        if filtered_table is not None:
+            filtered_tables.append(filtered_table)
+    return filtered_tables
+
+
+def _filter_dfs_impl(t, parent_matched, include, exclude, skip_dependent_tables):
+    def filter_dfs_child(r, matched, include, exclude, skip_dependent_tables):
+        filtered_child = _filter_dfs_impl(
+            r, matched, include, exclude, skip_dependent_tables
+        )
+        if filtered_child is not None:
+            return True, r
+        return matched, None
+
+    if exclude(t):
+        return None
+
+    matched = parent_matched and not skip_dependent_tables
+    if include(t):
+        matched = True
+
+    filtered_relations = []
+    for r in t.relations:
+        matched, filtered_child = filter_dfs_child(
+            r, matched, include, exclude, skip_dependent_tables
+        )
+        if filtered_child is not None:
+            filtered_relations.append(filtered_child)
+
+    t.relations = filtered_relations
+
+    if matched:
+        return t
+    return None
+
+
+def flatten_tables(tables: List[Table]) -> List[Table]:
+    flattened: List[Table] = []
     for table in tables:
-        matched = False
-        for include_table in include_tables:
-            if fnmatch.fnmatch(table.name, include_table):
-                matched = True
-        for skip_table in skip_tables:
-            if fnmatch.fnmatch(table.name, skip_table):
-                matched = False
-        if matched:
-            filtered.append(table)
-    return filtered
+        flattened.append(table)
+        flattened.extend(flatten_tables(table.relations))
+    return flattened
