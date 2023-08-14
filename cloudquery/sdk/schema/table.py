@@ -15,14 +15,14 @@ class Client:
 
 class Table:
     def __init__(
-        self,
-        name: str,
-        columns: List[Column],
-        title: str = "",
-        description: str = "",
-        parent: Table = None,
-        relations: List[Table] = None,
-        is_incremental: bool = False,
+            self,
+            name: str,
+            columns: List[Column],
+            title: str = "",
+            description: str = "",
+            parent: Table = None,
+            relations: List[Table] = None,
+            is_incremental: bool = False,
     ) -> None:
         self.name = name
         self.columns = columns
@@ -57,20 +57,19 @@ class Table:
         for field in schema:
             columns.append(Column.from_arrow_field(field))
         parent = None
-        if schema.metadata[arrow.METADATA_TABLE_DEPENDS_ON]:
+        if arrow.METADATA_TABLE_DEPENDS_ON in schema.metadata:
             parent = Table(
                 name=schema.metadata[arrow.METADATA_TABLE_DEPENDS_ON].decode("utf-8"),
                 columns=[],
             )
         return cls(
-            name=schema.metadata[arrow.METADATA_TABLE_NAME].decode("utf-8"),
-            title=schema.metadata[arrow.METADATA_TABLE_TITLE].decode("utf-8"),
+            name=schema.metadata.get(arrow.METADATA_TABLE_NAME, b"").decode("utf-8"),
+            title=schema.metadata.get(arrow.METADATA_TABLE_TITLE, b"").decode("utf-8"),
             columns=columns,
             description=schema.metadata.get(arrow.METADATA_TABLE_DESCRIPTION).decode(
                 "utf-8"
             ),
-            is_incremental=schema.metadata.get(arrow.METADATA_INCREMENTAL)
-            == arrow.METADATA_TRUE,
+            is_incremental=schema.metadata.get(arrow.METADATA_INCREMENTAL, arrow.METADATA_FALSE) == arrow.METADATA_TRUE,
             parent=parent,
         )
 
@@ -81,9 +80,7 @@ class Table:
             arrow.METADATA_TABLE_DESCRIPTION: self.description,
             arrow.METADATA_TABLE_TITLE: self.title,
             arrow.METADATA_TABLE_DEPENDS_ON: self.parent.name if self.parent else "",
-            arrow.METADATA_INCREMENTAL: arrow.METADATA_TRUE
-            if self.is_incremental
-            else arrow.METADATA_FALSE,
+            arrow.METADATA_INCREMENTAL: arrow.METADATA_TRUE if self.is_incremental else arrow.METADATA_FALSE,
         }
         for column in self.columns:
             fields.append(column.to_arrow_field())
@@ -102,7 +99,7 @@ def tables_to_arrow_schemas(tables: List[Table]):
 
 
 def filter_dfs(
-    tables: List[Table], include_tables: List[str], skip_tables: List[str]
+        tables: List[Table], include_tables: List[str], skip_tables: List[str]
 ) -> List[Table]:
     filtered: List[Table] = []
     for table in tables:
