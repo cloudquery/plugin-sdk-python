@@ -80,7 +80,7 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
         raise NotImplementedError()
 
     def Write(
-            self, request_iterator: Generator[plugin_pb2.Write.Request, None, None], context
+        self, request_iterator: Generator[plugin_pb2.Write.Request, None, None], context
     ):
         def msg_iterator() -> Generator[WriteMessage, None, None]:
             for msg in request_iterator:
