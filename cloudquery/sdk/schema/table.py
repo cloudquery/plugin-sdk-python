@@ -57,12 +57,24 @@ class Table:
         columns = []
         for field in schema:
             columns.append(Column.from_arrow_field(field))
+        parent = None
+        if arrow.METADATA_TABLE_DEPENDS_ON in schema.metadata:
+            parent = Table(
+                name=schema.metadata[arrow.METADATA_TABLE_DEPENDS_ON].decode("utf-8"),
+                columns=[],
+            )
         return cls(
-            name=schema.metadata[arrow.METADATA_TABLE_NAME].decode("utf-8"),
+            name=schema.metadata.get(arrow.METADATA_TABLE_NAME, b"").decode("utf-8"),
+            title=schema.metadata.get(arrow.METADATA_TABLE_TITLE, b"").decode("utf-8"),
             columns=columns,
             description=schema.metadata.get(arrow.METADATA_TABLE_DESCRIPTION).decode(
                 "utf-8"
             ),
+            is_incremental=schema.metadata.get(
+                arrow.METADATA_INCREMENTAL, arrow.METADATA_FALSE
+            )
+            == arrow.METADATA_TRUE,
+            parent=parent,
         )
 
     def to_arrow_schema(self):
@@ -70,7 +82,11 @@ class Table:
         md = {
             arrow.METADATA_TABLE_NAME: self.name,
             arrow.METADATA_TABLE_DESCRIPTION: self.description,
-            # arrow.METADATA_CONSTRAINT_NAME:
+            arrow.METADATA_TABLE_TITLE: self.title,
+            arrow.METADATA_TABLE_DEPENDS_ON: self.parent.name if self.parent else "",
+            arrow.METADATA_INCREMENTAL: arrow.METADATA_TRUE
+            if self.is_incremental
+            else arrow.METADATA_FALSE,
         }
         for column in self.columns:
             fields.append(column.to_arrow_field())

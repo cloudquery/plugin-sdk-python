@@ -6,8 +6,22 @@ from cloudquery.sdk.schema.table import flatten_tables
 
 
 def test_table():
-    table = Table("test_table", [Column("test_column", pa.int32())])
-    table.to_arrow_schema()
+    table = Table(
+        name="test_table",
+        columns=[Column("test_column", pa.int32())],
+        title="Test Table",
+        description="Test description",
+        parent=Table(name="parent_table", columns=[]),
+        relations=[],
+        is_incremental=True,
+    )
+    sch = table.to_arrow_schema()
+    got = Table.from_arrow_schema(sch)
+    assert got.name == table.name
+    assert got.title == table.title
+    assert got.description == table.description
+    assert got.is_incremental == table.is_incremental
+    assert got.parent.name == table.parent.name
 
 
 def test_filter_dfs_warns_no_matches():
