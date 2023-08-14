@@ -1,9 +1,8 @@
-import queue
 from dataclasses import dataclass
 from typing import List, Generator
 
-from cloudquery.sdk.schema import Table
 from cloudquery.sdk import message
+from cloudquery.sdk.schema import Table
 
 MIGRATE_MODE_STRINGS = ["safe", "force"]
 
@@ -35,7 +34,7 @@ class Plugin:
         self._name = name
         self._version = version
 
-    def init(self, spec: bytes) -> None:
+    def init(self, spec: bytes, no_connection: bool = False) -> None:
         pass
 
     def set_logger(self, logger) -> None:
