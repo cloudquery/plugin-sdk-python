@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.2](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.1...v0.1.2) (2023-09-01)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency exceptiongroup to v1.1.3 ([#46](https://github.com/cloudquery/plugin-sdk-python/issues/46)) ([baf407d](https://github.com/cloudquery/plugin-sdk-python/commit/baf407d54fa547d4f1747fe8b06c65c8f72ea0f0))
+* **deps:** Update dependency grpcio to v1.57.0 ([#47](https://github.com/cloudquery/plugin-sdk-python/issues/47)) ([d1795c7](https://github.com/cloudquery/plugin-sdk-python/commit/d1795c7c577fc459235e14f847d9f64c7ab71721))
+* **deps:** Update dependency grpcio-tools to v1.57.0 ([#49](https://github.com/cloudquery/plugin-sdk-python/issues/49)) ([56651c3](https://github.com/cloudquery/plugin-sdk-python/commit/56651c3072bee4bd498cc0ce9bd4e084502b16e1))
+* **deps:** Update dependency pandas to v2.1.0 ([#50](https://github.com/cloudquery/plugin-sdk-python/issues/50)) ([7c8e90c](https://github.com/cloudquery/plugin-sdk-python/commit/7c8e90cbb28311a5e05e3078f31d300a7db70c40))
+* **deps:** Update dependency pluggy to v1.3.0 ([#51](https://github.com/cloudquery/plugin-sdk-python/issues/51)) ([8e6029c](https://github.com/cloudquery/plugin-sdk-python/commit/8e6029cab3efdd225e4e849756db35f5540373d9))
+* **deps:** Update dependency protobuf to v4.24.2 ([#52](https://github.com/cloudquery/plugin-sdk-python/issues/52)) ([7a583bc](https://github.com/cloudquery/plugin-sdk-python/commit/7a583bc48d41d972552d0823dcaaa4f1b656c0c7))
+
 ## [0.1.1](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.0...v0.1.1) (2023-08-14)
 
 
