@@ -6,22 +6,20 @@ from cloudquery.sdk.schema import Column
 
 def oapi_type_to_arrow_type(field) -> pa.DataType:
     oapi_type = field.get("type")
-    if oapi_type == "string":
-        return pa.string()
-    elif oapi_type == "number":
-        return pa.int64()
-    elif oapi_type == "integer":
-        return pa.int64()
-    elif oapi_type == "boolean":
-        return pa.bool_()
-    elif oapi_type == "array":
-        return JSONType()
-    elif oapi_type == "object":
-        return JSONType()
+    type_map = {
+        "string": pa.string,
+        "number": pa.int64,
+        "integer": pa.int64,
+        "boolean": pa.bool_,
+        "array": JSONType,
+        "object": JSONType,
+    }
+    _type = pa.string
+    if oapi_type in type_map:
+        _type = type_map[oapi_type]
     elif oapi_type is None and "$ref" in field:
-        return JSONType()
-    else:
-        return pa.string()
+        _type = JSONType
+    return _type()
 
 
 def get_column_by_name(columns: List[Column], name: str) -> Optional[Column]:
@@ -31,14 +29,18 @@ def get_column_by_name(columns: List[Column], name: str) -> Optional[Column]:
     return None
 
 
-def oapi_definition_to_columns(definition: Dict, override_columns=[]) -> List[Column]:
+def oapi_definition_to_columns(
+    definition: Dict, override_columns: Optional[List] = None
+) -> List[Column]:
     columns = []
     for key, value in definition["properties"].items():
         column_type = oapi_type_to_arrow_type(value)
         column = Column(
             name=key, type=column_type, description=value.get("description")
         )
-        override_column = get_column_by_name(override_columns, key)
+        override_column = get_column_by_name(
+            override_columns if override_columns is not None else [], key
+        )
         if override_column is not None:
             column.type = override_column.type
             column.primary_key = override_column.primary_key

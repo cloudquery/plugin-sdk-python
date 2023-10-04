@@ -1,6 +1,6 @@
 import queue
 from concurrent import futures
-from typing import List, Generator, Any
+from typing import List, Generator, Any, Optional
 
 import structlog
 
@@ -17,7 +17,7 @@ QUEUE_PER_WORKER = 100
 
 class ThreadPoolExecutorWithQueueSizeLimit(futures.ThreadPoolExecutor):
     def __init__(self, maxsize, *args, **kwargs):
-        super(ThreadPoolExecutorWithQueueSizeLimit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._work_queue = queue.Queue(maxsize=maxsize)
 
 
@@ -84,7 +84,7 @@ class Scheduler:
         resolver: TableResolver,
         depth: int,
         client: Client,
-        parent_item: Resource,
+        parent_item: Optional[Resource],
         res: queue.Queue,
     ):
         try:
@@ -108,7 +108,7 @@ class Scheduler:
                     resource = self.resolve_resource(
                         resolver, client, parent_item, item
                     )
-                except Exception as e:
+                except Exception:
                     self._logger.error(
                         "failed to resolve resource",
                         client_id=client.id(),
@@ -145,7 +145,7 @@ class Scheduler:
                     resources=total_resources,
                     depth=depth,
                 )
-        except Exception as e:
+        except Exception:
             self._logger.error(
                 "table resolver finished with error",
                 client_id=client.id(),
@@ -184,12 +184,12 @@ class Scheduler:
         finished_table_resolvers = 0
         while True:
             message = res.get()
-            if type(message) == TableResolverStarted:
+            if isinstance(message, TableResolverStarted):
                 total_table_resolvers += 1
                 if total_table_resolvers == finished_table_resolvers:
                     break
                 continue
-            elif type(message) == TableResolverFinished:
+            if isinstance(message, TableResolverFinished):
                 finished_table_resolvers += 1
                 if total_table_resolvers == finished_table_resolvers:
                     break

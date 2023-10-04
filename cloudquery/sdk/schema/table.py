@@ -35,14 +35,18 @@ class Table:
         self.relations = relations
         self.is_incremental = is_incremental
 
-    def multiplex(self, client) -> List[Table]:
-        raise [client]
+    def multiplex(self, client: Client) -> List[Client]:
+        return [client]
 
     def index_column(self, column_name: str) -> int:
         for i, column in enumerate(self.columns):
             if column.name == column_name:
                 return i
         raise ValueError(f"Column {column_name} not found")
+
+    @property
+    def resolver(self):
+        raise NotImplementedError
 
     @property
     def primary_keys(self):

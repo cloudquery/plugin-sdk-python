@@ -8,7 +8,7 @@ class Timestamp(Scalar):
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if type(scalar) == Timestamp:
+        if isinstance(scalar, Timestamp):
             return self._value == scalar._value and self._valid == scalar._valid
         return False
 
@@ -27,15 +27,15 @@ class Timestamp(Scalar):
 
         if isinstance(value, pd.Timestamp):
             self._value = value
-        elif type(value) == datetime:
+        elif isinstance(value, datetime):
             self._value = pd.to_datetime(value)
-        elif type(value) == str:
+        elif isinstance(value, str):
             self._value = pd.to_datetime(value)
-        elif type(value) == time:
+        elif isinstance(value, time):
             self._value = pd.to_datetime(datetime.combine(datetime.today(), value))
         else:
             raise ScalarInvalidTypeError(
-                "Invalid type {} for Timestamp scalar".format(type(value))
+                f"Invalid type {type(value)} for Timestamp scalar"
             )
 
         self._valid = True

@@ -6,7 +6,7 @@ class JSON(Scalar):
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if type(scalar) == JSON:
+        if isinstance(scalar, JSON):
             return self._value == scalar._value and self._valid == scalar._valid
         return False
 
@@ -18,7 +18,7 @@ class JSON(Scalar):
         if value is None:
             return
 
-        if type(value) == str or type(value) == bytes:
+        if isinstance(value, (str, bytes)):
             # test if it is a valid json
             json.loads(value)
             self._value = value

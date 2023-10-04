@@ -5,7 +5,6 @@ import pyarrow as pa
 from concurrent import futures
 from cloudquery.sdk.schema import Table, Column
 from cloudquery.sdk import serve
-from cloudquery.sdk import message
 from cloudquery.plugin_v3 import plugin_pb2_grpc, plugin_pb2, arrow
 from cloudquery.sdk.internal.memdb import MemDB
 

@@ -1,7 +1,7 @@
 from cloudquery.sdk import plugin
 from cloudquery.sdk import message
 from cloudquery.sdk import schema
-from typing import List, Generator, Any, Dict
+from typing import List, Generator, Dict
 import pyarrow as pa
 
 NAME = "memdb"
@@ -26,11 +26,11 @@ class MemDB(plugin.Plugin):
 
     def write(self, msg_iterator: Generator[message.WriteMessage, None, None]) -> None:
         for msg in msg_iterator:
-            if type(msg) == message.WriteMigrateTableMessage:
+            if isinstance(msg, message.WriteMigrateTableMessage):
                 if msg.table.name not in self._db:
                     self._db[msg.table.name] = msg.table
                     self._tables[msg.table.name] = msg.table
-            elif type(msg) == message.WriteInsertMessage:
+            elif isinstance(msg, message.WriteInsertMessage):
                 table = schema.Table.from_arrow_schema(msg.record.schema)
                 self._db[table.name] = msg.record
             else:

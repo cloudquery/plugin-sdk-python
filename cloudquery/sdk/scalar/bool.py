@@ -13,14 +13,14 @@ def parse_string_to_bool(input_string):
     elif lower_input in false_strings:
         return False
     else:
-        raise ScalarInvalidTypeError("Invalid boolean string: {}".format(input_string))
+        raise ScalarInvalidTypeError(f"Invalid boolean string: {input_string}")
 
 
 class Bool(Scalar):
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if type(scalar) == Bool:
+        if isinstance(scalar, Bool):
             return self._value == scalar._value and self._valid == scalar._valid
         return False
 
@@ -38,13 +38,11 @@ class Bool(Scalar):
             self._value = value.value
             return
 
-        if type(value) == bool:
+        if isinstance(value, bool):
             self._value = value
-        elif type(value) == str:
+        elif isinstance(value, str):
             self._value = parse_string_to_bool(value)
         else:
-            raise ScalarInvalidTypeError(
-                "Invalid type {} for Bool scalar".format(type(value))
-            )
+            raise ScalarInvalidTypeError(f"Invalid type {type(value)} for Bool scalar")
 
         self._valid = True

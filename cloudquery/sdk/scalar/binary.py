@@ -6,7 +6,7 @@ class Binary(Scalar):
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if type(scalar) == Binary:
+        if isinstance(scalar, Binary):
             return self._value == scalar._value and self._valid == scalar._valid
         return False
 
@@ -23,13 +23,13 @@ class Binary(Scalar):
             self._value = value.value
             return
 
-        if type(value) == bytes:
+        if isinstance(value, bytes):
             self._valid = True
             self._value = value
-        elif type(value) == str:
+        elif isinstance(value, str):
             self._valid = True
             self._value = value.encode()
         else:
             raise ScalarInvalidTypeError(
-                "Invalid type {} for Binary scalar".format(type(value))
+                f"Invalid type {type(value)} for Binary scalar"
             )

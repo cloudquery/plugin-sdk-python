@@ -9,7 +9,7 @@ class UUID(Scalar):
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if type(scalar) == UUID:
+        if isinstance(scalar, UUID):
             return self._value == scalar._value and self._valid == scalar._valid
         return False
 
@@ -27,9 +27,9 @@ class UUID(Scalar):
             self._value = value.value
             return
 
-        if type(value) == uuid.UUID:
+        if isinstance(value, uuid.UUID):
             self._value = value
-        elif type(value) == str:
+        elif isinstance(value, str):
             try:
                 self._value = uuid.UUID(value)
             except ValueError as e:
