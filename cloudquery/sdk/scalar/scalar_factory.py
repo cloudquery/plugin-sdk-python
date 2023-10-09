@@ -1,3 +1,5 @@
+from functools import partial
+
 import pyarrow as pa
 
 from cloudquery.sdk.types import UUIDType, JSONType
@@ -22,74 +24,41 @@ class ScalarFactory:
 
     def new_scalar(self, dt: pa.DataType):
         dt_id = dt.id
-        if dt_id == pa.types.lib.Type_INT64:
-            return Int(bitwidth=64)
-        elif dt_id == pa.types.lib.Type_INT32:
-            return Int(bitwidth=32)
-        elif dt_id == pa.types.lib.Type_INT16:
-            return Int(bitwidth=16)
-        elif dt_id == pa.types.lib.Type_INT8:
-            return Int(bitwidth=8)
-        elif dt_id == pa.types.lib.Type_UINT64:
-            return Uint(bitwidth=64)
-        elif dt_id == pa.types.lib.Type_UINT32:
-            return Uint(bitwidth=32)
-        elif dt_id == pa.types.lib.Type_UINT16:
-            return Uint(bitwidth=16)
-        elif dt_id == pa.types.lib.Type_UINT8:
-            return Uint(bitwidth=8)
-        elif (
-            dt_id == pa.types.lib.Type_BINARY
-            or dt_id == pa.types.lib.Type_LARGE_BINARY
-            or dt_id == pa.types.lib.Type_FIXED_SIZE_BINARY
-        ):
-            return Binary()
-        elif dt_id == pa.types.lib.Type_BOOL:
-            return Bool()
-        elif dt_id == pa.types.lib.Type_DATE64:
-            return Date64()
-        elif dt_id == pa.types.lib.Type_DATE32:
-            return Date32()
-        # elif dt_id == pa.types.lib.Type_DECIMAL256:
-        #     return ()
-        # elif dt_id == pa.types.lib.Type_DECIMAL128:
-        #     return ()
-        # elif dt_id == pa.types.lib.Type_DICTIONARY:
-        #     return ()
-        # elif dt_id == pa.types.lib.Type_DURATION:
-        #     return ()
-        elif dt_id == pa.types.lib.Type_DOUBLE:
-            return Float(bitwidth=64)
-        elif dt_id == pa.types.lib.Type_FLOAT:
-            return Float(bitwidth=32)
-        elif dt_id == pa.types.lib.Type_HALF_FLOAT:
-            return Float(bitwidth=16)
-        # elif dt_id == pa.types.lib.Type_INTERVAL_MONTH_DAY_NANO:
-        #     return ()
-        elif (
-            dt_id == pa.types.lib.Type_LIST
-            or dt_id == pa.types.lib.Type_LARGE_LIST
-            or dt_id == pa.types.lib.Type_FIXED_SIZE_LIST
-        ):
-            item = ScalarFactory.new_scalar(dt.field(0).type)
-            return List(type(item))
-        # elif dt_id == pa.types.lib.Type_MAP:
-        #     return ()
-        elif (
-            dt_id == pa.types.lib.Type_STRING or dt_id == pa.types.lib.Type_LARGE_STRING
-        ):
-            return String()
-        # elif dt_id == pa.types.lib.Type_STRUCT:
-        #     return ()
-        # elif dt_id == pa.types.lib.Type_TIME32:
-        #     return ()
-        # elif dt_id == pa.types.lib.Type_TIME64:
-        #     return ()
-        elif dt_id == pa.types.lib.Type_TIMESTAMP:
-            return Timestamp()
-        elif dt == UUIDType():
+        type_id__map = {
+            pa.types.lib.Type_INT64: partial(Int, bitwidth=64),
+            pa.types.lib.Type_INT32: partial(Int, bitwidth=32),
+            pa.types.lib.Type_INT16: partial(Int, bitwidth=16),
+            pa.types.lib.Type_INT8: partial(Int, bitwidth=8),
+            pa.types.lib.Type_UINT64: partial(Uint, bitwidth=64),
+            pa.types.lib.Type_UINT32: partial(Uint, bitwidth=32),
+            pa.types.lib.Type_UINT16: partial(Uint, bitwidth=16),
+            pa.types.lib.Type_UINT8: partial(Uint, bitwidth=8),
+            pa.types.lib.Type_BINARY: Binary,
+            pa.types.lib.Type_LARGE_BINARY: Binary,
+            pa.types.lib.Type_FIXED_SIZE_BINARY: Binary,
+            pa.types.lib.Type_BOOL: Bool,
+            pa.types.lib.Type_DATE64: Date64,
+            pa.types.lib.Type_DATE32: Date32,
+            pa.types.lib.Type_DOUBLE: partial(Float, bitwidth=64),
+            pa.types.lib.Type_FLOAT: partial(Float, bitwidth=32),
+            pa.types.lib.Type_HALF_FLOAT: partial(Float, bitwidth=16),
+            pa.types.lib.Type_LIST: List,
+            pa.types.lib.Type_LARGE_LIST: List,
+            pa.types.lib.Type_FIXED_SIZE_LIST: List,
+            pa.types.lib.Type_STRING: String,
+            pa.types.lib.Type_LARGE_STRING: String,
+            pa.types.lib.Type_TIMESTAMP: Timestamp,
+        }
+        # Built-in Types
+        if dt_id in type_id__map:
+            scalar_type = type_id__map[dt_id]
+            if scalar_type == List:
+                item = self.new_scalar(dt.field(0).type)
+                return scalar_type(type(item))
+            return scalar_type()
+        # Extension Types - Can't do the same trick as above as they don't have `id`s and they are not hashable. :(
+        if dt == UUIDType():
             return UUID()
-        elif dt == JSONType():
+        if dt == JSONType():
             return JSON()
-        else:
-            raise ScalarInvalidTypeError("Invalid type {} for scalar".format(dt))
+        raise ScalarInvalidTypeError(f"Invalid type {dt} for scalar")

@@ -1,7 +1,7 @@
 from cloudquery.sdk.scalar import Scalar, ScalarInvalidTypeError
 from .scalar import NULL_VALUE
 from .vector import Vector
-from typing import Any, Type, Union
+from typing import Any, Type
 
 
 class List(Scalar):
@@ -10,12 +10,8 @@ class List(Scalar):
         self._value = Vector(scalar_type)
         self._type = scalar_type
 
-    def __eq__(self, other: Union[None, "List"]) -> bool:
-        if other is None:
-            return False
-        if type(self) != type(other):
-            return False
-        if self._valid != other._valid:
+    def __eq__(self, other: "List") -> bool:
+        if (not isinstance(other, self.__class__)) or self._valid != other._valid:
             return False
         return self._value == other._value
 
@@ -27,29 +23,29 @@ class List(Scalar):
     def value(self):
         return self._value
 
-    def set(self, val: Any):
-        if val is None:
+    def set(self, value: Any):
+        if value is None:
             self._valid = False
             self._value = Vector()
             return
 
-        if isinstance(val, Scalar) and type(val) == self._type:
-            if not val.is_valid:
+        if isinstance(value, self._type):
+            if not value.is_valid:
                 self._valid = False
                 self._value = Vector()
                 return
-            return self.set([val.value])
+            return self.set([value.value])
 
-        if isinstance(val, (list, tuple)):
+        if isinstance(value, (list, tuple)):
             self._value = Vector()
-            for item in val:
+            for item in value:
                 scalar = self._type()
                 scalar.set(item)
                 self._value.append(scalar)
                 self._valid = True
             return
 
-        raise ScalarInvalidTypeError("Invalid type {} for List".format(type(val)))
+        raise ScalarInvalidTypeError(f"Invalid type {type(value)} for List")
 
     def __str__(self) -> str:
         if not self._valid:

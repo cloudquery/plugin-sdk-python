@@ -7,7 +7,7 @@ class Date32(Scalar):
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if type(scalar) == Date32:
+        if isinstance(scalar, Date32):
             return self._value == scalar._value and self._valid == scalar._valid
         return False
 
@@ -25,15 +25,15 @@ class Date32(Scalar):
             self._value = value.value
             return
 
-        if type(value) == datetime:
+        if isinstance(value, datetime):
             self._value = value
-        elif type(value) == str:
+        elif isinstance(value, str):
             self._value = datetime.strptime(value, "%Y-%m-%d")
-        elif type(value) == time:
+        elif isinstance(value, time):
             self._value = datetime.combine(datetime.today(), value)
         else:
             raise ScalarInvalidTypeError(
-                "Invalid type {} for Date32 scalar".format(type(value))
+                f"Invalid type {type(value)} for Date32 scalar"
             )
 
         self._valid = True

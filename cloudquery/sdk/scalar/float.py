@@ -9,7 +9,7 @@ class Float(Scalar):
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if type(scalar) == Float and self._bitwidth == scalar.bitwidth:
+        if isinstance(scalar, Float) and self._bitwidth == scalar.bitwidth:
             return self._value == scalar._value and self._valid == scalar._valid
         return False
 
@@ -31,19 +31,19 @@ class Float(Scalar):
             self._value = value.value
             return
 
-        if type(value) == int:
+        if isinstance(value, int):
             self._value = float(value)
-        elif type(value) == float:
+        elif isinstance(value, float):
             self._value = value
-        elif type(value) == str:
+        elif isinstance(value, str):
             try:
                 self._value = float(value)
-            except ValueError:
+            except ValueError as e:
                 raise ScalarInvalidTypeError(
-                    "Invalid value for Float{} scalar".format(self._bitwidth)
-                )
+                    f"Invalid value for Float{self._bitwidth} scalar"
+                ) from e
         else:
             raise ScalarInvalidTypeError(
-                "Invalid type {} for Float{} scalar".format(type(value), self._bitwidth)
+                f"Invalid type {type(value)} for Float{self._bitwidth} scalar"
             )
         self._valid = True

@@ -5,7 +5,7 @@ class String(Scalar):
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if type(scalar) == String:
+        if isinstance(scalar, String):
             return self._value == scalar._value and self._valid == scalar._valid
         return False
 
@@ -22,10 +22,10 @@ class String(Scalar):
             self._value = value.value
             return
 
-        if type(value) == str:
+        if isinstance(value, str):
             self._valid = True
             self._value = value
         else:
             raise ScalarInvalidTypeError(
-                "Invalid type {} for String scalar".format(type(value))
+                f"Invalid type {type(value)} for String scalar"
             )

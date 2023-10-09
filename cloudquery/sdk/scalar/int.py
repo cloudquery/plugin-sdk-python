@@ -11,7 +11,7 @@ class Int(Scalar):
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if type(scalar) == Int and self._bitwidth == scalar.bitwidth:
+        if isinstance(scalar, Int) and self._bitwidth == scalar.bitwidth:
             return self._value == scalar._value and self._valid == scalar._valid
         return False
 
@@ -33,24 +33,24 @@ class Int(Scalar):
             self._value = value.value
             return
 
-        if type(value) == int:
+        if isinstance(value, int):
             val = value
-        elif type(value) == float:
+        elif isinstance(value, float):
             val = int(value)
-        elif type(value) == str:
+        elif isinstance(value, str):
             try:
                 val = int(value)
             except ValueError as e:
                 raise ScalarInvalidTypeError(
-                    "Invalid type for Int{} scalar".format(self._bitwidth)
+                    f"Invalid type for Int{self._bitwidth} scalar"
                 ) from e
         else:
             raise ScalarInvalidTypeError(
-                "Invalid type {} for Int{} scalar".format(type(value), self._bitwidth)
+                f"Invalid type {type(value)} for Int{self._bitwidth} scalar"
             )
         if val < self._min or val >= self._max:
             raise ScalarInvalidTypeError(
-                "Invalid Int{} scalar with value {}".format(self._bitwidth, val)
+                f"Invalid Int{self._bitwidth} scalar with value {val}"
             )
         self._value = val
         self._valid = True

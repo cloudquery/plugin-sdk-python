@@ -1,6 +1,6 @@
 from cloudquery.sdk.schema.table import Table
 from cloudquery.sdk.schema import Resource
-from typing import Any, Generator, List
+from typing import Any, Generator, List, Optional
 
 
 class Client:
@@ -8,12 +8,10 @@ class Client:
         raise NotImplementedError()
 
 
-from cloudquery.sdk.schema import Resource
-from cloudquery.sdk.schema.table import Table
-
-
 class TableResolver:
-    def __init__(self, table: Table, child_resolvers=[]) -> None:
+    def __init__(self, table: Table, child_resolvers: Optional[List] = None) -> None:
+        if child_resolvers is None:
+            child_resolvers = []
         self._table = table
         self._child_resolvers = child_resolvers
 
@@ -35,7 +33,7 @@ class TableResolver:
         return
 
     def resolve_column(self, client: Client, resource: Resource, column_name: str):
-        if type(resource.item) is dict:
+        if isinstance(resource.item, dict):
             if column_name in resource.item:
                 resource.set(column_name, resource.item[column_name])
         else:

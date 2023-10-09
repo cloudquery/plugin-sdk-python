@@ -31,7 +31,7 @@ class Column:
         return f"Column(name={self.name}, type={self.type}, description={self.description}, primary_key={self.primary_key}, not_null={self.not_null}, incremental_key={self.incremental_key}, unique={self.unique})"
 
     def __eq__(self, __value: object) -> bool:
-        if type(__value) == Column:
+        if isinstance(__value, Column):
             return (
                 self.name == __value.name
                 and self.type == __value.type
