@@ -24,8 +24,8 @@ class MemDB(plugin.Plugin):
         for table, record in self._db.items():
             yield message.SyncInsertMessage(record)
 
-    def write(self, msg_iterator: Generator[message.WriteMessage, None, None]) -> None:
-        for msg in msg_iterator:
+    def write(self, writer: Generator[message.WriteMessage, None, None]) -> None:
+        for msg in writer:
             if isinstance(msg, message.WriteMigrateTableMessage):
                 if msg.table.name not in self._db:
                     self._db[msg.table.name] = msg.table

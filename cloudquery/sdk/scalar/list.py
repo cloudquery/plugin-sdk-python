@@ -23,29 +23,29 @@ class List(Scalar):
     def value(self):
         return self._value
 
-    def set(self, val: Any):
-        if val is None:
+    def set(self, value: Any):
+        if value is None:
             self._valid = False
             self._value = Vector()
             return
 
-        if  isinstance(val, self._type)):
-            if not val.is_valid:
+        if isinstance(value, self._type):
+            if not value.is_valid:
                 self._valid = False
                 self._value = Vector()
                 return
-            return self.set([val.value])
+            return self.set([value.value])
 
-        if isinstance(val, (list, tuple)):
+        if isinstance(value, (list, tuple)):
             self._value = Vector()
-            for item in val:
+            for item in value:
                 scalar = self._type()
                 scalar.set(item)
                 self._value.append(scalar)
                 self._valid = True
             return
 
-        raise ScalarInvalidTypeError(f"Invalid type {type(val)} for List")
+        raise ScalarInvalidTypeError(f"Invalid type {type(value)} for List")
 
     def __str__(self) -> str:
         if not self._valid:

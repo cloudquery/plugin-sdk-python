@@ -38,10 +38,10 @@ class Float(Scalar):
         elif isinstance(value, str):
             try:
                 self._value = float(value)
-            except ValueError:
+            except ValueError as e:
                 raise ScalarInvalidTypeError(
                     f"Invalid value for Float{self._bitwidth} scalar"
-                )
+                ) from e
         else:
             raise ScalarInvalidTypeError(
                 f"Invalid type {type(value)} for Float{self._bitwidth} scalar"

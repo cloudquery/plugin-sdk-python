@@ -10,7 +10,7 @@ def parse_string_to_bool(input_string):
 
     if lower_input in true_strings:
         return True
-    elif lower_input in false_strings:
+    if lower_input in false_strings:
         return False
     else:
         raise ScalarInvalidTypeError(f"Invalid boolean string: {input_string}")

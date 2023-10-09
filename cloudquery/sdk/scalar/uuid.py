@@ -35,7 +35,5 @@ class UUID(Scalar):
             except ValueError as e:
                 raise ScalarInvalidTypeError("Invalid type for UUID scalar") from e
         else:
-            raise ScalarInvalidTypeError(
-                "Invalid type {} for UUID scalar".format(type(value))
-            )
+            raise ScalarInvalidTypeError(f"Invalid type {type(value)} for UUID scalar")
         self._valid = True

@@ -24,7 +24,7 @@ class ScalarFactory:
 
     def new_scalar(self, dt: pa.DataType):
         dt_id = dt.id
-        type_map = {
+        type_id__map = {
             pa.types.lib.Type_INT64: partial(Int, bitwidth=64),
             pa.types.lib.Type_INT32: partial(Int, bitwidth=32),
             pa.types.lib.Type_INT16: partial(Int, bitwidth=16),
@@ -49,12 +49,14 @@ class ScalarFactory:
             pa.types.lib.Type_LARGE_STRING: String,
             pa.types.lib.Type_TIMESTAMP: Timestamp,
         }
-        if dt_id in type_map:
-            scalar_type = type_map[dt_id]
+        # Built-in Types
+        if dt_id in type_id__map:
+            scalar_type = type_id__map[dt_id]
             if scalar_type == List:
                 item = self.new_scalar(dt.field(0).type)
                 return scalar_type(type(item))
             return scalar_type()
+        # Extension Types - Can't do the same trick as above as they don't have `id`s and they are not hashable. :(
         if dt == UUIDType():
             return UUID()
         if dt == JSONType():
