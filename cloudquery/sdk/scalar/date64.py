@@ -7,9 +7,7 @@ class Date64(Scalar):
     def __eq__(self, scalar: Scalar) -> bool:
         if scalar is None:
             return False
-        if isinstance(
-            scalar,
-        ):
+        if isinstance(scalar, Date64):
             return self._value == scalar._value and self._valid == scalar._valid
         return False
 

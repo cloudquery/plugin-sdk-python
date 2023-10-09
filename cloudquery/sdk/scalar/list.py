@@ -29,7 +29,7 @@ class List(Scalar):
             self._value = Vector()
             return
 
-        if isinstance(val, (Scalar, self._type)):
+        if  isinstance(val, self._type)):
             if not val.is_valid:
                 self._valid = False
                 self._value = Vector()
