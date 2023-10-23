@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.7](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.6...v0.1.7) (2023-10-23)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency pyarrow to v13 ([#53](https://github.com/cloudquery/plugin-sdk-python/issues/53)) ([55bed05](https://github.com/cloudquery/plugin-sdk-python/commit/55bed05df36c75dc9972b445e4bb21ef0321329c))
+* Properly handle `uuid.UUID` values in scalars ([#70](https://github.com/cloudquery/plugin-sdk-python/issues/70)), closes (https://github.com/cloudquery/cloudquery/issues/14825) ([1fc0cf7](https://github.com/cloudquery/plugin-sdk-python/commit/1fc0cf7535138d5b8c4e00b39d6863ce0f6bf51a))
+
 ## [0.1.6](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.5...v0.1.6) (2023-10-12)
 
 
