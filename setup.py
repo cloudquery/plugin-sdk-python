@@ -14,7 +14,7 @@ dependencies = [
     "exceptiongroup==1.1.3",
     "black==23.9.1",
     "grpcio==1.59.2",
-    "grpcio-tools==1.59.0",
+    "grpcio-tools==1.59.2",
     "iniconfig==2.0.0",
     "Jinja2==3.1.2",
     "MarkupSafe==2.1.3",
