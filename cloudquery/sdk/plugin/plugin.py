@@ -29,10 +29,40 @@ class SyncOptions:
     backend_options: BackendOptions = None
 
 
+@dataclass
+class BuildTarget:
+    os: str = None
+    arch: str = None
+
+
+@dataclass
+class Dockerfile:
+    path: str = None
+    build_targets: List[BuildTarget] = None
+
+
+@dataclass
+class Options:
+    dockerfiles: List[Dockerfile] = None
+    team_name: str = None
+    plugin_kind: str = None
+
+
 class Plugin:
-    def __init__(self, name: str, version: str) -> None:
+    def __init__(self, name: str, version: str, opts: Options = None) -> None:
         self._name = name
         self._version = version
+        self._opts = Options() if opts is None else opts
+        if self._opts.dockerfiles is None:
+            self._opts.dockerfiles = [
+                Dockerfile("Dockerfile", [
+                    BuildTarget("linux", "amd64"),
+                    BuildTarget("linux", "arm64"),
+                    BuildTarget("darwin", "amd64"),
+                    BuildTarget("darwin", "arm64"),
+                    BuildTarget("windows", "amd64"),
+                ]),
+            ]
 
     def init(self, spec: bytes, no_connection: bool = False) -> None:
         pass
@@ -45,6 +75,9 @@ class Plugin:
 
     def version(self) -> str:
         return self._version
+
+    def options(self) -> Options:
+        return self._opts
 
     def get_tables(self, options: TableOptions) -> List[Table]:
         raise NotImplementedError()
