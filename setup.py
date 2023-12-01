@@ -20,7 +20,7 @@ dependencies = [
     "MarkupSafe==2.1.3",
     "numpy==1.26.1",
     "packaging==23.2",
-    "pandas==2.1.2",
+    "pandas==2.1.3",
     "pluggy==1.3.0",
     "protobuf==4.24.4",
     "pyarrow==14.0.1",
