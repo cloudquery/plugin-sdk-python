@@ -206,18 +206,18 @@ class PluginCommand:
     def _package(self, args):
         logger = get_logger(args)
         self._plugin.set_logger(logger)
-        if self._plugin.name() == None or self._plugin.name() == "":
+        def _is_empty(val):
+            return val == None or len(val) == 0
+    
+        if _is_empty(self._plugin.name()):
             raise Exception("plugin name is required")
-        if self._plugin.team() == None or self._plugin.team() == "":
-            raise Exception("plugin team name is required")
-        if self._plugin.kind() == None or self._plugin.kind() == "":
+        if _is_empty(self._plugin.team()):
+            raise Exception("plugin team is required")
+        if _is_empty(self._plugin.kind()):
             raise Exception("plugin kind is required")
-        if self._plugin.dockerfile() == None or self._plugin.dockerfile() == "":
+        if _is_empty(self._plugin.dockerfile()):
             raise Exception("plugin dockerfile is required")
-        if (
-            self._plugin.build_targets() == None
-            or len(self._plugin.build_targets()) == 0
-        ):
+        if _is_empty(self._plugin.build_targets()):
             raise Exception("at least one build target is required")
 
         plugin_directory, version, message = (
