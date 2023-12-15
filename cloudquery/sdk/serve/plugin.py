@@ -206,9 +206,10 @@ class PluginCommand:
     def _package(self, args):
         logger = get_logger(args)
         self._plugin.set_logger(logger)
+
         def _is_empty(val):
             return val == None or len(val) == 0
-    
+
         if _is_empty(self._plugin.name()):
             raise Exception("plugin name is required")
         if _is_empty(self._plugin.team()):
