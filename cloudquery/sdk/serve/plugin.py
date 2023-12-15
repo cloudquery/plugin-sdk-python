@@ -15,10 +15,13 @@ import sys
 from cloudquery.discovery_v1 import discovery_pb2_grpc
 from cloudquery.plugin_v3 import plugin_pb2_grpc
 from structlog import wrap_logger
+from cloudquery.sdk import plugin
+
 
 from cloudquery.sdk.internal.servers.discovery_v1.discovery import DiscoveryServicer
 from cloudquery.sdk.internal.servers.plugin_v3 import PluginServicer
 from cloudquery.sdk.plugin.plugin import Plugin
+from cloudquery.sdk.schema import table
 
 _IS_WINDOWS = sys.platform == "win32"
 
@@ -160,7 +163,13 @@ class PluginCommand:
         )
 
     def _register_package_command(self, subparsers):
-        package_parser = subparsers.add_parser("package", help="Package plugin for publishing")
+        package_parser = subparsers.add_parser(
+            "package", help="Package the plugin as a Docker image"
+        )
+        package_parser.add_argument(
+            "version", help="version to tag the Docker image with"
+        )
+        package_parser.add_argument("plugin-directory")
         package_parser.add_argument(
             "--log-format",
             type=str,
@@ -176,71 +185,198 @@ class PluginCommand:
             help="log level",
         )
         package_parser.add_argument(
+            "-D",
             "--dist-dir",
             type=str,
-            default="dist",
+            help="dist directory to output the built plugin. (default: <plugin_directory>/dist)",
         )
         package_parser.add_argument(
+            "--docs-dir",
+            type=str,
+            help="docs directory containing markdown files to copy to the dist directory. (default: <plugin_directory>/docs)",
+        )
+        package_parser.add_argument(
+            "-m",
             "--message",
             type=str,
-            default="",
+            required=True,
+            help="message that summarizes what is new or changed in this version. Use @<file> to read from file. Supports markdown.",
         )
 
     def _package(self, args):
-        def run_docker_cmd(cmd):
-            result = subprocess.run(cmd,capture_output=True)
-            if result.returncode != 0:
-                err = "" if result.stderr is None else result.stderr.decode('ascii').strip()
-                raise ChildProcessError("Unable to run Docker command: %s" % err)
+        logger = get_logger(args)
+        self._plugin.set_logger(logger)
+        if self._plugin.name() == None or self._plugin.name() == "":
+            raise Exception("plugin name is required")
+        if self._plugin.team() == None or self._plugin.team() == "":
+            raise Exception("plugin team name is required")
+        if self._plugin.kind() == None or self._plugin.kind() == "":
+            raise Exception("plugin kind is required")
+        if self._plugin.dockerfile() == None or self._plugin.dockerfile() == "":
+            raise Exception("plugin dockerfile is required")
+        if (
+            self._plugin.build_targets() == None
+            or len(self._plugin.build_targets()) == 0
+        ):
+            raise Exception("at least one build target is required")
 
-        tmp_dist_dir = "%s/plugin" % args.dist_dir
-        Path(tmp_dist_dir).mkdir(0o755, exist_ok=True, parents=True)
+        plugin_directory, version, message = (
+            getattr(args, "plugin-directory"),
+            getattr(args, "version"),
+            getattr(args, "message"),
+        )
+        dist_dir = (
+            "%s/dist" % plugin_directory if args.dist_dir == None else args.dist_dir
+        )
+        docs_dir = (
+            "%s/docs" % plugin_directory if args.docs_dir == None else args.docs_dir
+        )
+        Path(dist_dir).mkdir(0o755, exist_ok=True, parents=True)
 
-        package_json = self._make_package_json(args.message)
+        self._copy_docs(logger, docs_dir, dist_dir)
+        self._writeTablesJSON(logger, dist_dir)
+        supportedTargets = self._buildDockerFile(
+            logger, plugin_directory, dist_dir, version
+        )
+        self._write_package_json(logger, dist_dir, message, version, supportedTargets)
+        logger.info("Done packaging plugin to '%s'" % dist_dir)
 
-        for i, dockerfile in enumerate(self._plugin.options().dockerfiles):
-            image_name = "cq-docker-image-%d" % i
-            image_path = "%s/%s.tar" % (tmp_dist_dir, image_name)
-
-            print("Building Docker image for Dockerfile '%s'" % dockerfile.path)
-            run_docker_cmd(["docker", "build", "--tag", image_name, "--file", dockerfile.path, "."])
-
-            print("Saving Docker image for Dockerfile '%s'" % dockerfile.path)
-            run_docker_cmd(["docker", "save", "--output", image_path, image_name])
-
-            for target in dockerfile.build_targets:
-                package_json["supported_targets"].append({
-                    "path": "%s.tar" % image_name,
-                    "os": target.os,
-                    "arch": target.arch,
-                    "checksum": calc_sha256_checksum(image_path),
-                })
-
-        with open("%s/package.json" % tmp_dist_dir, "w") as f:
-            package_json = json.dumps(package_json, indent=4)
-            f.write(package_json)
-
-        shutil.copyfile("docs/overview.md", "%s/overview.md" % tmp_dist_dir)
-
-        print("Creating tar.gz archive")
-        with tarfile.open("%s/plugin.tar.gz" % args.dist_dir, "w:gz") as tar:
-            tar.add(tmp_dist_dir, arcname=os.path.basename(tmp_dist_dir))
-
-        shutil.rmtree(tmp_dist_dir)
-        print("done")
-
-    def _make_package_json(self, message):
-        return {
+    def _write_package_json(self, logger, dist_dir, message, version, supportedTargets):
+        packageJsonPath = "%s/package.json" % dist_dir
+        logger.info("Writing package.json to '%s'" % packageJsonPath)
+        content = {
             "schema_version": 1,
             "name": self._plugin.name(),
-            "team": self._plugin.options().team_name,
-            "kind": self._plugin.options().plugin_kind,
-            "version": self._plugin.version(),
+            "team": self._plugin.team(),
+            "kind": self._plugin.kind(),
+            "version": version,
             "message": message,
             "protocols": [3],
-            "supported_targets": [],
+            "supported_targets": supportedTargets,
             "package_type": "docker",
         }
+        with open("%s/package.json" % dist_dir, "w") as f:
+            f.write(json.dumps(content, indent=2))
+
+    def _copy_docs(self, logger, docs_dir, dist_dir):
+        # check is docs_dir exists
+        if not os.path.isdir(docs_dir):
+            raise Exception("docs directory '%s' does not exist" % docs_dir)
+
+        output_docs_dir = "%s/docs" % dist_dir
+        logger.info("Copying docs from '%s' to '%s'" % (docs_dir, output_docs_dir))
+        shutil.copytree(docs_dir, output_docs_dir, dirs_exist_ok=True)
+
+    def _writeTablesJSON(self, logger, dist_dir):
+        if self._plugin.kind() != "source":
+            return
+
+        tables_json_output_path = "%s/tables.json" % dist_dir
+        logger.info("Writing tables to '%s'" % tables_json_output_path)
+        self._plugin.init(spec=b"", no_connection=True)
+        tables = self._plugin.get_tables(
+            options=plugin.plugin.TableOptions(
+                tables=["*"], skip_tables=[], skip_dependent_tables=False
+            )
+        )
+        flattened_tables = table.flatten_tables(tables)
+
+        def column_to_json(column: table.Column):
+            return {
+                "name": column.name,
+                "type": str(column.type),
+                "description": column.description,
+                "incremental_key": column.incremental_key,
+                "primary_key": column.primary_key,
+                "not_null": column.not_null,
+                "unique": column.unique,
+            }
+
+        def table_to_json(table: table.Table):
+            return {
+                "name": table.name,
+                "title": table.title,
+                "description": table.description,
+                "is_incremental": table.is_incremental,
+                "parent": table.parent.name if table.parent else "",
+                "relations": list(map(lambda r: r.name, table.relations)),
+                "columns": list(map(column_to_json, table.columns)),
+            }
+
+        tables_json = list(map(table_to_json, flattened_tables))
+        with open(tables_json_output_path, "w") as f:
+            f.write(json.dumps(tables_json))
+        logger.info(
+            "Wrote %d tables to '%s'" % (len(tables_json), tables_json_output_path)
+        )
+
+    def _buildDockerFile(self, logger, plugin_dir, dist_dir, version):
+        dockerFilePath = "%s/%s" % (plugin_dir, self._plugin.dockerfile())
+        if not os.path.isfile(dockerFilePath):
+            raise Exception("Dockerfile '%s' does not exist" % dockerFilePath)
+
+        def run_docker_cmd(cmd, plugin_dir):
+            result = subprocess.run(cmd, capture_output=True, cwd=plugin_dir)
+            if result.returncode != 0:
+                err = (
+                    ""
+                    if result.stderr is None
+                    else result.stderr.decode("ascii").strip()
+                )
+                raise ChildProcessError("Unable to run Docker command: %s" % err)
+
+        def build_target(target: plugin.plugin.BuildTarget):
+            imageRepository = "registry.cloudquery.io/%s/%s-%s" % (
+                self._plugin.team(),
+                self._plugin.kind(),
+                self._plugin.name(),
+            )
+            imageTag = "%s:%s-%s-%s" % (
+                imageRepository,
+                version,
+                target.os,
+                target.arch,
+            )
+            imageTar = "plugin-%s-%s-%s-%s.tar" % (
+                self._plugin.name(),
+                version,
+                target.os,
+                target.arch,
+            )
+            imagePath = "%s/%s" % (dist_dir, imageTar)
+            logger.info("Building docker image %s" % imageTag)
+            dockerBuildArguments = [
+                "docker",
+                "buildx",
+                "build",
+                "-t",
+                imageTag,
+                "--platform",
+                "%s/%s" % (target.os, target.arch),
+                "-f",
+                dockerFilePath,
+                ".",
+                "--progress",
+                "plain",
+                "--load",
+            ]
+            logger.debug("Running command 'docker %s'" % " ".join(dockerBuildArguments))
+            run_docker_cmd(dockerBuildArguments, plugin_dir)
+            logger.debug("Saving docker image '%s' to '%s'" % (imageTag, imagePath))
+            dockerSaveArguments = ["docker", "save", "-o", imagePath, imageTag]
+            logger.debug("Running command 'docker %s'", " ".join(dockerSaveArguments))
+            run_docker_cmd(dockerSaveArguments, plugin_dir)
+            return {
+                "os": target.os,
+                "arch": target.arch,
+                "path": imageTar,
+                "checksum": calc_sha256_checksum(imagePath),
+                "docker_image_tag": imageTag,
+            }
+
+        logger.info("Building %d targets" % len(self._plugin.build_targets()))
+        supportedTargets = list(map(build_target, self._plugin.build_targets()))
+        return supportedTargets
 
     def _serve(self, args):
         logger = get_logger(args)

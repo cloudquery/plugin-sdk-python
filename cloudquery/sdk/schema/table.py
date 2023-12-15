@@ -151,6 +151,8 @@ def filter_dfs_func(tt: List[Table], include, exclude, skip_dependent_tables: bo
     filtered_tables = []
     for t in tt:
         filtered_table = copy.deepcopy(t)
+        for r in filtered_table.relations:
+            r.parent = filtered_table
         filtered_table = _filter_dfs_impl(
             filtered_table, False, include, exclude, skip_dependent_tables
         )

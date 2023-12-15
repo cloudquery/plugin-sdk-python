@@ -36,16 +36,11 @@ class BuildTarget:
 
 
 @dataclass
-class Dockerfile:
-    path: str = None
-    build_targets: List[BuildTarget] = None
-
-
-@dataclass
 class Options:
-    dockerfiles: List[Dockerfile] = None
-    team_name: str = None
-    plugin_kind: str = None
+    dockerfile: str = None
+    build_targets: List[BuildTarget] = None
+    team: str = None
+    kind: str = None
 
 
 class Plugin:
@@ -53,15 +48,12 @@ class Plugin:
         self._name = name
         self._version = version
         self._opts = Options() if opts is None else opts
-        if self._opts.dockerfiles is None:
-            self._opts.dockerfiles = [
-                Dockerfile("Dockerfile", [
-                    BuildTarget("linux", "amd64"),
-                    BuildTarget("linux", "arm64"),
-                    BuildTarget("darwin", "amd64"),
-                    BuildTarget("darwin", "arm64"),
-                    BuildTarget("windows", "amd64"),
-                ]),
+        if self._opts.dockerfile is None:
+            self._opts.dockerfile = "Dockerfile"
+        if self._opts.build_targets is None:
+            self._opts.build_targets = [
+                BuildTarget("linux", "amd64"),
+                BuildTarget("linux", "arm64"),
             ]
 
     def init(self, spec: bytes, no_connection: bool = False) -> None:
@@ -76,8 +68,17 @@ class Plugin:
     def version(self) -> str:
         return self._version
 
-    def options(self) -> Options:
-        return self._opts
+    def team(self) -> str:
+        return self._opts.team
+
+    def kind(self) -> str:
+        return self._opts.kind
+
+    def dockerfile(self) -> str:
+        return self._opts.dockerfile
+
+    def build_targets(self) -> List[BuildTarget]:
+        return self._opts.build_targets
 
     def get_tables(self, options: TableOptions) -> List[Table]:
         raise NotImplementedError()

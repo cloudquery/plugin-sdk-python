@@ -3,6 +3,7 @@ from cloudquery.sdk import message
 from cloudquery.sdk import schema
 from typing import List, Generator, Dict
 import pyarrow as pa
+from cloudquery.sdk.types import JSONType
 
 NAME = "memdb"
 VERSION = "development"
@@ -10,9 +11,67 @@ VERSION = "development"
 
 class MemDB(plugin.Plugin):
     def __init__(self) -> None:
-        super().__init__(NAME, VERSION)
+        super().__init__(
+            NAME, VERSION, opts=plugin.plugin.Options(team="cloudquery", kind="source")
+        )
         self._db: Dict[str, pa.RecordBatch] = {}
-        self._tables: Dict[str, schema.Table] = {}
+        self._tables: Dict[str, schema.Table] = {
+            "table_1": schema.Table(
+                name="table_1",
+                columns=[
+                    schema.Column(
+                        name="name",
+                        type=pa.string(),
+                        primary_key=True,
+                        not_null=True,
+                        unique=True,
+                    ),
+                    schema.Column(
+                        name="id",
+                        type=pa.string(),
+                        primary_key=True,
+                        not_null=True,
+                        unique=True,
+                        incremental_key=True,
+                    ),
+                ],
+                title="Table 1",
+                description="Test Table 1",
+                is_incremental=True,
+                relations=[
+                    schema.Table(
+                        name="table_1_relation_1",
+                        columns=[
+                            schema.Column(
+                                name="name",
+                                type=pa.string(),
+                                primary_key=True,
+                                not_null=True,
+                                unique=True,
+                            ),
+                            schema.Column(name="data", type=JSONType()),
+                        ],
+                        title="Table 1 Relation 1",
+                        description="Test Table 1 Relation 1",
+                    )
+                ],
+            ),
+            "table_2": schema.Table(
+                name="table_2",
+                columns=[
+                    schema.Column(
+                        name="name",
+                        type=pa.string(),
+                        primary_key=True,
+                        not_null=True,
+                        unique=True,
+                    ),
+                    schema.Column(name="id", type=pa.string()),
+                ],
+                title="Table 2",
+                description="Test Table 2",
+            ),
+        }
 
     def get_tables(self, options: plugin.TableOptions = None) -> List[plugin.Table]:
         tables = list(self._tables.values())
