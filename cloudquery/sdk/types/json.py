@@ -13,6 +13,9 @@ class JSONType(pa.ExtensionType):
         # metadata to be deserialized
         return b"json-serialized"
 
+    def __str__(self):
+        return "json"
+
     @classmethod
     def __arrow_ext_deserialize__(self, storage_type, serialized):
         # return an instance of this subclass given the serialized

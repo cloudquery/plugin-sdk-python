@@ -134,7 +134,7 @@ def test_plugin_package():
                     },
                     {
                         "name": "data",
-                        "type": "extension<json<JSONType>>",
+                        "type": "json",
                         "description": "",
                         "incremental_key": False,
                         "primary_key": False,

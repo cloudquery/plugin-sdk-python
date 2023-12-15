@@ -15,6 +15,9 @@ class UUIDType(pa.ExtensionType):
         # metadata to be deserialized
         return b"uuid-serialized"
 
+    def __str__(self):
+        return "uuid"
+
     @classmethod
     def __arrow_ext_deserialize__(self, storage_type, serialized):
         # return an instance of this subclass given the serialized
