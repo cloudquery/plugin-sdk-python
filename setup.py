@@ -76,7 +76,7 @@ setuptools.setup(
     ],
     platforms="Posix; MacOS X; Windows",
     packages=packages,
-    python_requires=">=3.7,<3.12",
+    python_requires=">=3.7",
     namespace_packages=["cloudquery"],
     install_requires=dependencies,
     include_package_data=True,
