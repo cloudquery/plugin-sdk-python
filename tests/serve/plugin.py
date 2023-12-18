@@ -1,3 +1,5 @@
+import json
+import os
 import random
 import grpc
 import time
@@ -58,7 +60,7 @@ def test_plugin_serve():
 
             response = stub.GetTables(plugin_pb2.GetTables.Request(tables=["*"]))
             schemas = arrow.new_schemas_from_bytes(response.tables)
-            assert len(schemas) == 1
+            assert len(schemas) == 4
 
             response = stub.Sync(plugin_pb2.Sync.Request(tables=["*"]))
             total_records = 0
@@ -70,3 +72,134 @@ def test_plugin_serve():
     finally:
         cmd.stop()
         pool.shutdown()
+
+
+def test_plugin_package():
+    p = MemDB()
+    cmd = serve.PluginCommand(p)
+    cmd.run(["package", "-m", "test", "v1.0.0", "."])
+    assert os.path.isfile("dist/tables.json")
+    assert os.path.isfile("dist/package.json")
+    assert os.path.isfile("dist/docs/overview.md")
+    assert os.path.isfile("dist/plugin-memdb-v1.0.0-linux-amd64.tar")
+    assert os.path.isfile("dist/plugin-memdb-v1.0.0-linux-arm64.tar")
+
+    with open("dist/tables.json", "r") as f:
+        tables = json.loads(f.read())
+        assert tables == [
+            {
+                "name": "table_1",
+                "title": "Table 1",
+                "description": "Test Table 1",
+                "is_incremental": True,
+                "parent": "",
+                "relations": ["table_1_relation_1"],
+                "columns": [
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "description": "",
+                        "incremental_key": False,
+                        "primary_key": True,
+                        "not_null": True,
+                        "unique": True,
+                    },
+                    {
+                        "name": "id",
+                        "type": "string",
+                        "description": "",
+                        "incremental_key": True,
+                        "primary_key": True,
+                        "not_null": True,
+                        "unique": True,
+                    },
+                ],
+            },
+            {
+                "name": "table_1_relation_1",
+                "title": "Table 1 Relation 1",
+                "description": "Test Table 1 Relation 1",
+                "is_incremental": False,
+                "parent": "table_1",
+                "relations": [],
+                "columns": [
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "description": "",
+                        "incremental_key": False,
+                        "primary_key": True,
+                        "not_null": True,
+                        "unique": True,
+                    },
+                    {
+                        "name": "data",
+                        "type": "json",
+                        "description": "",
+                        "incremental_key": False,
+                        "primary_key": False,
+                        "not_null": False,
+                        "unique": False,
+                    },
+                ],
+            },
+            {
+                "name": "table_2",
+                "title": "Table 2",
+                "description": "Test Table 2",
+                "is_incremental": False,
+                "parent": "",
+                "relations": [],
+                "columns": [
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "description": "",
+                        "incremental_key": False,
+                        "primary_key": True,
+                        "not_null": True,
+                        "unique": True,
+                    },
+                    {
+                        "name": "id",
+                        "type": "string",
+                        "description": "",
+                        "incremental_key": False,
+                        "primary_key": False,
+                        "not_null": False,
+                        "unique": False,
+                    },
+                ],
+            },
+        ]
+    with open("dist/package.json", "r") as f:
+        package = json.loads(f.read())
+        assert package["schema_version"] == 1
+        assert package["name"] == "memdb"
+        assert package["version"] == "v1.0.0"
+        assert package["team"] == "cloudquery"
+        assert package["kind"] == "source"
+        assert package["message"] == "test"
+        assert package["protocols"] == [3]
+        assert len(package["supported_targets"]) == 2
+        assert package["package_type"] == "docker"
+        assert package["supported_targets"][0]["os"] == "linux"
+        assert package["supported_targets"][0]["arch"] == "amd64"
+        assert (
+            package["supported_targets"][0]["path"]
+            == "plugin-memdb-v1.0.0-linux-amd64.tar"
+        )
+        assert (
+            package["supported_targets"][0]["docker_image_tag"]
+            == "registry.cloudquery.io/cloudquery/source-memdb:v1.0.0-linux-amd64"
+        )
+        assert package["supported_targets"][1]["os"] == "linux"
+        assert package["supported_targets"][1]["arch"] == "arm64"
+        assert (
+            package["supported_targets"][1]["path"]
+            == "plugin-memdb-v1.0.0-linux-arm64.tar"
+        )
+        assert (
+            package["supported_targets"][1]["docker_image_tag"]
+            == "registry.cloudquery.io/cloudquery/source-memdb:v1.0.0-linux-arm64"
+        )
