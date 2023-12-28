@@ -148,6 +148,13 @@ class PluginCommand:
             default="",
             help="Open Telemetry HTTP collector endpoint (for development only) (placeholder for future use)",
         )
+        # ignored for now
+        serve_parser.add_argument(
+            "--license",
+            type=str,
+            default="",
+            help="set offline license file (placeholder for future use)",
+        )
         serve_parser.add_argument(
             "--address",
             type=str,
