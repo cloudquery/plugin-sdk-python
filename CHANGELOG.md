@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.9...v0.1.10) (2023-12-29)
+
+
+### Bug Fixes
+
+* Add --license placeholder for future use ([#101](https://github.com/cloudquery/plugin-sdk-python/issues/101)) ([22d4c60](https://github.com/cloudquery/plugin-sdk-python/commit/22d4c605a97470d90ccc36f1789968b4ed7e2ec4))
+
 ## [0.1.9](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.8...v0.1.9) (2023-12-18)
 
 
