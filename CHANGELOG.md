@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.11](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.10...v0.1.11) (2024-01-01)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency black to v23.12.1 ([#103](https://github.com/cloudquery/plugin-sdk-python/issues/103)) ([abfd215](https://github.com/cloudquery/plugin-sdk-python/commit/abfd215f2be7fb63154d0cd7114ae9fbb19eaa73))
+* **deps:** Update dependency pyarrow to v14.0.2 ([#104](https://github.com/cloudquery/plugin-sdk-python/issues/104)) ([3e16d15](https://github.com/cloudquery/plugin-sdk-python/commit/3e16d15f9b959b83ae12640d207bfa98f3c3a815))
+* **deps:** Update dependency pytest to v7.4.4 ([#106](https://github.com/cloudquery/plugin-sdk-python/issues/106)) ([230e6fd](https://github.com/cloudquery/plugin-sdk-python/commit/230e6fd72c122e2579886aa09f148535d486105d))
+* **deps:** Update dependency structlog to v23.3.0 ([#107](https://github.com/cloudquery/plugin-sdk-python/issues/107)) ([b210f6b](https://github.com/cloudquery/plugin-sdk-python/commit/b210f6b7d0a3c34746fbca236dbd449e26dccfb6))
+* **deps:** Update dependency tzdata to v2023.4 ([#108](https://github.com/cloudquery/plugin-sdk-python/issues/108)) ([870fd60](https://github.com/cloudquery/plugin-sdk-python/commit/870fd606a51fdc5ceb7a9b516a448e95bf5a56b2))
+* **deps:** Update python Docker tag to v3.12 ([#109](https://github.com/cloudquery/plugin-sdk-python/issues/109)) ([79f40a1](https://github.com/cloudquery/plugin-sdk-python/commit/79f40a1bc00df9c20e3635897361b990dbc9b0bb))
+
 ## [0.1.10](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.9...v0.1.10) (2023-12-29)
 
 
