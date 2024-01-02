@@ -8,14 +8,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: google-github-actions/release-please-action@v3
+      - uses: google-github-actions/release-please-action@v4
         id: release
         with:
-          release-type: python
-          package-name: plugin-sdk-python
           token: ${{ secrets.GH_CQ_BOT }}
-          pull-request-title-pattern: "chore${scope}: Release${component} v${version}"
-          # Should breaking changes before 1.0.0 produce minor bumps?
-          bump-minor-pre-major: true
-          # Should feat changes before 1.0.0 produce patch bumps instead of minor bumps?
-          bump-patch-for-minor-pre-major: true
