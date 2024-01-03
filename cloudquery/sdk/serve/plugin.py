@@ -334,7 +334,7 @@ class PluginCommand:
                 raise ChildProcessError("Unable to run Docker command: %s" % err)
 
         def build_target(target: plugin.plugin.BuildTarget):
-            image_repository = "registry.cloudquery.io/%s/%s-%s" % (
+            image_repository = "docker.cloudquery.io/%s/%s-%s" % (
                 self._plugin.team(),
                 self._plugin.kind(),
                 self._plugin.name(),
