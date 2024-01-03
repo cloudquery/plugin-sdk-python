@@ -191,7 +191,7 @@ def test_plugin_package():
         )
         assert (
             package["supported_targets"][0]["docker_image_tag"]
-            == "registry.cloudquery.io/cloudquery/source-memdb:v1.0.0-linux-amd64"
+            == "docker.cloudquery.io/cloudquery/source-memdb:v1.0.0-linux-amd64"
         )
         assert package["supported_targets"][1]["os"] == "linux"
         assert package["supported_targets"][1]["arch"] == "arm64"
@@ -201,5 +201,5 @@ def test_plugin_package():
         )
         assert (
             package["supported_targets"][1]["docker_image_tag"]
-            == "registry.cloudquery.io/cloudquery/source-memdb:v1.0.0-linux-arm64"
+            == "docker.cloudquery.io/cloudquery/source-memdb:v1.0.0-linux-arm64"
         )
