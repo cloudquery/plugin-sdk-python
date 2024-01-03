@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.12](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.11...v0.1.12) (2024-01-03)
+
+
+### Bug Fixes
+
+* Rename docker registry host ([#113](https://github.com/cloudquery/plugin-sdk-python/issues/113)) ([b783921](https://github.com/cloudquery/plugin-sdk-python/commit/b783921b1439252797b55dcc2f16a26cb65d7f7b))
+
 ## [0.1.11](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.10...v0.1.11) (2024-01-02)
 
 
