@@ -26,7 +26,7 @@ dependencies = [
     "pyarrow==14.0.2",
     "pytest==7.4.4",
     "python-dateutil==2.8.2",
-    "pytz==2023.3.post1",
+    "pytz==2023.4",
     "six==1.16.0",
     "structlog==23.3.0",
     "tomli==2.0.1",
