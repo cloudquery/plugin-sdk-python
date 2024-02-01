@@ -18,7 +18,7 @@ dependencies = [
     "iniconfig==2.0.0",
     "Jinja2==3.1.3",
     "MarkupSafe==2.1.4",
-    "numpy==1.26.2",
+    "numpy==1.26.3",
     "packaging==23.2",
     "pandas==2.1.4",
     "pluggy==1.3.0",
