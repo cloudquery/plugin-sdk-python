@@ -45,15 +45,15 @@ class Column:
 
     def to_arrow_field(self):
         metadata = {
-            arrow.METADATA_PRIMARY_KEY: arrow.METADATA_TRUE
-            if self.primary_key
-            else arrow.METADATA_FALSE,
-            arrow.METADATA_UNIQUE: arrow.METADATA_TRUE
-            if self.unique
-            else arrow.METADATA_FALSE,
-            arrow.METADATA_INCREMENTAL: arrow.METADATA_TRUE
-            if self.incremental_key
-            else arrow.METADATA_FALSE,
+            arrow.METADATA_PRIMARY_KEY: (
+                arrow.METADATA_TRUE if self.primary_key else arrow.METADATA_FALSE
+            ),
+            arrow.METADATA_UNIQUE: (
+                arrow.METADATA_TRUE if self.unique else arrow.METADATA_FALSE
+            ),
+            arrow.METADATA_INCREMENTAL: (
+                arrow.METADATA_TRUE if self.incremental_key else arrow.METADATA_FALSE
+            ),
         }
         return pa.field(self.name, self.type, metadata=metadata)
 

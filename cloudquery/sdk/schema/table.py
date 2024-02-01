@@ -88,9 +88,9 @@ class Table:
             arrow.METADATA_TABLE_DESCRIPTION: self.description,
             arrow.METADATA_TABLE_TITLE: self.title,
             arrow.METADATA_TABLE_DEPENDS_ON: self.parent.name if self.parent else "",
-            arrow.METADATA_INCREMENTAL: arrow.METADATA_TRUE
-            if self.is_incremental
-            else arrow.METADATA_FALSE,
+            arrow.METADATA_INCREMENTAL: (
+                arrow.METADATA_TRUE if self.is_incremental else arrow.METADATA_FALSE
+            ),
         }
         for column in self.columns:
             fields.append(column.to_arrow_field())
