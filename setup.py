@@ -34,8 +34,6 @@ dependencies = [
 ]
 url = "https://github.com/cloudquery/plugin-sdk-python"
 
-package_root = os.path.abspath(os.path.dirname(__file__))
-
 long_description = """
 CloudQuery Plugin SDK for Python
 ================================================
