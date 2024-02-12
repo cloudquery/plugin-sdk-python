@@ -28,6 +28,9 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
     def GetVersion(self, request, context):
         return plugin_pb2.GetVersion.Response(version=self._plugin.version())
 
+    def GetSpecSchema(self, request, context):
+        return plugin_pb2.GetSpecSchema.Response(json_schema=self._plugin.json_schema())
+
     def Init(self, request: plugin_pb2.Init.Request, context):
         self._plugin.init(request.spec, no_connection=request.no_connection)
         return plugin_pb2.Init.Response()

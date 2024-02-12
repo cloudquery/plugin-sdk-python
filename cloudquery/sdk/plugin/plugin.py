@@ -41,6 +41,7 @@ class Options:
     build_targets: List[BuildTarget] = None
     team: str = None
     kind: str = None
+    json_schema: str = None
 
 
 class Plugin:
@@ -73,6 +74,9 @@ class Plugin:
 
     def kind(self) -> str:
         return self._opts.kind
+
+    def json_schema(self) -> str:
+        return self._opts.json_schema
 
     def dockerfile(self) -> str:
         return self._opts.dockerfile
