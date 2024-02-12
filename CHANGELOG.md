@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.14](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.13...v0.1.14) (2024-02-12)
+
+
+### Features
+
+* Implement `GetSpecSchema` plugin gRPC call ([#130](https://github.com/cloudquery/plugin-sdk-python/issues/130)) ([35c981c](https://github.com/cloudquery/plugin-sdk-python/commit/35c981c6c57247d210b4e8513cbb45caf6659177))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.23 ([#125](https://github.com/cloudquery/plugin-sdk-python/issues/125)) ([5d1a1d7](https://github.com/cloudquery/plugin-sdk-python/commit/5d1a1d7d98ec88607695a6454085317f32df6abd))
+* **deps:** Update dependency pyarrow to v15 ([#126](https://github.com/cloudquery/plugin-sdk-python/issues/126)) ([541e9ca](https://github.com/cloudquery/plugin-sdk-python/commit/541e9ca6748d327a9a4f5117ee49695e0f8bb464))
+
 ## [0.1.13](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.12...v0.1.13) (2024-02-01)
 
 
