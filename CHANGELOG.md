@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.15](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.14...v0.1.15) (2024-03-01)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency black to v24.2.0 ([#136](https://github.com/cloudquery/plugin-sdk-python/issues/136)) ([a8cd1ae](https://github.com/cloudquery/plugin-sdk-python/commit/a8cd1ae1bac7949542adae8d80bef45541725ec3))
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.24 ([#140](https://github.com/cloudquery/plugin-sdk-python/issues/140)) ([cbd8d2e](https://github.com/cloudquery/plugin-sdk-python/commit/cbd8d2ef4567f1c8b426c5aee922b88a142a5f8f))
+* **deps:** Update dependency grpcio to v1.62.0 ([#137](https://github.com/cloudquery/plugin-sdk-python/issues/137)) ([0004bcf](https://github.com/cloudquery/plugin-sdk-python/commit/0004bcf94e40db4587b330125609db9f7849cf75))
+* **deps:** Update dependency grpcio-tools to v1.62.0 ([#138](https://github.com/cloudquery/plugin-sdk-python/issues/138)) ([0f9a10d](https://github.com/cloudquery/plugin-sdk-python/commit/0f9a10dab6bcb939c698c374f68af931606d618d))
+* **deps:** Update dependency MarkupSafe to v2.1.5 ([#131](https://github.com/cloudquery/plugin-sdk-python/issues/131)) ([289a7bd](https://github.com/cloudquery/plugin-sdk-python/commit/289a7bddf664af292ae048c72e42e595b9f45c59))
+* **deps:** Update dependency numpy to v1.26.4 ([#132](https://github.com/cloudquery/plugin-sdk-python/issues/132)) ([ce27605](https://github.com/cloudquery/plugin-sdk-python/commit/ce276058895488c1b3a81fef89115479c95ea530))
+* **deps:** Update dependency pandas to v2.2.1 ([#134](https://github.com/cloudquery/plugin-sdk-python/issues/134)) ([b973bf8](https://github.com/cloudquery/plugin-sdk-python/commit/b973bf8ba16ca8a9bab6c5eea4b56aa2158d6c76))
+* **deps:** Update dependency protobuf to v4.25.3 ([#135](https://github.com/cloudquery/plugin-sdk-python/issues/135)) ([8e6c12e](https://github.com/cloudquery/plugin-sdk-python/commit/8e6c12eafa9464a18cf85b27ceed6bbda5f6ca64))
+
 ## [0.1.14](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.13...v0.1.14) (2024-02-12)
 
 
