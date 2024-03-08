@@ -145,14 +145,14 @@ class Scheduler:
                     resources=total_resources,
                     depth=depth,
                 )
-        except Exception:
+        except Exception as e:
             self._logger.error(
                 "table resolver finished with error",
                 client_id=client.id(),
                 table=resolver.table.name,
                 resources=total_resources,
                 depth=depth,
-                exc_info=True,
+                exc_info=e,
             )
         finally:
             res.put(TableResolverFinished())
