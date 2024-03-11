@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.16](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.15...v0.1.16) (2024-03-11)
+
+
+### Bug Fixes
+
+* Exception Handling ([#141](https://github.com/cloudquery/plugin-sdk-python/issues/141)) ([afba5db](https://github.com/cloudquery/plugin-sdk-python/commit/afba5db9a8c536983c99e3b43da4a818cdbd8ff2))
+
 ## [0.1.15](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.14...v0.1.15) (2024-03-01)
 
 
