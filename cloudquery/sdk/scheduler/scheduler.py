@@ -108,13 +108,13 @@ class Scheduler:
                     resource = self.resolve_resource(
                         resolver, client, parent_item, item
                     )
-                except Exception:
+                except Exception as e:
                     self._logger.error(
                         "failed to resolve resource",
                         client_id=client.id(),
                         table=resolver.table.name,
                         depth=depth,
-                        exc_info=True,
+                        exc_info=e,
                     )
                     continue
                 res.put(SyncInsertMessage(resource.to_arrow_record()))
