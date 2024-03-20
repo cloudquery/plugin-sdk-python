@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.17](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.16...v0.1.17) (2024-03-20)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency black to v24.3.0 ([#144](https://github.com/cloudquery/plugin-sdk-python/issues/144)) ([6dd4cd1](https://github.com/cloudquery/plugin-sdk-python/commit/6dd4cd1ee912a4721b804ec9d327413678c3d23a))
+
 ## [0.1.16](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.15...v0.1.16) (2024-03-11)
 
 
