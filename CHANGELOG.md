@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.19](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.18...v0.1.19) (2024-04-01)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency packaging to v24 ([#152](https://github.com/cloudquery/plugin-sdk-python/issues/152)) ([484cd03](https://github.com/cloudquery/plugin-sdk-python/commit/484cd03b1d22e0b2321c49ea3cfd09e0b196d9bd))
+* **deps:** Update dependency pytz to v2024 ([#154](https://github.com/cloudquery/plugin-sdk-python/issues/154)) ([17081b1](https://github.com/cloudquery/plugin-sdk-python/commit/17081b157a9af4c5c9d3f3297ea08007a9f3300b))
+
 ## [0.1.18](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.17...v0.1.18) (2024-04-01)
 
 
