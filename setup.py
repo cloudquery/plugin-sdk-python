@@ -23,7 +23,7 @@ dependencies = [
     "pandas==2.2.1",
     "pluggy==1.4.0",
     "protobuf==4.25.3",
-    "pyarrow==15.0.0",
+    "pyarrow==15.0.2",
     "pytest==8.0.2",
     "python-dateutil==2.8.2",
     "pytz==2023.4",
