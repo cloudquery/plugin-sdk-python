@@ -19,7 +19,7 @@ dependencies = [
     "Jinja2==3.1.3",
     "MarkupSafe==2.1.5",
     "numpy==1.26.4",
-    "packaging==23.2",
+    "packaging==24.0",
     "pandas==2.2.1",
     "pluggy==1.4.0",
     "protobuf==4.25.3",
