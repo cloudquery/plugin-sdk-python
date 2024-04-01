@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.20](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.19...v0.1.20) (2024-04-01)
+
+
+### Bug Fixes
+
+* Revert https://github.com/cloudquery/plugin-sdk-python/pull/151 ([#157](https://github.com/cloudquery/plugin-sdk-python/issues/157)) ([e7d4547](https://github.com/cloudquery/plugin-sdk-python/commit/e7d45473f5821644e9d3557490860635883f8e73))
+
 ## [0.1.19](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.18...v0.1.19) (2024-04-01)
 
 
