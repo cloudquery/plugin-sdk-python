@@ -1,0 +1,6 @@
+* @cloudquery/cloudquery-framework
+
+requirements.txt
+setup.cfg
+.release-please-manifest.json
+CHANGELOG.md
