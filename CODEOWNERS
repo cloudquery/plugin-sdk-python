@@ -1,6 +1,6 @@
 * @cloudquery/cloudquery-framework
 
 requirements.txt
-setup.cfg
+setup.py
 .release-please-manifest.json
 CHANGELOG.md
