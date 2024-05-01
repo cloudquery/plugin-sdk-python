@@ -13,7 +13,7 @@ dependencies = [
     "cloudquery-plugin-pb==0.0.25",
     "exceptiongroup==1.2.1",
     "black==24.4.2",
-    "grpcio==1.62.1",
+    "grpcio==1.63.0",
     "grpcio-tools==1.62.1",
     "iniconfig==2.0.0",
     "Jinja2==3.1.3",
