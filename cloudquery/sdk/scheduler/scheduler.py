@@ -116,6 +116,12 @@ class Scheduler:
                         depth=depth,
                         exc_info=e,
                     )
+                    self._logger.debug(
+                        "details about resource that failed to resolve",
+                        client_id=client.id(),
+                        table=resolver.table.name,
+                        resource=item,
+                    )
                     continue
                 res.put(SyncInsertMessage(resource.to_arrow_record()))
                 for child_resolvers in resolver.child_resolvers:
