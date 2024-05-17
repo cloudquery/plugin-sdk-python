@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.23](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.22...v0.1.23) (2024-05-17)
+
+
+### Features
+
+* Log resource when exception occurs to aid debugging ([#172](https://github.com/cloudquery/plugin-sdk-python/issues/172)) ([6403290](https://github.com/cloudquery/plugin-sdk-python/commit/6403290dd15da5190e85930f2738a7d27da4c3db))
+
 ## [0.1.22](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.21...v0.1.22) (2024-05-07)
 
 
