@@ -113,6 +113,7 @@ class Scheduler:
                         "failed to resolve resource",
                         client_id=client.id(),
                         table=resolver.table.name,
+                        resource=item,
                         depth=depth,
                         exc_info=e,
                     )
