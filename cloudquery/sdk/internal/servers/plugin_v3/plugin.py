@@ -32,7 +32,9 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
         return plugin_pb2.GetSpecSchema.Response(json_schema=self._plugin.json_schema())
 
     def Init(self, request: plugin_pb2.Init.Request, context):
-        self._plugin.init(request.spec, no_connection=request.no_connection)
+        self._plugin.init(
+            sanitize_spec(request.spec), no_connection=request.no_connection
+        )
         return plugin_pb2.Init.Response()
 
     def GetTables(self, request: plugin_pb2.GetTables.Request, context):
@@ -113,3 +115,7 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
     def Close(self, request, context):
         self._plugin.close()
         return plugin_pb2.Close.Response()
+
+
+def sanitize_spec(spec=None):
+    return b"{}" if spec is None or spec == b"" or spec == b"null" else spec
