@@ -1,14 +1,12 @@
 from cloudquery.sdk.internal import memdb
+from cloudquery.sdk.internal.servers.plugin_v3 import plugin
 from cloudquery.sdk.plugin import SyncOptions
 
-
-def get_spec(spec=None):
-    return b"{}" if spec is None or spec == b"" else spec
 
 
 def test_memdb():
     p = memdb.MemDB()
-    p.init(get_spec())
+    p.init(plugin.sanitize_spec(b"null"))
     msgs = []
     for msg in p.sync(SyncOptions(tables=["*"])):
         msgs.append(msg)
