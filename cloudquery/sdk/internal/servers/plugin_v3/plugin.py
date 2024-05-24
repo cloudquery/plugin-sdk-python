@@ -32,7 +32,9 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
         return plugin_pb2.GetSpecSchema.Response(json_schema=self._plugin.json_schema())
 
     def Init(self, request: plugin_pb2.Init.Request, context):
-        self._plugin.init(sanitize_spec(request.spec), no_connection=request.no_connection)
+        self._plugin.init(
+            sanitize_spec(request.spec), no_connection=request.no_connection
+        )
         return plugin_pb2.Init.Response()
 
     def GetTables(self, request: plugin_pb2.GetTables.Request, context):
@@ -83,7 +85,7 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
         raise NotImplementedError()
 
     def Write(
-            self, request_iterator: Generator[plugin_pb2.Write.Request, None, None], context
+        self, request_iterator: Generator[plugin_pb2.Write.Request, None, None], context
     ):
         def msg_iterator() -> Generator[WriteMessage, None, None]:
             for msg in request_iterator:
