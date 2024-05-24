@@ -11,9 +11,11 @@ from dataclasses import dataclass, field
 NAME = "memdb"
 VERSION = "development"
 
+
 @dataclass
 class Spec:
     abc: str = field(default="abc")
+
 
 class MemDB(plugin.Plugin):
     def __init__(self) -> None:
