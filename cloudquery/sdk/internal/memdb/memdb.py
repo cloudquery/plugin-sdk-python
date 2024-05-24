@@ -1,13 +1,19 @@
+import json
+
 from cloudquery.sdk import plugin
 from cloudquery.sdk import message
 from cloudquery.sdk import schema
 from typing import List, Generator, Dict
 import pyarrow as pa
 from cloudquery.sdk.types import JSONType
+from dataclasses import dataclass, field
 
 NAME = "memdb"
 VERSION = "development"
 
+@dataclass
+class Spec:
+    abc: str = field(default="abc")
 
 class MemDB(plugin.Plugin):
     def __init__(self) -> None:
@@ -72,6 +78,12 @@ class MemDB(plugin.Plugin):
                 description="Test Table 2",
             ),
         }
+
+    def init(self, spec, no_connection: bool = False):
+        if no_connection:
+            return
+        self._spec_json = json.loads(spec)
+        self._spec = Spec(**self._spec_json)
 
     def get_tables(self, options: plugin.TableOptions = None) -> List[plugin.Table]:
         tables = list(self._tables.values())
