@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.24](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.23...v0.1.24) (2024-05-24)
+
+
+### Bug Fixes
+
+* Set spec to `b"{}"` on empty input ([#174](https://github.com/cloudquery/plugin-sdk-python/issues/174)) ([3f46922](https://github.com/cloudquery/plugin-sdk-python/commit/3f469227003f0df101df36724bfc6019411b9bf0))
+
 ## [0.1.23](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.22...v0.1.23) (2024-05-17)
 
 
