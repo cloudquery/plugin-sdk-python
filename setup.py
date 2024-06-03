@@ -25,7 +25,7 @@ dependencies = [
     "protobuf==5.27.0",
     "pyarrow==15.0.2",
     "pytest==8.2.1",
-    "python-dateutil==2.9.0.post0",
+    "python-dateutil==2.8.2",
     "pytz==2024.1",
     "six==1.16.0",
     "structlog==23.3.0",
