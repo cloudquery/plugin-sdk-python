@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.26](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.25...v0.1.26) (2024-06-03)
+
+
+### Bug Fixes
+
+* Revert "fix(deps): Update dependency python-dateutil to v2.9.0.post0 ([#182](https://github.com/cloudquery/plugin-sdk-python/issues/182))" ([#186](https://github.com/cloudquery/plugin-sdk-python/issues/186)) ([2d45018](https://github.com/cloudquery/plugin-sdk-python/commit/2d450180c7843535a85ec6864893a23ac347876a))
+
 ## [0.1.25](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.24...v0.1.25) (2024-06-02)
 
 
