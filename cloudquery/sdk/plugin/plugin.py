@@ -93,5 +93,8 @@ class Plugin:
     def write(self, writer: Generator[message.WriteMessage, None, None]) -> None:
         raise NotImplementedError()
 
+    def read(self, reader: Generator[message.ReadMessage, None, None]) -> None:
+        raise NotImplementedError()
+
     def close(self) -> None:
         raise NotImplementedError()

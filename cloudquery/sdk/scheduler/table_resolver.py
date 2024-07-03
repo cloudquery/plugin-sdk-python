@@ -2,7 +2,6 @@ from cloudquery.sdk.schema.table import Table
 from cloudquery.sdk.schema import Resource
 from typing import Any, Generator, List, Optional
 
-
 class Client:
     def id(self) -> str:
         raise NotImplementedError()
@@ -14,6 +13,7 @@ class TableResolver:
             child_resolvers = []
         self._table = table
         self._child_resolvers = child_resolvers
+        self.state_client = None
 
     @property
     def table(self) -> Table:
@@ -22,6 +22,9 @@ class TableResolver:
     @property
     def child_resolvers(self):
         return self._child_resolvers
+
+    def set_state_client(self, state_client) -> None:
+        self.state_client = state_client
 
     def multiplex(self, client: Client) -> List[Client]:
         return [client]

@@ -10,6 +10,7 @@ from cloudquery.sdk.message import (
     SyncMigrateTableMessage,
 )
 from cloudquery.sdk.schema import Resource
+from cloudquery.sdk.stateclient.stateclient import StateClient
 from .table_resolver import TableResolver, Client
 
 QUEUE_PER_WORKER = 100
@@ -64,6 +65,10 @@ class Scheduler:
             current_depth_queue_size = (
                 current_depth_queue_size // 2 if current_depth_queue_size > 1 else 1
             )
+        self._state_client: StateClient = None
+
+    def set_state_client(self, state_client: StateClient):
+        self._state_client = state_client
 
     def shutdown(self):
         for pool in self._pools:
@@ -181,6 +186,12 @@ class Scheduler:
     def sync(
         self, client, resolvers: List[TableResolver], deterministic_cq_id=False
     ) -> Generator[SyncMessage, None, None]:
+        
+        # N.B. it's crucial that the state client is the last resolver, because
+        # the other resolvers will set keys that need to be written later by it
+        if self._state_client and self._state_client.get_resolver():
+            resolvers.append(self._state_client.get_resolver())
+
         res = queue.Queue()
         yield from self._send_migrate_table_messages(resolvers)
 

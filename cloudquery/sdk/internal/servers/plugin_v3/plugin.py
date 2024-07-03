@@ -11,6 +11,8 @@ from cloudquery.sdk.message import (
     WriteMigrateTableMessage,
     WriteMessage,
     WriteDeleteStale,
+    ReadMessage,
+    ReadInsertMessage,
 )
 from cloudquery.sdk.plugin.plugin import Plugin, SyncOptions, TableOptions
 from cloudquery.sdk.schema import tables_to_arrow_schemas, Table
@@ -63,7 +65,7 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
             skip_dependent_tables=request.skip_dependent_tables,
             skip_tables=request.skip_tables,
             tables=request.tables,
-            backend_options=None,
+            backend_options=request.backend, # TODO: shouldn't this be "backend_options"? I put "backend" based on live breakpoint
         )
 
         for msg in self._plugin.sync(options):
@@ -81,8 +83,22 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
                 # unknown sync message type
                 raise NotImplementedError()
 
-    def Read(self, request, context):
-        raise NotImplementedError()
+    def Read(self, plugin: Plugin, request: plugin_pb2.Read.Request):
+        raise NotImplementedError("Read is not implemented")
+        breakpoint()        
+        def msg_iterator() -> Generator[ReadMessage, None, None]:
+            for msg in request_iterator:
+                field = msg.WhichOneof("message")
+                if field == "insert":
+                    yield WriteInsertMessage(
+                        record=arrow.new_record_from_bytes(msg.insert.record)
+                    )
+                else:
+                    raise NotImplementedError(f"unknown write message type {field}")
+
+        breakpoint()
+        # plugin.read(msg_iterator())
+        return plugin_pb2.Read.Response()
 
     def Write(
         self, request_iterator: Generator[plugin_pb2.Write.Request, None, None], context
