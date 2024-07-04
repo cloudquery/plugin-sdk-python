@@ -1,4 +1,6 @@
 import logging
+
+import grpc
 import sys
 import os
 from abc import ABC, abstractmethod
@@ -10,7 +12,7 @@ from cloudquery.sdk import schema, message
 from cloudquery.sdk.internal.servers.plugin_v3.plugin import PluginServicer
 from cloudquery.sdk.plugin.plugin import BackendOptions, Plugin
 from cloudquery.sdk.scheduler.table_resolver import TableResolver
-from cloudquery.plugin_v3 import plugin_pb2, arrow
+from cloudquery.plugin_v3 import plugin_pb2, plugin_pb2_grpc, arrow
 
 _IS_WINDOWS = sys.platform == "win32"
 
@@ -100,7 +102,7 @@ class StateClientBuilder:
         if not backend_options or not backend_options.table_name:
             return NoOpStateClient()
         
-        return StateClientImpl(plugin, backend_options.table_name, backend_options)
+        return StateClientImpl(backend_options.connection, backend_options.table_name)
 
 class DefaultLoggerArgs:
     def __init__(self):
@@ -108,7 +110,14 @@ class DefaultLoggerArgs:
         self.log_format = "text"
 
 class StateClientImpl:
-    def __init__(self, plugin, table_name, options):
+    def __init__(self, connection: str, table_name: str):
+        # make a gRPC connection
+        # TODO
+        with grpc.insecure_channel(connection) as channel:
+            backend_plugin = plugin_pb2_grpc.PluginStub(channel)
+            result = backend_plugin.Read(plugin_pb2.Read.Request(table=arrow.schema_to_bytes(table(table_name).to_arrow_schema())))
+            breakpoint()
+
         self.table_name = table_name
         self.options = options
         self.logger = get_logger(DefaultLoggerArgs())

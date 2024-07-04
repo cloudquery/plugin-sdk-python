@@ -85,7 +85,7 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
 
     def Read(self, plugin: Plugin, request: plugin_pb2.Read.Request):
         raise NotImplementedError("Read is not implemented")
-        breakpoint()        
+        breakpoint()
         def msg_iterator() -> Generator[ReadMessage, None, None]:
             for msg in request_iterator:
                 field = msg.WhichOneof("message")
