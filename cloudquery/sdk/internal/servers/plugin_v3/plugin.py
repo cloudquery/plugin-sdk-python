@@ -11,8 +11,6 @@ from cloudquery.sdk.message import (
     WriteMigrateTableMessage,
     WriteMessage,
     WriteDeleteStale,
-    ReadMessage,
-    ReadInsertMessage,
 )
 from cloudquery.sdk.plugin.plugin import Plugin, SyncOptions, TableOptions
 from cloudquery.sdk.schema import tables_to_arrow_schemas, Table
@@ -83,8 +81,8 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
                 # unknown sync message type
                 raise NotImplementedError()
 
-    def Read(self, plugin: Plugin, request: plugin_pb2.Read.Request):
-        raise NotImplementedError("Read is not implemented")
+    def Read(self):
+        raise NotImplementedError()
 
     def Write(
         self, request_iterator: Generator[plugin_pb2.Write.Request, None, None], context
