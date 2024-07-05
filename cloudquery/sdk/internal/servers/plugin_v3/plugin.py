@@ -81,7 +81,7 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
                 # unknown sync message type
                 raise NotImplementedError()
 
-    def Read(self):
+    def Read(self, request, context):
         raise NotImplementedError()
 
     def Write(

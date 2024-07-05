@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List, Generator
+from typing import List, Generator
 
 from cloudquery.sdk import message
 from cloudquery.sdk.schema import Table
