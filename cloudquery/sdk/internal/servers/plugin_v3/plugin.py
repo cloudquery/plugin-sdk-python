@@ -63,7 +63,7 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
             skip_dependent_tables=request.skip_dependent_tables,
             skip_tables=request.skip_tables,
             tables=request.tables,
-            backend_options=None,
+            backend_options=request.backend,
         )
 
         for msg in self._plugin.sync(options):
