@@ -10,6 +10,7 @@ from cloudquery.sdk.message import (
     SyncMigrateTableMessage,
 )
 from cloudquery.sdk.schema import Resource
+from cloudquery.sdk.stateclient.stateclient import StateClient
 from .table_resolver import TableResolver, Client
 
 QUEUE_PER_WORKER = 100
@@ -35,6 +36,7 @@ class Scheduler:
     def __init__(
         self, concurrency: int, queue_size: int = 0, max_depth: int = 3, logger=None
     ):
+        self._post_sync_hook = lambda: None
         self._queue = queue.Queue()
         self._max_depth = max_depth
         if logger is None:
@@ -201,6 +203,8 @@ class Scheduler:
                     break
                 continue
             yield message
+
+        self._post_sync_hook()
         thread.shutdown(wait=True)
 
     def _send_migrate_table_messages(
@@ -210,3 +214,18 @@ class Scheduler:
             yield SyncMigrateTableMessage(table=resolver.table.to_arrow_schema())
             if resolver.child_resolvers:
                 yield from self._send_migrate_table_messages(resolver.child_resolvers)
+
+    def set_post_sync_hook(self, fn):
+        """
+        Use this to set a function that will be called after the sync is finished,
+        a la `defer fn()` in Go (but for a single function, rather than a stack).
+
+        This is necessary because plugins use this pattern on their sync method:
+
+        ```
+        return self._scheduler.sync(...)
+        ```
+
+        So if a plugin has a `state_client`, there's nowhere to call the flush method.
+        """
+        self._post_sync_hook = fn
