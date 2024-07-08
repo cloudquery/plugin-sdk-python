@@ -28,7 +28,7 @@ dependencies = [
     "python-dateutil==2.9.0.post0",
     "pytz==2024.1",
     "six==1.16.0",
-    "structlog==23.3.0",
+    "structlog==24.2.0",
     "tomli==2.0.1",
     "tzdata==2024.1",
 ]
