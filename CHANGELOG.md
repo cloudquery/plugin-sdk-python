@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.29](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.28...v0.1.29) (2024-07-11)
+
+
+### Bug Fixes
+
+* Relax python-dateutil version requirement ([#203](https://github.com/cloudquery/plugin-sdk-python/issues/203)) ([dec6cfe](https://github.com/cloudquery/plugin-sdk-python/commit/dec6cfe497d5c8912c8db8cc0365e4fe346e4ae2))
+
 ## [0.1.28](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.27...v0.1.28) (2024-07-08)
 
 
