@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.31](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.30...v0.1.31) (2024-07-30)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.31 ([#208](https://github.com/cloudquery/plugin-sdk-python/issues/208)) ([f4f2f6d](https://github.com/cloudquery/plugin-sdk-python/commit/f4f2f6ddde89642cdd83033ed1acc98c2d83e113))
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.32 ([#210](https://github.com/cloudquery/plugin-sdk-python/issues/210)) ([4ee3f53](https://github.com/cloudquery/plugin-sdk-python/commit/4ee3f53c0b62f67a5141c31674d65fc6ea6fa34d))
+
 ## [0.1.30](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.29...v0.1.30) (2024-07-17)
 
 
