@@ -24,7 +24,7 @@ dependencies = [
     "pluggy==1.5.0",
     "protobuf==5.27.3",
     "pyarrow==16.1.0",
-    "pytest==8.2.2",
+    "pytest==8.3.2",
     "python-dateutil>=2.8.1",
     "pytz==2024.1",
     "six==1.16.0",
