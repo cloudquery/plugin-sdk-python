@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.32](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.31...v0.1.32) (2024-08-01)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.33 ([#220](https://github.com/cloudquery/plugin-sdk-python/issues/220)) ([33ad65f](https://github.com/cloudquery/plugin-sdk-python/commit/33ad65f9796138a1603dadb38820dc5ab4f25c90))
+* **deps:** Update dependency exceptiongroup to v1.2.2 ([#211](https://github.com/cloudquery/plugin-sdk-python/issues/211)) ([ea7f54b](https://github.com/cloudquery/plugin-sdk-python/commit/ea7f54b7f9576e078254e51d56d7cbd2c0e30b70))
+* **deps:** Update dependency grpcio to v1.65.2 ([#215](https://github.com/cloudquery/plugin-sdk-python/issues/215)) ([0936749](https://github.com/cloudquery/plugin-sdk-python/commit/0936749c906626e7b6c26675e60301002b00673c))
+* **deps:** Update dependency grpcio-tools to v1.65.2 ([#216](https://github.com/cloudquery/plugin-sdk-python/issues/216)) ([c4887ee](https://github.com/cloudquery/plugin-sdk-python/commit/c4887ee4d3ce9b44cbf05cbf4e0fb3717c47b898))
+* **deps:** Update dependency numpy to v2.0.1 ([#212](https://github.com/cloudquery/plugin-sdk-python/issues/212)) ([f460c5b](https://github.com/cloudquery/plugin-sdk-python/commit/f460c5b104a7ae0295c9d31daccdb91e9698936d))
+* **deps:** Update dependency protobuf to v5.27.3 ([#214](https://github.com/cloudquery/plugin-sdk-python/issues/214)) ([1f50a0c](https://github.com/cloudquery/plugin-sdk-python/commit/1f50a0c6c592b3d4bb8d9bfde075bfee23347def))
+* **deps:** Update dependency pyarrow to v17 ([#219](https://github.com/cloudquery/plugin-sdk-python/issues/219)) ([766bba9](https://github.com/cloudquery/plugin-sdk-python/commit/766bba98245f8aebd79c5e093fe9697a8acbbbf3))
+* **deps:** Update dependency pytest to v8.3.2 ([#217](https://github.com/cloudquery/plugin-sdk-python/issues/217)) ([5c1d110](https://github.com/cloudquery/plugin-sdk-python/commit/5c1d11079645ba1e83304ab506c20c9a502cccfd))
+* **deps:** Update dependency structlog to v24.4.0 ([#218](https://github.com/cloudquery/plugin-sdk-python/issues/218)) ([f320480](https://github.com/cloudquery/plugin-sdk-python/commit/f320480797fc1d4edac7df592616e29cd50a2aba))
+
 ## [0.1.31](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.30...v0.1.31) (2024-07-30)
 
 
