@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.33](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.32...v0.1.33) (2024-08-14)
+
+
+### Bug Fixes
+
+* dont error when field has no metadata. ([#221](https://github.com/cloudquery/plugin-sdk-python/issues/221)) ([aac99a9](https://github.com/cloudquery/plugin-sdk-python/commit/aac99a967d0e1a089794f5c53aee4cdd4f6d80cd))
+
 ## [0.1.32](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.31...v0.1.32) (2024-08-01)
 
 
