@@ -59,7 +59,7 @@ class Column:
 
     @staticmethod
     def from_arrow_field(field: pa.Field) -> Column:
-        metadata = field.metadata
+        metadata = field.metadata or {}
         primary_key = metadata.get(arrow.METADATA_PRIMARY_KEY) == arrow.METADATA_TRUE
         unique = metadata.get(arrow.METADATA_UNIQUE) == arrow.METADATA_TRUE
         incremental_key = (
