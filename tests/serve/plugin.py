@@ -73,6 +73,7 @@ def test_plugin_serve():
         cmd.stop()
         pool.shutdown()
 
+
 def test_plugin_read():
     p = MemDB()
     sample_record_1 = pa.RecordBatch.from_arrays(
@@ -109,7 +110,9 @@ def test_plugin_read():
             response = stub.Init(plugin_pb2.Init.Request(spec=b""))
             assert response is not None
 
-            request = plugin_pb2.Read.Request(table=arrow.schema_to_bytes(test_table.to_arrow_schema()))
+            request = plugin_pb2.Read.Request(
+                table=arrow.schema_to_bytes(test_table.to_arrow_schema())
+            )
             reader_iterator = stub.Read(request)
 
             output_records = []
@@ -122,6 +125,7 @@ def test_plugin_read():
     finally:
         cmd.stop()
         pool.shutdown()
+
 
 def test_plugin_package():
     p = MemDB()

@@ -81,11 +81,12 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
                 # unknown sync message type
                 raise NotImplementedError()
 
-    def Read(self, request: plugin_pb2.Read.Request, context) -> Generator[plugin_pb2.Read.Response, None, None]:
+    def Read(
+        self, request: plugin_pb2.Read.Request, context
+    ) -> Generator[plugin_pb2.Read.Response, None, None]:
         for msg in self._plugin.read(request):
             buf = arrow.record_to_bytes(msg.record)
             yield plugin_pb2.Read.Response(record=buf)
-
 
     def Write(
         self, request_iterator: Generator[plugin_pb2.Write.Request, None, None], context
