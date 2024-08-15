@@ -73,6 +73,55 @@ def test_plugin_serve():
         cmd.stop()
         pool.shutdown()
 
+def test_plugin_read():
+    p = MemDB()
+    sample_record_1 = pa.RecordBatch.from_arrays(
+        [
+            pa.array([1, 2, 3]),
+            pa.array(["a", "b", "c"]),
+        ],
+        schema=test_table.to_arrow_schema(),
+    )
+    sample_record_2 = pa.RecordBatch.from_arrays(
+        [
+            pa.array([2, 3, 4]),
+            pa.array(["b", "c", "d"]),
+        ],
+        schema=test_table.to_arrow_schema(),
+    )
+    p._db["test_1"] = sample_record_1
+    p._db["test_2"] = sample_record_2
+
+    cmd = serve.PluginCommand(p)
+    port = random.randint(5000, 50000)
+    pool = futures.ThreadPoolExecutor(max_workers=1)
+    pool.submit(cmd.run, ["serve", "--address", f"[::]:{port}"])
+    time.sleep(1)
+    try:
+        with grpc.insecure_channel(f"localhost:{port}") as channel:
+            stub = plugin_pb2_grpc.PluginStub(channel)
+            response = stub.GetName(plugin_pb2.GetName.Request())
+            assert response.name == "memdb"
+
+            response = stub.GetVersion(plugin_pb2.GetVersion.Request())
+            assert response.version == "development"
+
+            response = stub.Init(plugin_pb2.Init.Request(spec=b""))
+            assert response is not None
+
+            request = plugin_pb2.Read.Request(table=arrow.schema_to_bytes(test_table.to_arrow_schema()))
+            reader_iterator = stub.Read(request)
+
+            output_records = []
+            for msg in reader_iterator:
+                output_records.append(arrow.new_record_from_bytes(msg.record))
+
+            assert len(output_records) == 2
+            assert output_records[0].equals(sample_record_1)
+            assert output_records[1].equals(sample_record_2)
+    finally:
+        cmd.stop()
+        pool.shutdown()
 
 def test_plugin_package():
     p = MemDB()

@@ -5,6 +5,7 @@ from cloudquery.sdk import message
 from cloudquery.sdk import schema
 from typing import List, Generator, Dict
 import pyarrow as pa
+from cloudquery.sdk.schema.table import Table
 from cloudquery.sdk.types import JSONType
 from dataclasses import dataclass, field
 
@@ -108,6 +109,10 @@ class MemDB(plugin.Plugin):
                 self._db[table.name] = msg.record
             else:
                 raise NotImplementedError(f"Unknown message type {type(msg)}")
+
+    def read(self, table: Table) -> Generator[message.ReadMessage, None, None]:
+        for table, record in self._db.items():
+            yield message.ReadMessage(record)
 
     def close(self) -> None:
         self._db = {}
