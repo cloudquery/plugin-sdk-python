@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.34](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.33...v0.1.34) (2024-08-21)
+
+
+### Features
+
+* Enable destination plugins to do reads (for backend) ([#223](https://github.com/cloudquery/plugin-sdk-python/issues/223)) ([829f552](https://github.com/cloudquery/plugin-sdk-python/commit/829f55217839c29128bf839ee556b1679ed21b59))
+
 ## [0.1.33](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.32...v0.1.33) (2024-08-14)
 
 
