@@ -55,7 +55,9 @@ class Column:
                 arrow.METADATA_TRUE if self.incremental_key else arrow.METADATA_FALSE
             ),
         }
-        return pa.field(self.name, self.type, metadata=metadata)
+        return pa.field(
+            self.name, self.type, metadata=metadata, nullable=not self.not_null
+        )
 
     @staticmethod
     def from_arrow_field(field: pa.Field) -> Column:

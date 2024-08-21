@@ -1,6 +1,7 @@
 import json
 import os
 import random
+from uuid import UUID
 import grpc
 import time
 import pyarrow as pa
@@ -9,12 +10,16 @@ from cloudquery.sdk.schema import Table, Column
 from cloudquery.sdk import serve
 from cloudquery.plugin_v3 import plugin_pb2_grpc, plugin_pb2, arrow
 from cloudquery.sdk.internal.memdb import MemDB
+from cloudquery.sdk.types.json import JSONType
+from cloudquery.sdk.types.uuid import UUIDType
 
 test_table = Table(
     "test",
     [
         Column("id", pa.int64()),
         Column("name", pa.string()),
+        Column("json", JSONType()),
+        Column("uuid", UUIDType()),
     ],
 )
 
@@ -47,6 +52,15 @@ def test_plugin_serve():
                     [
                         pa.array([1, 2, 3]),
                         pa.array(["a", "b", "c"]),
+                        pa.array([None, b"{}", b'{"a":null}']),
+                        pa.array(
+                            [
+                                None,
+                                UUID("550e8400-e29b-41d4-a716-446655440000").bytes,
+                                UUID("123e4567-e89b-12d3-a456-426614174000").bytes,
+                            ],
+                            type=pa.binary(16),
+                        ),
                     ],
                     schema=test_table.to_arrow_schema(),
                 )
@@ -80,6 +94,15 @@ def test_plugin_read():
         [
             pa.array([1, 2, 3]),
             pa.array(["a", "b", "c"]),
+            pa.array([None, b"{}", b'{"a":null}']),
+            pa.array(
+                [
+                    None,
+                    UUID("550e8400-e29b-41d4-a716-446655440000").bytes,
+                    UUID("123e4567-e89b-12d3-a456-426614174000").bytes,
+                ],
+                type=pa.binary(16),
+            ),
         ],
         schema=test_table.to_arrow_schema(),
     )
@@ -87,6 +110,15 @@ def test_plugin_read():
         [
             pa.array([2, 3, 4]),
             pa.array(["b", "c", "d"]),
+            pa.array([b'""', b'{"a":true}', b'{"b":1}']),
+            pa.array(
+                [
+                    UUID("9bba4c2a-1a37-4fbe-b489-6b40303a8a25").bytes,
+                    None,
+                    UUID("3fa85f64-5717-4562-b3fc-2c963f66afa6").bytes,
+                ],
+                type=pa.binary(16),
+            ),
         ],
         schema=test_table.to_arrow_schema(),
     )

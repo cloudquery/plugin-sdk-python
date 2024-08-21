@@ -12,8 +12,9 @@ class WriteInsertMessage(WriteMessage):
 
 
 class WriteMigrateTableMessage(WriteMessage):
-    def __init__(self, table: Table):
+    def __init__(self, table: Table, migrate_force: bool):
         self.table = table
+        self.migrate_force = migrate_force
 
 
 class WriteDeleteStale(WriteMessage):

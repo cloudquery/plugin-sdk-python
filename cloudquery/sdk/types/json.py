@@ -21,3 +21,6 @@ class JSONType(pa.ExtensionType):
         # return an instance of this subclass given the serialized
         # metadata.
         return JSONType()
+
+
+pa.register_extension_type(JSONType())
