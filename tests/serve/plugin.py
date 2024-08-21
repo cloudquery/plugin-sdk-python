@@ -1,6 +1,7 @@
 import json
 import os
 import random
+from uuid import UUID
 import grpc
 import time
 import pyarrow as pa
@@ -9,12 +10,16 @@ from cloudquery.sdk.schema import Table, Column
 from cloudquery.sdk import serve
 from cloudquery.plugin_v3 import plugin_pb2_grpc, plugin_pb2, arrow
 from cloudquery.sdk.internal.memdb import MemDB
+from cloudquery.sdk.types.json import JSONType
+from cloudquery.sdk.types.uuid import UUIDType
 
 test_table = Table(
     "test",
     [
         Column("id", pa.int64()),
         Column("name", pa.string()),
+        Column("json", JSONType()),
+        Column("uuid", UUIDType()),
     ],
 )
 
@@ -47,6 +52,15 @@ def test_plugin_serve():
                     [
                         pa.array([1, 2, 3]),
                         pa.array(["a", "b", "c"]),
+                        pa.array([None, b"{}", b'{"a":null}']),
+                        pa.array(
+                            [
+                                None,
+                                UUID("550e8400-e29b-41d4-a716-446655440000").bytes,
+                                UUID("123e4567-e89b-12d3-a456-426614174000").bytes,
+                            ],
+                            type=pa.binary(16),
+                        ),
                     ],
                     schema=test_table.to_arrow_schema(),
                 )
@@ -69,6 +83,77 @@ def test_plugin_serve():
                     rec = arrow.new_record_from_bytes(msg.insert.record)
                     total_records += 1
             assert total_records == 1
+    finally:
+        cmd.stop()
+        pool.shutdown()
+
+
+def test_plugin_read():
+    p = MemDB()
+    sample_record_1 = pa.RecordBatch.from_arrays(
+        [
+            pa.array([1, 2, 3]),
+            pa.array(["a", "b", "c"]),
+            pa.array([None, b"{}", b'{"a":null}']),
+            pa.array(
+                [
+                    None,
+                    UUID("550e8400-e29b-41d4-a716-446655440000").bytes,
+                    UUID("123e4567-e89b-12d3-a456-426614174000").bytes,
+                ],
+                type=pa.binary(16),
+            ),
+        ],
+        schema=test_table.to_arrow_schema(),
+    )
+    sample_record_2 = pa.RecordBatch.from_arrays(
+        [
+            pa.array([2, 3, 4]),
+            pa.array(["b", "c", "d"]),
+            pa.array([b'""', b'{"a":true}', b'{"b":1}']),
+            pa.array(
+                [
+                    UUID("9bba4c2a-1a37-4fbe-b489-6b40303a8a25").bytes,
+                    None,
+                    UUID("3fa85f64-5717-4562-b3fc-2c963f66afa6").bytes,
+                ],
+                type=pa.binary(16),
+            ),
+        ],
+        schema=test_table.to_arrow_schema(),
+    )
+    p._db["test_1"] = sample_record_1
+    p._db["test_2"] = sample_record_2
+
+    cmd = serve.PluginCommand(p)
+    port = random.randint(5000, 50000)
+    pool = futures.ThreadPoolExecutor(max_workers=1)
+    pool.submit(cmd.run, ["serve", "--address", f"[::]:{port}"])
+    time.sleep(1)
+    try:
+        with grpc.insecure_channel(f"localhost:{port}") as channel:
+            stub = plugin_pb2_grpc.PluginStub(channel)
+            response = stub.GetName(plugin_pb2.GetName.Request())
+            assert response.name == "memdb"
+
+            response = stub.GetVersion(plugin_pb2.GetVersion.Request())
+            assert response.version == "development"
+
+            response = stub.Init(plugin_pb2.Init.Request(spec=b""))
+            assert response is not None
+
+            request = plugin_pb2.Read.Request(
+                table=arrow.schema_to_bytes(test_table.to_arrow_schema())
+            )
+            reader_iterator = stub.Read(request)
+
+            output_records = []
+            for msg in reader_iterator:
+                output_records.append(arrow.new_record_from_bytes(msg.record))
+
+            assert len(output_records) == 2
+            assert output_records[0].equals(sample_record_1)
+            assert output_records[1].equals(sample_record_2)
     finally:
         cmd.stop()
         pool.shutdown()

@@ -81,8 +81,14 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
                 # unknown sync message type
                 raise NotImplementedError()
 
-    def Read(self, request, context):
-        raise NotImplementedError()
+    def Read(
+        self, request: plugin_pb2.Read.Request, context
+    ) -> Generator[plugin_pb2.Read.Response, None, None]:
+        schema = arrow.new_schema_from_bytes(request.table)
+        table = Table.from_arrow_schema(schema)
+        for msg in self._plugin.read(table):
+            buf = arrow.record_to_bytes(msg.record)
+            yield plugin_pb2.Read.Response(record=buf)
 
     def Write(
         self, request_iterator: Generator[plugin_pb2.Write.Request, None, None], context
@@ -93,7 +99,9 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
                 if field == "migrate_table":
                     sc = arrow.new_schema_from_bytes(msg.migrate_table.table)
                     table = Table.from_arrow_schema(sc)
-                    yield WriteMigrateTableMessage(table=table)
+                    yield WriteMigrateTableMessage(
+                        table=table, migrate_force=msg.migrate_table.migrate_force
+                    )
                 elif field == "insert":
                     yield WriteInsertMessage(
                         record=arrow.new_record_from_bytes(msg.insert.record)

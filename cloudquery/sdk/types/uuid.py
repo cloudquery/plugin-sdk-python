@@ -23,3 +23,6 @@ class UUIDType(pa.ExtensionType):
         # return an instance of this subclass given the serialized
         # metadata.
         return UUIDType()
+
+
+pa.register_extension_type(UUIDType())
