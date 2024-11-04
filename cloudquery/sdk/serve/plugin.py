@@ -329,7 +329,7 @@ class PluginCommand:
                 err = (
                     ""
                     if result.stderr is None
-                    else result.stderr.decode("ascii").strip()
+                    else result.stderr.decode("utf-8").strip()
                 )
                 raise ChildProcessError("Unable to run Docker command: %s" % err)
 
