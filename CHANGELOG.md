@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.38](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.37...v0.1.38) (2024-12-02)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.38 ([#260](https://github.com/cloudquery/plugin-sdk-python/issues/260)) ([10d7f2c](https://github.com/cloudquery/plugin-sdk-python/commit/10d7f2ccd0871f23a3942cea87c90a3a53037666))
+* **deps:** Update dependency grpcio to v1.68.0 ([#255](https://github.com/cloudquery/plugin-sdk-python/issues/255)) ([83ce2a3](https://github.com/cloudquery/plugin-sdk-python/commit/83ce2a399bb19570a663d622a90dafe0a112d736))
+* **deps:** Update dependency grpcio to v1.68.1 ([#261](https://github.com/cloudquery/plugin-sdk-python/issues/261)) ([eb06ffb](https://github.com/cloudquery/plugin-sdk-python/commit/eb06ffb192964670d0bda0b7dfa24b1ef0ddb255))
+* **deps:** Update dependency grpcio-tools to v1.68.0 ([#257](https://github.com/cloudquery/plugin-sdk-python/issues/257)) ([b931c99](https://github.com/cloudquery/plugin-sdk-python/commit/b931c9914b42808a672b976b72fe6cd0937c8a40))
+* **deps:** Update dependency grpcio-tools to v1.68.1 ([#262](https://github.com/cloudquery/plugin-sdk-python/issues/262)) ([4e8584c](https://github.com/cloudquery/plugin-sdk-python/commit/4e8584c7556a50d0bd53740e4fa2a84d79ce08a0))
+* **deps:** Update dependency numpy to v2.1.3 ([#254](https://github.com/cloudquery/plugin-sdk-python/issues/254)) ([c0a87e6](https://github.com/cloudquery/plugin-sdk-python/commit/c0a87e627bc12802122304a104516ea89146a338))
+* **deps:** Update dependency packaging to v24.2 ([#258](https://github.com/cloudquery/plugin-sdk-python/issues/258)) ([d323a09](https://github.com/cloudquery/plugin-sdk-python/commit/d323a09194320d348ef384c23ec502b151499007))
+* **deps:** Update dependency protobuf to v5.29.0 ([#264](https://github.com/cloudquery/plugin-sdk-python/issues/264)) ([dbe63d7](https://github.com/cloudquery/plugin-sdk-python/commit/dbe63d74966ea5669ce2cdb21048a3cddf2ee44e))
+* **deps:** Update dependency pyarrow to v18.1.0 ([#265](https://github.com/cloudquery/plugin-sdk-python/issues/265)) ([cbcfd95](https://github.com/cloudquery/plugin-sdk-python/commit/cbcfd9599f4179de861330eea519087f47d65839))
+* **deps:** Update dependency pytest to v8.3.4 ([#263](https://github.com/cloudquery/plugin-sdk-python/issues/263)) ([b6882f0](https://github.com/cloudquery/plugin-sdk-python/commit/b6882f0eee74a47d267a83689122e67934074da5))
+* **deps:** Update dependency tomli to v2.1.0 ([#259](https://github.com/cloudquery/plugin-sdk-python/issues/259)) ([6651357](https://github.com/cloudquery/plugin-sdk-python/commit/6651357263d89ac7ac50bd054563c77eb196187e))
+* **deps:** Update dependency tomli to v2.2.1 ([#266](https://github.com/cloudquery/plugin-sdk-python/issues/266)) ([89c49c0](https://github.com/cloudquery/plugin-sdk-python/commit/89c49c04cc4c413fa5668466318b2c9ac0a68fb5))
+
 ## [0.1.37](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.36...v0.1.37) (2024-11-04)
 
 
