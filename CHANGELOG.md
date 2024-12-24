@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.39](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.38...v0.1.39) (2024-12-24)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency Jinja2 to v3.1.5 ([#267](https://github.com/cloudquery/plugin-sdk-python/issues/267)) ([fd445a1](https://github.com/cloudquery/plugin-sdk-python/commit/fd445a1301ee59f24373535a63f16184febfe141))
+
 ## [0.1.38](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.37...v0.1.38) (2024-12-02)
 
 
