@@ -27,7 +27,7 @@ dependencies = [
     "pytest==8.3.4",
     "python-dateutil>=2.8.1",
     "pytz==2024.2",
-    "six==1.16.0",
+    "six==1.17.0",
     "structlog==24.4.0",
     "tomli==2.2.1",
     "tzdata==2024.2",
