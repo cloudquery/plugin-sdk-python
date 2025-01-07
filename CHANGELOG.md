@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.40](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.39...v0.1.40) (2025-01-07)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.39 ([#273](https://github.com/cloudquery/plugin-sdk-python/issues/273)) ([d7b7590](https://github.com/cloudquery/plugin-sdk-python/commit/d7b7590168a8109d26ec9170e8ac66586bb827db))
+* **deps:** Update dependency numpy to v2.2.1 ([#270](https://github.com/cloudquery/plugin-sdk-python/issues/270)) ([0077c26](https://github.com/cloudquery/plugin-sdk-python/commit/0077c2683235f06ceadb76d487c7d784033eed3e))
+* **deps:** Update dependency protobuf to v5.29.2 ([#269](https://github.com/cloudquery/plugin-sdk-python/issues/269)) ([6a1e021](https://github.com/cloudquery/plugin-sdk-python/commit/6a1e021d4a7c0cbbef7eec67416b43d101f33bf1))
+* **deps:** Update dependency six to v1.17.0 ([#272](https://github.com/cloudquery/plugin-sdk-python/issues/272)) ([f3733b7](https://github.com/cloudquery/plugin-sdk-python/commit/f3733b76604527b15aae68bee1e38e83961fad50))
+
 ## [0.1.39](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.38...v0.1.39) (2024-12-24)
 
 
