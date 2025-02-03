@@ -10,11 +10,11 @@ name = "cloudquery-plugin-sdk"
 description = "CloudQuery Plugin SDK for Python"
 
 dependencies = [
-    "cloudquery-plugin-pb==0.0.39",
+    "cloudquery-plugin-pb==0.0.40",
     "exceptiongroup==1.2.2",
     "black==24.10.0",
     "grpcio==1.70.0",
-    "grpcio-tools==1.68.1",
+    "grpcio-tools==1.70.0",
     "iniconfig==2.0.0",
     "Jinja2==3.1.5",
     "MarkupSafe==3.0.2",
@@ -23,7 +23,7 @@ dependencies = [
     "pandas==2.2.3",
     "pluggy==1.5.0",
     "protobuf==5.29.3",
-    "pyarrow==18.1.0",
+    "pyarrow==19.0.0",
     "pytest==8.3.4",
     "python-dateutil>=2.8.1",
     "pytz==2024.2",
