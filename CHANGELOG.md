@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.41](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.40...v0.1.41) (2025-02-03)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.40 ([#283](https://github.com/cloudquery/plugin-sdk-python/issues/283)) ([2ad2aff](https://github.com/cloudquery/plugin-sdk-python/commit/2ad2aff1682b32fc8c0ccc665e4ebce36ed1991a))
+* **deps:** Update dependency grpcio to v1.70.0 ([#278](https://github.com/cloudquery/plugin-sdk-python/issues/278)) ([323c94f](https://github.com/cloudquery/plugin-sdk-python/commit/323c94f3923d4d353f06acac38fa85f5af845f47))
+* **deps:** Update dependency grpcio-tools to v1.70.0 ([#279](https://github.com/cloudquery/plugin-sdk-python/issues/279)) ([6e3598f](https://github.com/cloudquery/plugin-sdk-python/commit/6e3598fb097c1c2be012b2ac1b5f02c34a71a386))
+* **deps:** Update dependency numpy to v2.2.2 ([#275](https://github.com/cloudquery/plugin-sdk-python/issues/275)) ([1588459](https://github.com/cloudquery/plugin-sdk-python/commit/1588459bc9381319f9acb469a5ee888647cb1aec))
+* **deps:** Update dependency protobuf to v5.29.3 ([#276](https://github.com/cloudquery/plugin-sdk-python/issues/276)) ([2ff79da](https://github.com/cloudquery/plugin-sdk-python/commit/2ff79da1a55a724650329f349e9aa5c8389e53eb))
+* **deps:** Update dependency pyarrow to v19 ([#280](https://github.com/cloudquery/plugin-sdk-python/issues/280)) ([c5f06dc](https://github.com/cloudquery/plugin-sdk-python/commit/c5f06dc58be6816b1e600925245fcc06eb30d030))
+* **deps:** Update dependency structlog to v25 ([#281](https://github.com/cloudquery/plugin-sdk-python/issues/281)) ([e78c775](https://github.com/cloudquery/plugin-sdk-python/commit/e78c775422a94d0fd8e3c36d38f230197b6fce19))
+* **deps:** Update dependency tzdata to v2025 ([#282](https://github.com/cloudquery/plugin-sdk-python/issues/282)) ([016a074](https://github.com/cloudquery/plugin-sdk-python/commit/016a0740dc063abadb4d4200375c209071eacd3e))
+
 ## [0.1.40](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.39...v0.1.40) (2025-01-07)
 
 
