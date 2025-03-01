@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.42](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.41...v0.1.42) (2025-03-01)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency numpy to v2.2.3 ([#284](https://github.com/cloudquery/plugin-sdk-python/issues/284)) ([d7d344a](https://github.com/cloudquery/plugin-sdk-python/commit/d7d344a7bacef1f24cad800d4bf45c92b2c4bc9b))
+* **deps:** Update dependency pyarrow to v19.0.1 ([#285](https://github.com/cloudquery/plugin-sdk-python/issues/285)) ([29dda77](https://github.com/cloudquery/plugin-sdk-python/commit/29dda775f6479b13929a93fe7646502a0871df57))
+
 ## [0.1.41](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.40...v0.1.41) (2025-02-03)
 
 
