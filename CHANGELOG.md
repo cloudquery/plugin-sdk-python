@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.42](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.41...v0.1.42) (2025-03-06)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency black to v25 ([#287](https://github.com/cloudquery/plugin-sdk-python/issues/287)) ([dca6df3](https://github.com/cloudquery/plugin-sdk-python/commit/dca6df39f8fd94174add2f0799852f0c246f8c70))
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.41 ([#289](https://github.com/cloudquery/plugin-sdk-python/issues/289)) ([17d6e4a](https://github.com/cloudquery/plugin-sdk-python/commit/17d6e4a0a4034d995bd5135cea094dfd2d8893c1))
+* **deps:** Update dependency Jinja2 to v3.1.6 [SECURITY] ([#290](https://github.com/cloudquery/plugin-sdk-python/issues/290)) ([995fb93](https://github.com/cloudquery/plugin-sdk-python/commit/995fb93e34895afc0128fbb2ff82eeaa9e7d5aa8))
+* **deps:** Update dependency numpy to v2.2.3 ([#284](https://github.com/cloudquery/plugin-sdk-python/issues/284)) ([d7d344a](https://github.com/cloudquery/plugin-sdk-python/commit/d7d344a7bacef1f24cad800d4bf45c92b2c4bc9b))
+* **deps:** Update dependency pyarrow to v19.0.1 ([#285](https://github.com/cloudquery/plugin-sdk-python/issues/285)) ([29dda77](https://github.com/cloudquery/plugin-sdk-python/commit/29dda775f6479b13929a93fe7646502a0871df57))
+* **deps:** Update dependency pytz to v2025 ([#288](https://github.com/cloudquery/plugin-sdk-python/issues/288)) ([9134d63](https://github.com/cloudquery/plugin-sdk-python/commit/9134d6384ba9e6db8c24110c7e28832cd427cb60))
+
 ## [0.1.41](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.40...v0.1.41) (2025-02-03)
 
 
