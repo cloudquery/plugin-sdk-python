@@ -21,7 +21,7 @@ dependencies = [
     "numpy==2.3.2",
     "packaging==24.2",
     "pandas==2.3.2",
-    "pluggy==1.5.0",
+    "pluggy==1.6.0",
     "protobuf>=6.31.1",
     "pyarrow==19.0.1",
     "pytest==8.3.5",
