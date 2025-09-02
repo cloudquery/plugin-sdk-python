@@ -8,6 +8,7 @@ from cloudquery.sdk.message import (
     SyncMessage,
     SyncInsertMessage,
     SyncMigrateTableMessage,
+    SyncErrorMessage,
 )
 from cloudquery.sdk.schema import Resource
 from cloudquery.sdk.stateclient.stateclient import StateClient
@@ -162,6 +163,7 @@ class Scheduler:
                 depth=depth,
                 exc_info=e,
             )
+            res.put(SyncErrorMessage(resolver.table.name, str(e)))
         finally:
             res.put(TableResolverFinished())
 

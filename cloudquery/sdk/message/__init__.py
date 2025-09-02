@@ -1,4 +1,9 @@
-from .sync import SyncMessage, SyncInsertMessage, SyncMigrateTableMessage
+from .sync import (
+    SyncMessage,
+    SyncInsertMessage,
+    SyncMigrateTableMessage,
+    SyncErrorMessage,
+)
 from .write import (
     WriteMessage,
     WriteInsertMessage,
