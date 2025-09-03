@@ -7,6 +7,7 @@ from cloudquery.plugin_v3 import plugin_pb2, plugin_pb2_grpc, arrow
 from cloudquery.sdk.message import (
     SyncInsertMessage,
     SyncMigrateTableMessage,
+    SyncErrorMessage,
     WriteInsertMessage,
     WriteMigrateTableMessage,
     WriteMessage,
@@ -76,6 +77,12 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
                 buf = arrow.schema_to_bytes(msg.table)
                 yield plugin_pb2.Sync.Response(
                     migrate_table=plugin_pb2.Sync.MessageMigrateTable(table=buf)
+                )
+            elif isinstance(msg, SyncErrorMessage) and request.withErrorMessages:
+                yield plugin_pb2.Sync.Response(
+                    error=plugin_pb2.Sync.MessageError(
+                        table_name=msg.table_name, error=msg.error
+                    )
                 )
             else:
                 # unknown sync message type
