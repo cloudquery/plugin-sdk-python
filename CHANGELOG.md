@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.47](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.46...v0.1.47) (2025-09-03)
+
+
+### Features
+
+* Report table errors from plugins via gRPC ([#320](https://github.com/cloudquery/plugin-sdk-python/issues/320)) ([79d026e](https://github.com/cloudquery/plugin-sdk-python/commit/79d026e494f487d35d13cd1d03801d02e7407320))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.47 ([#318](https://github.com/cloudquery/plugin-sdk-python/issues/318)) ([cc679a3](https://github.com/cloudquery/plugin-sdk-python/commit/cc679a3bf921bb8d1043cedec979a1b0bad41af9))
+
 ## [0.1.46](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.45...v0.1.46) (2025-09-01)
 
 
