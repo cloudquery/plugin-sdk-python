@@ -14,9 +14,15 @@ from cloudquery.sdk.types.json import JSONType
 from cloudquery.sdk.types.uuid import UUIDType
 
 test_table = Table(
-        "test_table",
-        [Column("id", pa.int64()), Column("name", pa.string()), Column("json", JSONType()), Column("uuid", UUIDType())],
-    )
+    "test_table",
+    [
+        Column("id", pa.int64()),
+        Column("name", pa.string()),
+        Column("json", JSONType()),
+        Column("uuid", UUIDType()),
+    ],
+)
+
 
 def test_plugin_serve():
     p = MemDB()
@@ -66,11 +72,13 @@ def test_plugin_serve():
 
             stub.Write(writer_iterator())
 
-            response = stub.GetTables(plugin_pb2.GetTables.Request(tables=["*"],skip_tables=[]))
+            response = stub.GetTables(
+                plugin_pb2.GetTables.Request(tables=["*"], skip_tables=[])
+            )
             schemas = arrow.new_schemas_from_bytes(response.tables)
             assert len(schemas) == 3
 
-            response = stub.Sync(plugin_pb2.Sync.Request(tables=["*"],skip_tables=[]))
+            response = stub.Sync(plugin_pb2.Sync.Request(tables=["*"], skip_tables=[]))
             total_migrate_tables = 0
             total_records = 0
             total_errors = 0

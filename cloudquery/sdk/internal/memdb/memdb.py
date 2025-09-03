@@ -211,7 +211,9 @@ class MemDB(plugin.Plugin):
 
     def read(self, table: Table) -> Generator[message.ReadMessage, None, None]:
         for record in self._db:
-            recordMetadata = record.schema.metadata.get(METADATA_TABLE_NAME).decode("utf-8")
+            recordMetadata = record.schema.metadata.get(METADATA_TABLE_NAME).decode(
+                "utf-8"
+            )
             if recordMetadata == table.name:
                 yield message.ReadMessage(record)
 

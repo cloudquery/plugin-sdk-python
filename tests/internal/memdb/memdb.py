@@ -10,7 +10,7 @@ def test_memdb():
     p.set_logger(structlog.get_logger())
     p.init(plugin.sanitize_spec(b"null"))
     msgs = []
-    for msg in p.sync(SyncOptions(tables=["*"],skip_tables=[])):
+    for msg in p.sync(SyncOptions(tables=["*"], skip_tables=[])):
         msgs.append(msg)
     assert len(msgs) == 18
 
@@ -21,5 +21,3 @@ def test_memdb():
     # other messages should be inserts
     for msg in msgs[3:]:
         assert isinstance(msg, SyncInsertMessage)
-
-
