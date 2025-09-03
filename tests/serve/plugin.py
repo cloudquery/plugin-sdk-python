@@ -14,15 +14,9 @@ from cloudquery.sdk.types.json import JSONType
 from cloudquery.sdk.types.uuid import UUIDType
 
 test_table = Table(
-    "test",
-    [
-        Column("id", pa.int64()),
-        Column("name", pa.string()),
-        Column("json", JSONType()),
-        Column("uuid", UUIDType()),
-    ],
-)
-
+        "test_table",
+        [Column("id", pa.int64()), Column("name", pa.string()), Column("json", JSONType()), Column("uuid", UUIDType())],
+    )
 
 def test_plugin_serve():
     p = MemDB()
@@ -72,17 +66,29 @@ def test_plugin_serve():
 
             stub.Write(writer_iterator())
 
-            response = stub.GetTables(plugin_pb2.GetTables.Request(tables=["*"]))
+            response = stub.GetTables(plugin_pb2.GetTables.Request(tables=["*"],skip_tables=[]))
             schemas = arrow.new_schemas_from_bytes(response.tables)
-            assert len(schemas) == 4
+            assert len(schemas) == 3
 
-            response = stub.Sync(plugin_pb2.Sync.Request(tables=["*"]))
+            response = stub.Sync(plugin_pb2.Sync.Request(tables=["*"],skip_tables=[]))
+            total_migrate_tables = 0
             total_records = 0
+            total_errors = 0
             for msg in response:
-                if msg.insert is not None:
+                message_type = msg.WhichOneof("message")
+                if message_type == "insert":
                     rec = arrow.new_record_from_bytes(msg.insert.record)
+                    assert rec.num_rows > 0
                     total_records += 1
-            assert total_records == 1
+                elif message_type == "migrate_table":
+                    total_migrate_tables += 1
+                elif message_type == "error":
+                    total_errors += 1
+                else:
+                    raise NotImplementedError(f"Unknown message type {type(msg)}")
+            assert total_migrate_tables == 3
+            assert total_records == 15
+            assert total_errors == 0
     finally:
         cmd.stop()
         pool.shutdown()
@@ -122,8 +128,7 @@ def test_plugin_read():
         ],
         schema=test_table.to_arrow_schema(),
     )
-    p._db["test_1"] = sample_record_1
-    p._db["test_2"] = sample_record_2
+    p._db = [sample_record_1, sample_record_2]
 
     cmd = serve.PluginCommand(p)
     port = random.randint(5000, 50000)
@@ -191,7 +196,7 @@ def test_plugin_package():
                     },
                     {
                         "name": "id",
-                        "type": "string",
+                        "type": "int64",
                         "description": "",
                         "incremental_key": True,
                         "primary_key": True,
@@ -247,7 +252,7 @@ def test_plugin_package():
                     },
                     {
                         "name": "id",
-                        "type": "string",
+                        "type": "int64",
                         "description": "",
                         "incremental_key": False,
                         "primary_key": False,

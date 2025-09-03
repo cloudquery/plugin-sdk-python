@@ -7,6 +7,7 @@ from cloudquery.sdk.scheduler import Scheduler, TableResolver
 from typing import List, Generator, Dict, Any
 import pyarrow as pa
 from cloudquery.sdk.schema.table import Table
+from cloudquery.sdk.schema.arrow import METADATA_TABLE_NAME
 from cloudquery.sdk.types import JSONType
 from dataclasses import dataclass, field
 
@@ -155,7 +156,7 @@ class MemDB(plugin.Plugin):
             table1.name: table1,
             table2.name: table2,
         }
-        self._db: Dict[str, pa.RecordBatch] = {}
+        self._db: List[pa.RecordBatch] = []
         self._client = Client()
 
     def set_logger(self, logger) -> None:
@@ -202,18 +203,15 @@ class MemDB(plugin.Plugin):
     def write(self, writer: Generator[message.WriteMessage, None, None]) -> None:
         for msg in writer:
             if isinstance(msg, message.WriteMigrateTableMessage):
-                if msg.table.name not in self._db:
-                    self._db[msg.table.name] = msg.table
-                    self._tables[msg.table.name] = msg.table
+                pass
             elif isinstance(msg, message.WriteInsertMessage):
-                table = schema.Table.from_arrow_schema(msg.record.schema)
-                self._db[table.name] = msg.record
+                self._db.append(msg.record)
             else:
                 raise NotImplementedError(f"Unknown message type {type(msg)}")
 
     def read(self, table: Table) -> Generator[message.ReadMessage, None, None]:
-        for table, record in self._db.items():
-            recordMetadata = record.schema.metadata.get(schema.MetadataTableName)
+        for record in self._db:
+            recordMetadata = record.schema.metadata.get(METADATA_TABLE_NAME).decode("utf-8")
             if recordMetadata == table.name:
                 yield message.ReadMessage(record)
 
