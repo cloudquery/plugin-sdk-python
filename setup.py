@@ -14,7 +14,7 @@ dependencies = [
     "exceptiongroup==1.3.0",
     "black==25.9.0",
     "grpcio==1.75.1",
-    "grpcio-tools==1.75.0",
+    "grpcio-tools==1.75.1",
     "iniconfig==2.1.0",
     "Jinja2==3.1.6",
     "MarkupSafe==3.0.3",
@@ -23,7 +23,7 @@ dependencies = [
     "pandas==2.3.3",
     "pluggy==1.6.0",
     "protobuf>=6.31.1",
-    "pyarrow==19.0.1",
+    "pyarrow==21.0.0",
     "pytest==8.4.2",
     "python-dateutil>=2.8.1",
     "pytz==2025.2",
@@ -51,7 +51,7 @@ packages = [
 ]
 setuptools.setup(
     name=name,
-    version="0.1.48",
+    version="0.1.49",
     description=description,
     long_description=long_description,
     author="CloudQuery LTD",
