@@ -14,7 +14,7 @@ dependencies = [
     "exceptiongroup==1.3.0",
     "black==25.9.0",
     "grpcio==1.75.1",
-    "grpcio-tools==1.75.0",
+    "grpcio-tools==1.75.1",
     "iniconfig==2.1.0",
     "Jinja2==3.1.6",
     "MarkupSafe==3.0.3",
@@ -51,7 +51,7 @@ packages = [
 ]
 setuptools.setup(
     name=name,
-    version="0.1.48",
+    version="0.1.49",
     description=description,
     long_description=long_description,
     author="CloudQuery LTD",
