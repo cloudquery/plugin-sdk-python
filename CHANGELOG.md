@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.49](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.48...v0.1.49) (2025-10-01)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.48 ([#329](https://github.com/cloudquery/plugin-sdk-python/issues/329)) ([8f911a4](https://github.com/cloudquery/plugin-sdk-python/commit/8f911a42ec8aefbffe7cbc67ab48694a7b66c4f3))
+* **deps:** Update dependency grpcio to v1.75.1 ([#330](https://github.com/cloudquery/plugin-sdk-python/issues/330)) ([990bf23](https://github.com/cloudquery/plugin-sdk-python/commit/990bf23f71a763cd2162fb56473b0bdb87d82fe6))
+* **deps:** Update dependency MarkupSafe to v3.0.3 ([#332](https://github.com/cloudquery/plugin-sdk-python/issues/332)) ([b07bff3](https://github.com/cloudquery/plugin-sdk-python/commit/b07bff38b9af88f020ba1f732c816b34f30f7172))
+* **deps:** Update dependency pandas to v2.3.3 ([#333](https://github.com/cloudquery/plugin-sdk-python/issues/333)) ([39877e7](https://github.com/cloudquery/plugin-sdk-python/commit/39877e7a8dcc1052bb0f5f80368ed252b1e959ac))
+* **deps:** Update dependency pyarrow to v21 ([#339](https://github.com/cloudquery/plugin-sdk-python/issues/339)) ([ff1a04e](https://github.com/cloudquery/plugin-sdk-python/commit/ff1a04ee9b5eadcbd2784380e2879a7f49854397))
+* **deps:** Update dependency tzdata to v2025.2 ([#334](https://github.com/cloudquery/plugin-sdk-python/issues/334)) ([93f5a9e](https://github.com/cloudquery/plugin-sdk-python/commit/93f5a9edaf11ae82bb0b74ab6de56bbf7002fdb9))
+
 ## [0.1.48](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.47...v0.1.48) (2025-10-01)
 
 
