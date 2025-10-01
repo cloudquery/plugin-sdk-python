@@ -30,7 +30,7 @@ dependencies = [
     "six==1.17.0",
     "structlog==25.4.0",
     "tomli==2.2.1",
-    "tzdata==2025.1",
+    "tzdata==2025.2",
 ]
 url = "https://github.com/cloudquery/plugin-sdk-python"
 
