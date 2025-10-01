@@ -17,10 +17,10 @@ dependencies = [
     "grpcio-tools==1.75.1",
     "iniconfig==2.1.0",
     "Jinja2==3.1.6",
-    "MarkupSafe==3.0.2",
+    "MarkupSafe==3.0.3",
     "numpy==2.3.3",
     "packaging==24.2",
-    "pandas==2.3.2",
+    "pandas==2.3.3",
     "pluggy==1.6.0",
     "protobuf>=6.31.1",
     "pyarrow==19.0.1",
@@ -30,7 +30,7 @@ dependencies = [
     "six==1.17.0",
     "structlog==25.4.0",
     "tomli==2.2.1",
-    "tzdata==2025.1",
+    "tzdata==2025.2",
 ]
 url = "https://github.com/cloudquery/plugin-sdk-python"
 
