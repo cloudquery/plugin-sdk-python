@@ -15,7 +15,7 @@ dependencies = [
     "black==25.11.0",
     "grpcio==1.76.0",
     "grpcio-tools==1.76.0",
-    "iniconfig==2.1.0",
+    "iniconfig==2.3.0",
     "Jinja2==3.1.6",
     "MarkupSafe==3.0.3",
     "numpy==2.3.5",
