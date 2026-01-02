@@ -10,7 +10,7 @@ name = "cloudquery-plugin-sdk"
 description = "CloudQuery Plugin SDK for Python"
 
 dependencies = [
-    "cloudquery-plugin-pb==0.0.50",
+    "cloudquery-plugin-pb==0.0.51",
     "exceptiongroup==1.3.1",
     "black==25.12.0",
     "grpcio==1.76.0",
@@ -29,8 +29,8 @@ dependencies = [
     "pytz==2025.2",
     "six==1.17.0",
     "structlog==25.5.0",
-    "tomli==2.2.1",
-    "tzdata==2025.2",
+    "tomli==2.3.0",
+    "tzdata==2025.3",
 ]
 url = "https://github.com/cloudquery/plugin-sdk-python"
 
