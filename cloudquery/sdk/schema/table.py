@@ -10,7 +10,6 @@ import pyarrow as pa
 from cloudquery.sdk.schema import arrow
 from .column import Column
 
-
 CQ_SYNC_TIME_COLUMN = "cq_sync_time"
 CQ_SOURCE_NAME_COLUMN = "cq_source_name"
 
