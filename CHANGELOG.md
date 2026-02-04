@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.52](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.51...v0.1.52) (2026-02-04)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency black to v26 ([#363](https://github.com/cloudquery/plugin-sdk-python/issues/363)) ([f51028f](https://github.com/cloudquery/plugin-sdk-python/commit/f51028ffa8b895ac59f0ad77ecbdf3f5072c5aed))
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.52 ([#369](https://github.com/cloudquery/plugin-sdk-python/issues/369)) ([734baa4](https://github.com/cloudquery/plugin-sdk-python/commit/734baa4294410efb53b49f0515bbe100c95573d4))
+* **deps:** Update dependency numpy to v2.4.1 ([#360](https://github.com/cloudquery/plugin-sdk-python/issues/360)) ([a78bf2b](https://github.com/cloudquery/plugin-sdk-python/commit/a78bf2b4038974bcababa73fabade2d8ec69f108))
+* **deps:** Update dependency packaging to v26 ([#364](https://github.com/cloudquery/plugin-sdk-python/issues/364)) ([3ced41a](https://github.com/cloudquery/plugin-sdk-python/commit/3ced41af7725d0956647cf75a3de407fcc877ca8))
+* **deps:** Update dependency pandas to v3 ([#365](https://github.com/cloudquery/plugin-sdk-python/issues/365)) ([21458ad](https://github.com/cloudquery/plugin-sdk-python/commit/21458adf65b312f6cad2db7e189c01dc9fa02244))
+* **deps:** Update dependency pyarrow to v23 ([#366](https://github.com/cloudquery/plugin-sdk-python/issues/366)) ([c4a0c5a](https://github.com/cloudquery/plugin-sdk-python/commit/c4a0c5a2cf76b416136ad12155bc91d42e744021))
+* **deps:** Update dependency pytest to v9 ([#367](https://github.com/cloudquery/plugin-sdk-python/issues/367)) ([c246344](https://github.com/cloudquery/plugin-sdk-python/commit/c2463442b3d1cac211ce51e1307f9ba424954bdc))
+* **deps:** Update dependency tomli to v2.4.0 ([#361](https://github.com/cloudquery/plugin-sdk-python/issues/361)) ([e2e4941](https://github.com/cloudquery/plugin-sdk-python/commit/e2e4941e1f3bfab6fd65ed002d874e63b794e37d))
+
 ## [0.1.51](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.50...v0.1.51) (2026-01-02)
 
 
