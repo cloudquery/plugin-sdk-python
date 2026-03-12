@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.53](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.52...v0.1.53) (2026-03-12)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency black to v26.3.1 [SECURITY] ([#373](https://github.com/cloudquery/plugin-sdk-python/issues/373)) ([ef393d0](https://github.com/cloudquery/plugin-sdk-python/commit/ef393d02dd43eb9a4f844ae4c05b76d34b1d2690))
+* **deps:** Update dependency cloudquery-plugin-pb to v0.0.53 ([#372](https://github.com/cloudquery/plugin-sdk-python/issues/372)) ([bd8c91d](https://github.com/cloudquery/plugin-sdk-python/commit/bd8c91d688ea3124c1362f2522ab56b7608662f8))
+* **deps:** Update dependency numpy to v2.4.2 ([#370](https://github.com/cloudquery/plugin-sdk-python/issues/370)) ([9ce8eee](https://github.com/cloudquery/plugin-sdk-python/commit/9ce8eeef08b805df7c164c429d85f34c7c282deb))
+
 ## [0.1.52](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.51...v0.1.52) (2026-02-04)
 
 
