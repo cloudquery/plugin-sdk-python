@@ -5,7 +5,7 @@ This is the high-level package to use for developing CloudQuery plugins in Pytho
 ## Installation
 
 ```commandline
-pip install cloudquery-plugin-sdk
+uv add cloudquery-plugin-sdk
 ```
 
 ## Links
