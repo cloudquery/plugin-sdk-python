@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cloudquery-plugin-sdk"
+version = "0.1.54"
+description = "CloudQuery Plugin SDK for Python"
+readme = "README.md"
+license = "MPL-2.0"
+requires-python = ">=3.11"
+authors = [
+    { name = "CloudQuery LTD", email = "pypi-packages@cloudquery.io" },
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "Topic :: Internet",
+]
+dependencies = [
+    "cloudquery-plugin-pb>=0.0.54",
+    "grpcio>=1.78.0",
+    "grpcio-tools>=1.78.0",
+    "Jinja2>=3.1.6",
+    "MarkupSafe>=3.0.3",
+    "numpy>=2.4.2",
+    "packaging>=26.0",
+    "pandas>=3.0.0",
+    "protobuf>=6.31.1",
+    "pyarrow>=23.0.0",
+    "python-dateutil>=2.8.1",
+    "pytz>=2025.2",
+    "six>=1.17.0",
+    "structlog>=25.5.0",
+    "tomli>=2.4.0",
+    "tzdata>=2025.3",
+]
+
+[project.urls]
+Homepage = "https://github.com/cloudquery/plugin-sdk-python"
+
+[dependency-groups]
+dev = [
+    "black>=26.3.1",
+    "pytest>=9.0.2",
+]
+
+[tool.setuptools.packages.find]
+include = ["cloudquery*"]
+
+[tool.setuptools.package-data]
+cloudquery = ["sdk/py.typed"]
+
+[tool.pytest.ini_options]
+python_files = "tests/*.py"
+
+[tool.uv]
+exclude-newer = "1 week"

@@ -1,8 +1,8 @@
 test:
-	pytest .
+	uv run pytest .
 
 fmt:
-	black .
+	uv run black .
 
 fmt-check:
-	black --check .
+	uv run black --check .
