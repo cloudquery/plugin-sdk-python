@@ -61,3 +61,4 @@ python_files = "tests/*.py"
 
 [tool.uv]
 exclude-newer = "1 week"
+exclude-newer-package = { pytest = false }
