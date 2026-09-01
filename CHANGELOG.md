@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.55](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.54...v0.1.55) (2026-09-01)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency pytest to v9.0.3 [SECURITY] ([#385](https://github.com/cloudquery/plugin-sdk-python/issues/385)) ([faea392](https://github.com/cloudquery/plugin-sdk-python/commit/faea392b91bd4902359faef0f141e0b1b74527b7))
+* **deps:** Update dependency pytest to v9.0.3 [SECURITY] ([#387](https://github.com/cloudquery/plugin-sdk-python/issues/387)) ([e7814d1](https://github.com/cloudquery/plugin-sdk-python/commit/e7814d1a4c93fcc279c06d958b44760a07948041))
+* **deps:** Update dependency pytest to v9.0.3 [SECURITY] ([#388](https://github.com/cloudquery/plugin-sdk-python/issues/388)) ([13046ac](https://github.com/cloudquery/plugin-sdk-python/commit/13046ac85f9440d136988b23f393e59f0de74627))
+* **deps:** Update dependency pytest to v9.0.3 [SECURITY] ([#389](https://github.com/cloudquery/plugin-sdk-python/issues/389)) ([447bf67](https://github.com/cloudquery/plugin-sdk-python/commit/447bf67e17883e33940dcb7dd7727251f667c3d6))
+* **deps:** Update dependency pytest to v9.0.3 [SECURITY] ([#390](https://github.com/cloudquery/plugin-sdk-python/issues/390)) ([10e2c31](https://github.com/cloudquery/plugin-sdk-python/commit/10e2c31bd598e18a627aa4f4e619577ba2278ef3))
+* **deps:** Update dependency pytest to v9.0.3 [SECURITY] ([#391](https://github.com/cloudquery/plugin-sdk-python/issues/391)) ([85a3cdc](https://github.com/cloudquery/plugin-sdk-python/commit/85a3cdc725debbfec91ae4a98fbd8b80f7519e69))
+* **deps:** Update dependency pytest to v9.0.3 [SECURITY] ([#392](https://github.com/cloudquery/plugin-sdk-python/issues/392)) ([45ec16f](https://github.com/cloudquery/plugin-sdk-python/commit/45ec16f64db0c34315671220c26dda8da6d977ad))
+* **deps:** Update dependency pytest to v9.0.3 [SECURITY] ([#394](https://github.com/cloudquery/plugin-sdk-python/issues/394)) ([f935ee4](https://github.com/cloudquery/plugin-sdk-python/commit/f935ee474dad12340578809645ef862c9e323a6e))
+* **deps:** Update dependency pytest to v9.0.3 [SECURITY] ([#395](https://github.com/cloudquery/plugin-sdk-python/issues/395)) ([793e068](https://github.com/cloudquery/plugin-sdk-python/commit/793e0684bf521b76497ec471096fd4d3cb0792e7))
+* **deps:** Update dependency pytest to v9.0.3 [SECURITY] ([#396](https://github.com/cloudquery/plugin-sdk-python/issues/396)) ([1e2bd60](https://github.com/cloudquery/plugin-sdk-python/commit/1e2bd604be8881ed047f5d949d00d72bb5e66976))
+* **deps:** Update dependency pytest to v9.0.3 [SECURITY] ([#397](https://github.com/cloudquery/plugin-sdk-python/issues/397)) ([41dd0e6](https://github.com/cloudquery/plugin-sdk-python/commit/41dd0e6da58001923fdae130c3836c66ac33603f))
+* **deps:** Update ghcr.io/astral-sh/uv Docker tag to v0.11.17 ([#402](https://github.com/cloudquery/plugin-sdk-python/issues/402)) ([cdc4dc8](https://github.com/cloudquery/plugin-sdk-python/commit/cdc4dc8996224667532b222ab5eddf9e7c7c6b16))
+* **deps:** Update ghcr.io/astral-sh/uv Docker tag to v0.11.26 ([#404](https://github.com/cloudquery/plugin-sdk-python/issues/404)) ([68422bc](https://github.com/cloudquery/plugin-sdk-python/commit/68422bc3607d502c77b695e298e130006cd2027f))
+* **deps:** Update ghcr.io/astral-sh/uv Docker tag to v0.11.8 ([#399](https://github.com/cloudquery/plugin-sdk-python/issues/399)) ([f080e0c](https://github.com/cloudquery/plugin-sdk-python/commit/f080e0ce12b7bfe4813bcb9ffc345dab1d39694c))
+* **deps:** Update ghcr.io/astral-sh/uv Docker tag to v0.12.1 ([#407](https://github.com/cloudquery/plugin-sdk-python/issues/407)) ([4a5f440](https://github.com/cloudquery/plugin-sdk-python/commit/4a5f440ace8d47ea553b8fcda6f0f46cf007243f))
+* **deps:** Update ghcr.io/astral-sh/uv Docker tag to v0.12.8 ([#410](https://github.com/cloudquery/plugin-sdk-python/issues/410)) ([7b13f96](https://github.com/cloudquery/plugin-sdk-python/commit/7b13f96ec01852a3555ab37125d03ee7b2762865))
+
 ## [0.1.54](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.53...v0.1.54) (2026-03-13)
 
 
