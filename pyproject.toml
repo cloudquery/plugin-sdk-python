@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cloudquery-plugin-sdk"
-version = "0.1.54"
+version = "0.1.55"
 description = "CloudQuery Plugin SDK for Python"
 readme = "README.md"
 license = "MPL-2.0"
