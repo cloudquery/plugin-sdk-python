@@ -44,7 +44,7 @@ class StateClientBuilder:
         if not backend_options or not backend_options.table_name:
             return NoOpStateClient(backend_options=backend_options)
 
-        if not getattr(backend_options, "supports_checkpoints", False):
+        if not backend_options.supports_checkpoints:
             checkpoints = None
         return ConnectedStateClient(
             backend_options=backend_options, checkpoints=checkpoints
