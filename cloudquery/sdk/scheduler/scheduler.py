@@ -9,7 +9,9 @@ from cloudquery.sdk.message import (
     SyncInsertMessage,
     SyncMigrateTableMessage,
     SyncErrorMessage,
+    SyncCheckpointMessage,
 )
+from cloudquery.sdk.internal.checkpoint import Checkpoints, Scope
 from cloudquery.sdk.schema import Resource
 from cloudquery.sdk.stateclient.stateclient import StateClient
 from .table_resolver import TableResolver, Client
@@ -39,6 +41,8 @@ class Scheduler:
     ):
         self._post_sync_hook = lambda: None
         self._queue = queue.Queue()
+        # pass to StateClientBuilder.build so that state flushes are sent as checkpoints, when the CLI supports them
+        self.checkpoints = Checkpoints()
         self._max_depth = max_depth
         if logger is None:
             self._logger = structlog.get_logger()
@@ -89,7 +93,28 @@ class Scheduler:
         client: Client,
         parent_item: Optional[Resource],
         res: queue.Queue,
+        scope: Optional[Scope] = None,
     ):
+        if scope is None:
+            scope = self.checkpoints.new_scope(None)
+        try:
+            with self.checkpoints.entered(scope):
+                self._resolve_table(resolver, depth, client, parent_item, res, scope)
+        finally:
+            # after every resource of the resolver is on the queue, so its checkpoints follow them
+            self.checkpoints.resolver_finished(scope)
+            res.put(TableResolverFinished())
+
+    def _resolve_table(
+        self,
+        resolver: TableResolver,
+        depth: int,
+        client: Client,
+        parent_item: Optional[Resource],
+        res: queue.Queue,
+        scope: Scope,
+    ):
+        total_resources = 0
         try:
             if depth == 0:
                 self._logger.info(
@@ -105,7 +130,6 @@ class Scheduler:
                     table=resolver.table.name,
                     depth=depth,
                 )
-            total_resources = 0
             for item in resolver.resolve(client, parent_item):
                 try:
                     resource = self.resolve_resource(
@@ -136,6 +160,7 @@ class Scheduler:
                         client,
                         resource,
                         res,
+                        self.checkpoints.new_scope(scope),
                     )
                 total_resources += 1
             if depth == 0:
@@ -164,8 +189,6 @@ class Scheduler:
                 exc_info=e,
             )
             res.put(SyncErrorMessage(resolver.table.name, str(e)))
-        finally:
-            res.put(TableResolverFinished())
 
     def _sync(
         self,
@@ -179,7 +202,13 @@ class Scheduler:
             for client in clients:
                 res.put(TableResolverStarted())
                 self._pools[0].submit(
-                    self.resolve_table, resolver, 0, client, None, res
+                    self.resolve_table,
+                    resolver,
+                    0,
+                    client,
+                    None,
+                    res,
+                    self.checkpoints.new_scope(None),
                 )
 
     def sync(
@@ -188,26 +217,38 @@ class Scheduler:
         res = queue.Queue()
         yield from self._send_migrate_table_messages(resolvers)
 
-        thread = futures.ThreadPoolExecutor()
-        thread.submit(self._sync, client, resolvers, res, deterministic_cq_id)
-        total_table_resolvers = 0
-        finished_table_resolvers = 0
-        while True:
-            message = res.get()
-            if isinstance(message, TableResolverStarted):
-                total_table_resolvers += 1
-                if total_table_resolvers == finished_table_resolvers:
-                    break
-                continue
-            if isinstance(message, TableResolverFinished):
-                finished_table_resolvers += 1
-                if total_table_resolvers == finished_table_resolvers:
-                    break
-                continue
-            yield message
+        self.checkpoints.start(res)
+        try:
+            thread = futures.ThreadPoolExecutor()
+            thread.submit(self._sync, client, resolvers, res, deterministic_cq_id)
+            total_table_resolvers = 0
+            finished_table_resolvers = 0
+            while True:
+                message = res.get()
+                if isinstance(message, TableResolverStarted):
+                    total_table_resolvers += 1
+                    if total_table_resolvers == finished_table_resolvers:
+                        break
+                    continue
+                if isinstance(message, TableResolverFinished):
+                    finished_table_resolvers += 1
+                    if total_table_resolvers == finished_table_resolvers:
+                        break
+                    continue
+                yield message
 
-        self._post_sync_hook()
-        thread.shutdown(wait=True)
+            self._post_sync_hook()
+            # checkpoints the post-sync hook flushed, after every resource
+            while True:
+                try:
+                    message = res.get_nowait()
+                except queue.Empty:
+                    break
+                if isinstance(message, SyncCheckpointMessage):
+                    yield message
+            thread.shutdown(wait=True)
+        finally:
+            self.checkpoints.stop()
 
     def _send_migrate_table_messages(
         self, resolvers: List[TableResolver]

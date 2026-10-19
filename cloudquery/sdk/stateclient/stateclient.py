@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import grpc
+import threading
 from abc import ABC, abstractmethod
-from typing import Generator, Optional, Tuple
+from typing import Dict, FrozenSet, Generator, List, Optional, Set, Tuple
 
 import pyarrow as pa
 from cloudquery.sdk import schema
+from cloudquery.sdk.internal.checkpoint import Checkpoints, Scope
+from cloudquery.sdk.message import SyncCheckpointMessage
 from cloudquery.sdk.plugin.plugin import BackendOptions
 from cloudquery.plugin_v3 import plugin_pb2, plugin_pb2_grpc, arrow
 from functools import wraps
@@ -21,6 +24,13 @@ class StateClientBuilder:
 
     Args:
         backend_options (BackendOptions): which has `connection` & `table_name` strings.
+        checkpoints (Checkpoints): optional, the `checkpoints` of the `Scheduler` that syncs.
+            When the CLI supports checkpoints, `flush` then sends the state on the sync stream
+            instead of writing it to the backend, and the CLI persists it once the destinations
+            commit the resources synced before it. Changes made within a table resolver wait only
+            for the resources that resolver produced before the flush, and their relations.
+            Changes made outside table resolvers wait for nothing, so flush them after the
+            resources they summarize are synced, e.g. in the scheduler's post-sync hook.
 
     Returns:
         `ConnectedStateClient` or `NoOpStateClient`
@@ -28,11 +38,17 @@ class StateClientBuilder:
     """
 
     @staticmethod
-    def build(*, backend_options: BackendOptions) -> StateClient:
+    def build(
+        *, backend_options: BackendOptions, checkpoints: Optional[Checkpoints] = None
+    ) -> StateClient:
         if not backend_options or not backend_options.table_name:
             return NoOpStateClient(backend_options=backend_options)
 
-        return ConnectedStateClient(backend_options=backend_options)
+        if not getattr(backend_options, "supports_checkpoints", False):
+            checkpoints = None
+        return ConnectedStateClient(
+            backend_options=backend_options, checkpoints=checkpoints
+        )
 
 
 class StateClient(ABC):
@@ -43,31 +59,70 @@ class StateClient(ABC):
     so it is a succinct overview of what a state client does.
     """
 
-    def __init__(self, *, backend_options: BackendOptions):
+    def __init__(
+        self,
+        *,
+        backend_options: BackendOptions,
+        checkpoints: Optional[Checkpoints] = None,
+    ):
         self.mem = {}
-        self.changes = {}
+        # changed keys, each with the scopes of the table resolvers that changed it since the
+        # last flush (None for changes made outside table resolvers)
+        self.changes: Dict[str, Set[Optional[Scope]]] = {}
         self.connection = getattr(backend_options, "connection", None)
         self.table = Table(getattr(backend_options, "table_name", None))
+        self.checkpoints = checkpoints
+        # guards mem and changes, which table resolvers change from several threads
+        self._lock = threading.RLock()
+        # serializes flushes, so that a key's flushed values reach the state in the order they were set
+        self._flush_lock = threading.Lock()
 
         self.migrate_state_table()
         self.read_all_state()
 
     def get_key(self, key: str) -> Optional[str]:
-        return self.mem.get(key)
+        with self._lock:
+            return self.mem.get(key)
 
     def set_key(self, key: str, value: str) -> None:
-        self.mem[key] = value
-        self.changes[key] = True
+        scope = self.checkpoints.current_scope() if self.checkpoints else None
+        with self._lock:
+            self.mem[key] = value
+            self.changes.setdefault(key, set()).add(scope)
 
     def flush(self):
-        if not self.changes:
-            return
+        """
+        Persists the keys changed since the last flush: writes them to the backend, or, with
+        checkpoints, sends them on the sync stream after the resources they cover.
+        If that fails, the keys stay changed, so a later flush retries them.
+        """
+        with self._flush_lock:
+            with self._lock:
+                if not self.changes:
+                    return
+                changes, self.changes = self.changes, {}
+                values = {key: self.mem[key] for key in changes}
+            try:
+                if self.checkpoints is None:
+                    self.write_all_state(iter(values.items()))
+                else:
+                    self._send_checkpoints(changes, values)
+            except Exception:
+                with self._lock:
+                    for key, scopes in changes.items():
+                        self.changes.setdefault(key, set()).update(scopes)
+                raise
 
-        self.write_all_state(self._changed_keys())
-
-    def _changed_keys(self):
-        for key, _ in self.changes.items():
-            yield (key, self.mem[key])
+    def _send_checkpoints(
+        self, changes: Dict[str, Set[Optional[Scope]]], values: Dict[str, str]
+    ):
+        # one checkpoint per set of scopes, so each waits only for the resources of the scopes that changed its keys
+        groups: Dict[FrozenSet[Optional[Scope]], List[str]] = {}
+        for key, scopes in changes.items():
+            groups.setdefault(frozenset(scopes), []).append(key)
+        for scopes, keys in groups.items():
+            record = self.table.record([(key, values[key]) for key in keys])
+            self.checkpoints.schedule(scopes, keys, SyncCheckpointMessage(record))
 
     @abstractmethod
     def migrate_state_table(self):
@@ -91,6 +146,9 @@ class NoOpStateClient(StateClient):
         pass
 
     def set_key(self, key: str, value: str) -> None:
+        pass
+
+    def flush(self):
         pass
 
     def migrate_state_table(self):
@@ -144,13 +202,7 @@ class ConnectedStateClient(StateClient):
         backend_plugin.Write(self._write_request(k, v) for k, v in changed_keys)
 
     def _write_request(self, key: str, value: str) -> plugin_pb2.Write.Request:
-        record = pa.RecordBatch.from_arrays(
-            [
-                pa.array([key]),
-                pa.array([value]),
-            ],
-            schema=self.table.arrow_schema(),
-        )
+        record = self.table.record([(key, value)])
         return plugin_pb2.Write.Request(
             insert=plugin_pb2.Write.MessageInsert(record=arrow.record_to_bytes(record))
         )
@@ -196,6 +248,16 @@ class Table:
 
     def bytes(self):
         return self._bytes
+
+    def record(self, rows: List[Tuple[str, str]]) -> pa.RecordBatch:
+        """Returns the state rows as a record of this table, with the table name in its schema metadata."""
+        return pa.RecordBatch.from_arrays(
+            [
+                pa.array([key for key, _ in rows], type=pa.string()),
+                pa.array([value for _, value in rows], type=pa.string()),
+            ],
+            schema=self._arrow_schema,
+        )
 
     def _state_table_schema(self):
         return schema.Table(
