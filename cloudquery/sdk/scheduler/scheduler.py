@@ -134,37 +134,38 @@ class Scheduler:
                     depth=depth,
                 )
             for item in resolver.resolve(client, parent_item):
-                try:
-                    resource = self.resolve_resource(
-                        resolver, client, parent_item, item
-                    )
-                except Exception as e:
-                    self._logger.error(
-                        "failed to resolve resource",
-                        client_id=client.id(),
-                        table=resolver.table.name,
-                        depth=depth,
-                        exc_info=e,
-                    )
-                    self._logger.debug(
-                        "details about resource that failed to resolve",
-                        client_id=client.id(),
-                        table=resolver.table.name,
-                        resource=item,
-                    )
-                    continue
-                res.put(SyncInsertMessage(resource.to_arrow_record()))
-                for child_resolvers in resolver.child_resolvers:
-                    res.put(TableResolverStarted())
-                    self._pools[depth + 1].submit(
-                        self.resolve_table,
-                        child_resolvers,
-                        depth + 1,
-                        client,
-                        resource,
-                        res,
-                        self.checkpoints.new_scope(scope),
-                    )
+                with self.checkpoints.resource(scope):
+                    try:
+                        resource = self.resolve_resource(
+                            resolver, client, parent_item, item
+                        )
+                    except Exception as e:
+                        self._logger.error(
+                            "failed to resolve resource",
+                            client_id=client.id(),
+                            table=resolver.table.name,
+                            depth=depth,
+                            exc_info=e,
+                        )
+                        self._logger.debug(
+                            "details about resource that failed to resolve",
+                            client_id=client.id(),
+                            table=resolver.table.name,
+                            resource=item,
+                        )
+                        continue
+                    res.put(SyncInsertMessage(resource.to_arrow_record()))
+                    for child_resolvers in resolver.child_resolvers:
+                        res.put(TableResolverStarted())
+                        self._pools[depth + 1].submit(
+                            self.resolve_table,
+                            child_resolvers,
+                            depth + 1,
+                            client,
+                            resource,
+                            res,
+                            self.checkpoints.new_scope(scope),
+                        )
                 total_resources += 1
             if depth == 0:
                 self._logger.info(

@@ -395,3 +395,164 @@ def test_resolvers_of_an_ended_sync_do_not_checkpoint_into_the_next_one():
     ]
     assert cursors
     assert all(cursor.startswith("next-") for cursor in cursors)
+
+
+class HookCursorResolver(TableResolver):
+    """Checkpoints its cursor from a resource hook, before the resource is on the queue."""
+
+    def __init__(self, state: StateClient, hook: str, parents: int):
+        super().__init__(
+            Table("parent", [Column("id", pa.int64())]),
+            child_resolvers=[ChildResolver(2)],
+        )
+        self._state = state
+        self._hook = hook
+        self._parents = parents
+
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+        for parent_id in range(self._parents):
+            yield {"id": parent_id}
+
+    def pre_resource_resolve(self, client, resource):
+        if self._hook == "pre":
+            self._checkpoint(resource)
+
+    def post_resource_resolve(self, client, resource):
+        if self._hook == "post":
+            self._checkpoint(resource)
+
+    def _checkpoint(self, resource):
+        self._state.set_key("hook-cursor", str(resource.item["id"]))
+        self._state.flush()
+
+
+@pytest.mark.parametrize("hook", ["pre", "post"])
+def test_checkpoints_flushed_by_resource_hooks_follow_the_resource_and_its_relations(
+    hook,
+):
+    parents = 10
+    scheduler = Scheduler(4)
+    state = MemoryStateClient(checkpoints=scheduler.checkpoints)
+    try:
+        messages = list(
+            scheduler.sync(TestClient(), [HookCursorResolver(state, hook, parents)])
+        )
+    finally:
+        scheduler.shutdown()
+
+    seen = set()
+    cursors = []
+    for msg in messages:
+        if isinstance(msg, SyncInsertMessage):
+            table = msg.record.schema.metadata[METADATA_TABLE_NAME]
+            row = msg.record.to_pylist()[0]
+            if table == b"parent":
+                seen.add((row["id"],))
+            else:
+                seen.add((row["parent_id"], row["child_id"]))
+        elif isinstance(msg, SyncCheckpointMessage):
+            cursor = int(checkpoint_rows(msg)["hook-cursor"])
+            cursors.append(cursor)
+            for parent_id in range(cursor + 1):
+                assert (parent_id,) in seen, f"cursor {cursor} sent before its parent"
+                for child_id in range(2):
+                    assert (parent_id, child_id) in seen, (
+                        f"cursor {cursor} sent before child {child_id} of parent "
+                        f"{parent_id}"
+                    )
+    assert cursors and cursors[-1] == parents - 1
+
+
+class GrandchildResolver(TableResolver):
+    """Yields slowly, so it still runs after the child resolver that spawned it returned."""
+
+    def __init__(self):
+        super().__init__(
+            Table(
+                "grandchild",
+                [
+                    Column("parent_id", pa.int64()),
+                    Column("child_id", pa.int64()),
+                    Column("grandchild_id", pa.int64()),
+                ],
+            )
+        )
+
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+        for grandchild_id in range(3):
+            time.sleep(random.uniform(0.005, 0.02))
+            yield {**parent_resource.item, "grandchild_id": grandchild_id}
+
+
+class FastChildResolver(TableResolver):
+    def __init__(self):
+        super().__init__(
+            Table(
+                "fast_child",
+                [Column("parent_id", pa.int64()), Column("child_id", pa.int64())],
+            ),
+            child_resolvers=[GrandchildResolver()],
+        )
+
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+        for child_id in range(2):
+            yield {"parent_id": parent_resource.item["id"], "child_id": child_id}
+
+
+class GrandparentResolver(TableResolver):
+    def __init__(self, state: StateClient, parents: int, flush_each: bool):
+        super().__init__(
+            Table("grandparent", [Column("id", pa.int64())]),
+            child_resolvers=[FastChildResolver()],
+        )
+        self._state = state
+        self._parents = parents
+        self._flush_each = flush_each
+
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+        for parent_id in range(self._parents):
+            yield {"id": parent_id}
+            if self._flush_each:
+                self._state.set_key("grandparent-cursor", str(parent_id))
+                self._state.flush()
+        if not self._flush_each:
+            # the child resolvers return meanwhile, while their grandchildren still run
+            time.sleep(0.01)
+            self._state.set_key("grandparent-cursor", str(self._parents - 1))
+            self._state.flush()
+
+
+@pytest.mark.parametrize("flush_each", [True, False])
+def test_parent_checkpoints_follow_the_relations_of_their_relations(flush_each):
+    parents = 10
+    scheduler = Scheduler(8)
+    state = MemoryStateClient(checkpoints=scheduler.checkpoints)
+    try:
+        messages = list(
+            scheduler.sync(
+                TestClient(), [GrandparentResolver(state, parents, flush_each)]
+            )
+        )
+    finally:
+        scheduler.shutdown()
+
+    seen = set()
+    cursors = []
+    for msg in messages:
+        if (
+            isinstance(msg, SyncInsertMessage)
+            and msg.record.schema.metadata[METADATA_TABLE_NAME] == b"grandchild"
+        ):
+            row = msg.record.to_pylist()[0]
+            seen.add((row["parent_id"], row["child_id"], row["grandchild_id"]))
+        elif isinstance(msg, SyncCheckpointMessage):
+            cursor = int(checkpoint_rows(msg)["grandparent-cursor"])
+            cursors.append(cursor)
+            for parent_id in range(cursor + 1):
+                for child_id in range(2):
+                    for grandchild_id in range(3):
+                        assert (parent_id, child_id, grandchild_id) in seen, (
+                            f"cursor {cursor} sent before grandchild "
+                            f"{(parent_id, child_id, grandchild_id)}"
+                        )
+    assert cursors and cursors[-1] == parents - 1

@@ -39,6 +39,10 @@ class Scope:
         self.resolving = True
         # checkpoints waiting for this scope to finish
         self.waiters: List[_Pending] = []
+        # set while a resource is resolved, until it is on the queue and its relations are submitted
+        self.resource_in_flight = False
+        # checkpoints waiting for that resource and its relations
+        self.after_resource: List[_Pending] = []
 
     def finished(self) -> bool:
         return not self.resolving and not self.open_children
@@ -112,6 +116,29 @@ class Checkpoints:
         """Returns the scope of the table resolver running in this context, or None outside table resolvers."""
         return self._scope.get()
 
+    @contextmanager
+    def resource(self, scope: Scope) -> Iterator[None]:
+        """
+        Marks a resource of scope as in flight until it is on the queue and its relations are
+        submitted, so that checkpoints flushed meanwhile, e.g. from its resource hooks, follow
+        the resource and its relations.
+        """
+        with self._lock:
+            scope.resource_in_flight = True
+        try:
+            yield
+        finally:
+            with self._lock:
+                scope.resource_in_flight = False
+                ready: List[_Pending] = []
+                for pending in scope.after_resource:
+                    pending.blockers -= 1
+                    self._wait_for_children(pending, scope)
+                    if pending.blockers == 0:
+                        ready.append(pending)
+                scope.after_resource = []
+                self._send(ready)
+
     def resolver_finished(self, scope: Scope) -> None:
         """
         Marks the resolver of scope as returned, once every resource it produced is on the queue.
@@ -167,11 +194,11 @@ class Checkpoints:
     ) -> None:
         pending = _Pending(msg, keys, self._sync)
         for scope in {s for s in scopes if s is not None}:
-            # the scope's own resources are on the queue already: resolvers put each
-            # resource on it before they resume, so only its relations can be in flight
-            for child in scope.open_children:
-                child.waiters.append(pending)
+            if scope.resource_in_flight:
+                scope.after_resource.append(pending)
                 pending.blockers += 1
+            else:
+                self._wait_for_children(pending, scope)
         earlier = set()
         for key in keys:
             previous = self._unsent.get(key)
@@ -182,6 +209,16 @@ class Checkpoints:
             self._unsent[key] = pending
         if pending.blockers == 0:
             self._send([pending])
+
+    @staticmethod
+    def _wait_for_children(pending: _Pending, scope: Scope) -> None:
+        """
+        Makes pending wait for the relations of scope's resources. Its resources are on the queue
+        already, as none is in flight. Called with the lock held.
+        """
+        for child in scope.open_children:
+            child.waiters.append(pending)
+            pending.blockers += 1
 
     def _send(self, ready: List[_Pending]) -> None:
         """Puts ready checkpoints on the queue, then the ones that only waited for them. Called with the lock held."""
