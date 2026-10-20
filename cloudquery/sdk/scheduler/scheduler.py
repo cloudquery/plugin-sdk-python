@@ -20,10 +20,12 @@ QUEUE_PER_WORKER = 100
 
 
 class ThreadPoolExecutorWithQueueSizeLimit(futures.ThreadPoolExecutor):
-    def __init__(self, maxsize, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, maxsize: int, max_workers: int, *args, **kwargs):
+        super().__init__(max_workers, *args, **kwargs)
         self.maxsize = maxsize
-        self._slots = threading.BoundedSemaphore(maxsize + self._max_workers)
+        # submit() puts on the work queue while holding a lock that every pool shares, so a
+        # full bounded queue would block the other pools' workers too: limit it before submit
+        self._slots = threading.BoundedSemaphore(maxsize + max_workers)
 
     def submit(self, fn, /, *args, **kwargs):
         self._slots.acquire()
