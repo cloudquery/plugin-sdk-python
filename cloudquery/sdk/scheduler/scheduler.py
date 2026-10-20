@@ -1,4 +1,5 @@
 import queue
+import threading
 from concurrent import futures
 from typing import List, Generator, Any, Optional
 
@@ -21,7 +22,18 @@ QUEUE_PER_WORKER = 100
 class ThreadPoolExecutorWithQueueSizeLimit(futures.ThreadPoolExecutor):
     def __init__(self, maxsize, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._work_queue = queue.Queue(maxsize=maxsize)
+        self.maxsize = maxsize
+        self._slots = threading.BoundedSemaphore(maxsize + self._max_workers)
+
+    def submit(self, fn, /, *args, **kwargs):
+        self._slots.acquire()
+        try:
+            future = super().submit(fn, *args, **kwargs)
+        except BaseException:
+            self._slots.release()
+            raise
+        future.add_done_callback(lambda _: self._slots.release())
+        return future
 
 
 class TableResolverStarted:
