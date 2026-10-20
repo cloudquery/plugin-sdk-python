@@ -395,3 +395,51 @@ def test_resolvers_of_an_ended_sync_do_not_checkpoint_into_the_next_one():
     ]
     assert cursors
     assert all(cursor.startswith("next-") for cursor in cursors)
+
+
+def test_resolvers_of_an_ended_sync_cannot_change_the_state_of_the_next_one():
+    # the plugin keeps the current sync's state client on an attribute that resolvers read
+    shared: Dict[str, StateClient] = {}
+    next_started, leftover_done = threading.Event(), threading.Event()
+    leftover_errors: List[Exception] = []
+
+    class LeftoverResolver(TableResolver):
+        def __init__(self):
+            super().__init__(Table("leftover", [Column("id", pa.int64())]))
+
+        def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+            yield {"id": 1}
+            next_started.wait(5)
+            try:
+                shared["state"].set_key("leftover_cursor", "ended")
+            except RuntimeError as e:
+                leftover_errors.append(e)
+            finally:
+                leftover_done.set()
+
+    class NextResolver(CursorResolver):
+        def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+            next_started.set()
+            leftover_done.wait(5)
+            yield from super().resolve(client, parent_resource)
+
+    scheduler = Scheduler(4)
+    try:
+        ended = scheduler.sync(TestClient(), [LeftoverResolver()])
+        while not isinstance(next(ended), SyncInsertMessage):
+            pass
+        ended.close()
+
+        shared["state"] = MemoryStateClient(checkpoints=scheduler.checkpoints)
+        scheduler.set_post_sync_hook(shared["state"].flush)
+        messages = list(
+            scheduler.sync(TestClient(), [NextResolver(shared["state"], "next")])
+        )
+    finally:
+        scheduler.shutdown()
+    assert len(leftover_errors) == 1
+    assert "leftover_cursor" not in shared["state"].mem
+    checkpoints = [
+        checkpoint_rows(m) for m in messages if isinstance(m, SyncCheckpointMessage)
+    ]
+    assert [c["cursor"] for c in checkpoints] == [f"next-{i}" for i in range(1, 30)]

@@ -112,6 +112,20 @@ class Checkpoints:
         """Returns the scope of the table resolver running in this context, or None outside table resolvers."""
         return self._scope.get()
 
+    def check_scope(self, scope: Optional[Scope]) -> None:
+        """
+        Raises if scope belongs to a sync that ended. The state client calls it before it records
+        a change, so that a resolver still running after its sync cannot change the state of the
+        next one: neither the values the next sync reads nor the keys it flushes.
+
+        Raises:
+            RuntimeError: if scope belongs to a sync that ended.
+        """
+        if scope is not None and scope.sync is not self._sync:
+            raise RuntimeError(
+                "the state of a table resolver can only be changed during its own sync"
+            )
+
     def resolver_finished(self, scope: Scope) -> None:
         """
         Marks the resolver of scope as returned, once every resource it produced is on the queue.

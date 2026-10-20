@@ -85,7 +85,10 @@ class StateClient(ABC):
             return self.mem.get(key)
 
     def set_key(self, key: str, value: str) -> None:
-        scope = self.checkpoints.current_scope() if self.checkpoints else None
+        scope = None
+        if self.checkpoints:
+            scope = self.checkpoints.current_scope()
+            self.checkpoints.check_scope(scope)
         with self._lock:
             self.mem[key] = value
             self.changes.setdefault(key, set()).add(scope)
