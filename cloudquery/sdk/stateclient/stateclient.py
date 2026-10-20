@@ -91,6 +91,10 @@ class StateClient(ABC):
         if self.checkpoints and self.checkpoints.superseded(scope):
             return
         with self._lock:
+            # with checkpoints, the value also covers the caller's resources, so later checkpoints
+            # of the key must still follow them even if it is unchanged
+            if self.checkpoints is None and self.mem.get(key) == value:
+                return
             self.mem[key] = value
             self.changes.setdefault(key, set()).add(scope)
 
@@ -101,6 +105,10 @@ class StateClient(ABC):
         If that fails, the keys stay changed, so a later flush retries them.
         Changes made by table resolvers of an ended sync are dropped once another sync runs,
         as the resources they cover may never have been committed.
+
+        Raises:
+            SyncNotRunningError: with checkpoints, if the sync is not running, e.g. once
+                Scheduler.sync returned. Flush in the scheduler's post-sync hook instead.
         """
         with self._flush_lock:
             with self._lock:

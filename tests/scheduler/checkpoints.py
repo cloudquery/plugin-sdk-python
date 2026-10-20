@@ -1,4 +1,5 @@
 import contextvars
+import queue
 import random
 import threading
 import time
@@ -18,6 +19,7 @@ from cloudquery.sdk.scheduler import Scheduler, TableResolver
 from cloudquery.sdk.schema import Column
 from cloudquery.sdk.schema.arrow import METADATA_TABLE_NAME
 from cloudquery.sdk.schema.table import Table
+from cloudquery.sdk.stateclient import SyncNotRunningError
 from cloudquery.sdk.stateclient.stateclient import (
     ConnectedStateClient,
     StateClient,
@@ -223,6 +225,62 @@ def test_flush_writes_to_the_backend_without_checkpoints():
     assert state.writes[-1] == [("a", "3")]
 
 
+def test_setting_an_unchanged_value_is_not_a_change():
+    state = MemoryStateClient(checkpoints=None)
+    state.backend["a"] = "1"
+    state.read_all_state()
+    state.set_key("a", "1")
+    state.flush()
+    assert state.writes == []
+
+    state.set_key("a", "2")
+    state.set_key("a", "2")
+    state.flush()
+    assert state.writes == [[("a", "2")]]
+
+
+def test_setting_an_unchanged_value_adds_the_caller_to_the_pending_change():
+    scheduler = Scheduler(1)
+    state = MemoryStateClient(checkpoints=scheduler.checkpoints)
+    state.set_key("a", "1")
+    scope = scheduler.checkpoints.new_scope(None)
+    with scheduler.checkpoints.entered(scope):
+        state.set_key("a", "1")
+    scheduler.shutdown()
+    assert state.changes["a"] == {None, scope}
+
+
+def test_unchanged_values_order_later_checkpoints_after_the_callers_resources():
+    scheduler = Scheduler(1)
+    checkpoints = scheduler.checkpoints
+    res = queue.Queue()
+    checkpoints.start(res)
+    state = MemoryStateClient(checkpoints=checkpoints)
+    first, unfinished, last = (checkpoints.new_scope(None) for _ in range(3))
+    child = checkpoints.new_scope(unfinished)
+
+    def flush_in(scope, value):
+        with checkpoints.entered(scope):
+            state.set_key("cursor", value)
+            state.flush()
+
+    def sent():
+        return [checkpoint_rows(res.get_nowait())["cursor"] for _ in range(res.qsize())]
+
+    try:
+        flush_in(first, "1")
+        assert sent() == ["1"]
+        # the same value, but it also covers the resources of a resolver whose relations still run
+        flush_in(unfinished, "1")
+        flush_in(last, "2")
+        assert sent() == [], "a later value must not overtake the relations it follows"
+        checkpoints.resolver_finished(child)
+        assert sent() == ["1", "2"]
+    finally:
+        checkpoints.stop()
+        scheduler.shutdown()
+
+
 def test_failed_flush_keeps_the_changes():
     state = MemoryStateClient(checkpoints=None, fail_writes=True)
     state.set_key("a", "1")
@@ -238,7 +296,7 @@ def test_checkpoint_flush_outside_a_sync_fails_and_keeps_the_changes():
     scheduler = Scheduler(1)
     state = MemoryStateClient(checkpoints=scheduler.checkpoints)
     state.set_key("a", "1")
-    with pytest.raises(RuntimeError):
+    with pytest.raises(SyncNotRunningError):
         state.flush()
     assert "a" in state.changes
     assert state.writes == []
@@ -495,3 +553,164 @@ def test_a_state_client_reused_across_syncs_drops_unflushed_changes_of_an_ended_
         checkpoint_rows(m) for m in messages if isinstance(m, SyncCheckpointMessage)
     ]
     assert checkpoints == [{"other": "next"}]
+
+
+class HookCursorResolver(TableResolver):
+    """Checkpoints its cursor from a resource hook, before the resource is on the queue."""
+
+    def __init__(self, state: StateClient, hook: str, parents: int):
+        super().__init__(
+            Table("parent", [Column("id", pa.int64())]),
+            child_resolvers=[ChildResolver(2)],
+        )
+        self._state = state
+        self._hook = hook
+        self._parents = parents
+
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+        for parent_id in range(self._parents):
+            yield {"id": parent_id}
+
+    def pre_resource_resolve(self, client, resource):
+        if self._hook == "pre":
+            self._checkpoint(resource)
+
+    def post_resource_resolve(self, client, resource):
+        if self._hook == "post":
+            self._checkpoint(resource)
+
+    def _checkpoint(self, resource):
+        self._state.set_key("hook-cursor", str(resource.item["id"]))
+        self._state.flush()
+
+
+@pytest.mark.parametrize("hook", ["pre", "post"])
+def test_checkpoints_flushed_by_resource_hooks_follow_the_resource_and_its_relations(
+    hook,
+):
+    parents = 10
+    scheduler = Scheduler(4)
+    state = MemoryStateClient(checkpoints=scheduler.checkpoints)
+    try:
+        messages = list(
+            scheduler.sync(TestClient(), [HookCursorResolver(state, hook, parents)])
+        )
+    finally:
+        scheduler.shutdown()
+
+    seen = set()
+    cursors = []
+    for msg in messages:
+        if isinstance(msg, SyncInsertMessage):
+            table = msg.record.schema.metadata[METADATA_TABLE_NAME]
+            row = msg.record.to_pylist()[0]
+            if table == b"parent":
+                seen.add((row["id"],))
+            else:
+                seen.add((row["parent_id"], row["child_id"]))
+        elif isinstance(msg, SyncCheckpointMessage):
+            cursor = int(checkpoint_rows(msg)["hook-cursor"])
+            cursors.append(cursor)
+            for parent_id in range(cursor + 1):
+                assert (parent_id,) in seen, f"cursor {cursor} sent before its parent"
+                for child_id in range(2):
+                    assert (parent_id, child_id) in seen, (
+                        f"cursor {cursor} sent before child {child_id} of parent "
+                        f"{parent_id}"
+                    )
+    assert cursors and cursors[-1] == parents - 1
+
+
+class GrandchildResolver(TableResolver):
+    """Yields slowly, so it still runs after the child resolver that spawned it returned."""
+
+    def __init__(self):
+        super().__init__(
+            Table(
+                "grandchild",
+                [
+                    Column("parent_id", pa.int64()),
+                    Column("child_id", pa.int64()),
+                    Column("grandchild_id", pa.int64()),
+                ],
+            )
+        )
+
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+        for grandchild_id in range(3):
+            time.sleep(random.uniform(0.005, 0.02))
+            yield {**parent_resource.item, "grandchild_id": grandchild_id}
+
+
+class FastChildResolver(TableResolver):
+    def __init__(self):
+        super().__init__(
+            Table(
+                "fast_child",
+                [Column("parent_id", pa.int64()), Column("child_id", pa.int64())],
+            ),
+            child_resolvers=[GrandchildResolver()],
+        )
+
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+        for child_id in range(2):
+            yield {"parent_id": parent_resource.item["id"], "child_id": child_id}
+
+
+class GrandparentResolver(TableResolver):
+    def __init__(self, state: StateClient, parents: int, flush_each: bool):
+        super().__init__(
+            Table("grandparent", [Column("id", pa.int64())]),
+            child_resolvers=[FastChildResolver()],
+        )
+        self._state = state
+        self._parents = parents
+        self._flush_each = flush_each
+
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+        for parent_id in range(self._parents):
+            yield {"id": parent_id}
+            if self._flush_each:
+                self._state.set_key("grandparent-cursor", str(parent_id))
+                self._state.flush()
+        if not self._flush_each:
+            # the child resolvers return meanwhile, while their grandchildren still run
+            time.sleep(0.01)
+            self._state.set_key("grandparent-cursor", str(self._parents - 1))
+            self._state.flush()
+
+
+@pytest.mark.parametrize("flush_each", [True, False])
+def test_parent_checkpoints_follow_the_relations_of_their_relations(flush_each):
+    parents = 10
+    scheduler = Scheduler(8)
+    state = MemoryStateClient(checkpoints=scheduler.checkpoints)
+    try:
+        messages = list(
+            scheduler.sync(
+                TestClient(), [GrandparentResolver(state, parents, flush_each)]
+            )
+        )
+    finally:
+        scheduler.shutdown()
+
+    seen = set()
+    cursors = []
+    for msg in messages:
+        if (
+            isinstance(msg, SyncInsertMessage)
+            and msg.record.schema.metadata[METADATA_TABLE_NAME] == b"grandchild"
+        ):
+            row = msg.record.to_pylist()[0]
+            seen.add((row["parent_id"], row["child_id"], row["grandchild_id"]))
+        elif isinstance(msg, SyncCheckpointMessage):
+            cursor = int(checkpoint_rows(msg)["grandparent-cursor"])
+            cursors.append(cursor)
+            for parent_id in range(cursor + 1):
+                for child_id in range(2):
+                    for grandchild_id in range(3):
+                        assert (parent_id, child_id, grandchild_id) in seen, (
+                            f"cursor {cursor} sent before grandchild "
+                            f"{(parent_id, child_id, grandchild_id)}"
+                        )
+    assert cursors and cursors[-1] == parents - 1

@@ -20,10 +20,12 @@ QUEUE_PER_WORKER = 100
 
 
 class ThreadPoolExecutorWithQueueSizeLimit(futures.ThreadPoolExecutor):
-    def __init__(self, maxsize, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, maxsize: int, max_workers: int, *args, **kwargs):
+        super().__init__(max_workers, *args, **kwargs)
         self.maxsize = maxsize
-        self._slots = threading.BoundedSemaphore(maxsize + self._max_workers)
+        # submit() puts on the work queue while holding a lock that every pool shares, so a
+        # full bounded queue would block the other pools' workers too: limit it before submit
+        self._slots = threading.BoundedSemaphore(maxsize + max_workers)
 
     def submit(self, fn, /, *args, **kwargs):
         self._slots.acquire()
@@ -146,37 +148,38 @@ class Scheduler:
                     depth=depth,
                 )
             for item in resolver.resolve(client, parent_item):
-                try:
-                    resource = self.resolve_resource(
-                        resolver, client, parent_item, item
-                    )
-                except Exception as e:
-                    self._logger.error(
-                        "failed to resolve resource",
-                        client_id=client.id(),
-                        table=resolver.table.name,
-                        depth=depth,
-                        exc_info=e,
-                    )
-                    self._logger.debug(
-                        "details about resource that failed to resolve",
-                        client_id=client.id(),
-                        table=resolver.table.name,
-                        resource=item,
-                    )
-                    continue
-                res.put(SyncInsertMessage(resource.to_arrow_record()))
-                for child_resolvers in resolver.child_resolvers:
-                    res.put(TableResolverStarted())
-                    self._pools[depth + 1].submit(
-                        self.resolve_table,
-                        child_resolvers,
-                        depth + 1,
-                        client,
-                        resource,
-                        res,
-                        self.checkpoints.new_scope(scope),
-                    )
+                with self.checkpoints.resource(scope):
+                    try:
+                        resource = self.resolve_resource(
+                            resolver, client, parent_item, item
+                        )
+                    except Exception as e:
+                        self._logger.error(
+                            "failed to resolve resource",
+                            client_id=client.id(),
+                            table=resolver.table.name,
+                            depth=depth,
+                            exc_info=e,
+                        )
+                        self._logger.debug(
+                            "details about resource that failed to resolve",
+                            client_id=client.id(),
+                            table=resolver.table.name,
+                            resource=item,
+                        )
+                        continue
+                    res.put(SyncInsertMessage(resource.to_arrow_record()))
+                    for child_resolvers in resolver.child_resolvers:
+                        res.put(TableResolverStarted())
+                        self._pools[depth + 1].submit(
+                            self.resolve_table,
+                            child_resolvers,
+                            depth + 1,
+                            client,
+                            resource,
+                            res,
+                            self.checkpoints.new_scope(scope),
+                        )
                 total_resources += 1
             if depth == 0:
                 self._logger.info(
