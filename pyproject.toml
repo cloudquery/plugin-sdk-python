@@ -23,7 +23,7 @@ classifiers = [
     "Topic :: Internet",
 ]
 dependencies = [
-    "cloudquery-plugin-pb>=0.0.54",
+    "cloudquery-plugin-pb>=0.0.55",
     "grpcio>=1.78.0",
     "grpcio-tools>=1.78.0",
     "Jinja2>=3.1.6",
@@ -61,3 +61,4 @@ python_files = "tests/*.py"
 
 [tool.uv]
 exclude-newer = "1 week"
+exclude-newer-package = { cloudquery-plugin-pb = false }
