@@ -147,6 +147,14 @@ class Checkpoints:
                 scope.after_resource = []
                 self._send(ready)
 
+    def superseded(self, scope: Optional[Scope]) -> bool:
+        """Returns True if scope belongs to a sync that ended while another sync runs now."""
+        return (
+            scope is not None
+            and self._sync is not None
+            and scope.sync is not self._sync
+        )
+
     def resolver_finished(self, scope: Scope) -> None:
         """
         Marks the resolver of scope as returned, once every resource it produced is on the queue.
@@ -187,7 +195,7 @@ class Checkpoints:
                     "e.g. from a table resolver or the post-sync hook"
                 )
             for scopes, _, _ in checkpoints:
-                if any(s is not None and s.sync is not self._sync for s in scopes):
+                if any(self.superseded(s) for s in scopes):
                     raise SyncNotRunningError(
                         "state checkpoints of a table resolver can only be flushed during its own sync"
                     )
