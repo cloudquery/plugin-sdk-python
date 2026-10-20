@@ -352,3 +352,46 @@ def test_scope_follows_copied_context_into_other_threads():
     finally:
         scheduler.shutdown()
     assert scopes[0] is not None
+
+
+class CursorResolver(TableResolver):
+    def __init__(self, state: StateClient, tag: str):
+        super().__init__(Table("items", [Column("id", pa.int64())]))
+        self._state = state
+        self._tag = tag
+
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+        for item_id in range(1, 30):
+            time.sleep(0.02)
+            yield {"id": item_id}
+            self._state.set_key("cursor", f"{self._tag}-{item_id}")
+            self._state.flush()
+
+
+def test_resolvers_of_an_ended_sync_do_not_checkpoint_into_the_next_one():
+    scheduler = Scheduler(4)
+    try:
+        ended = scheduler.sync(
+            TestClient(),
+            [
+                CursorResolver(
+                    MemoryStateClient(checkpoints=scheduler.checkpoints), "ended"
+                )
+            ],
+        )
+        for _ in range(5):
+            next(ended)
+        ended.close()
+
+        state = MemoryStateClient(checkpoints=scheduler.checkpoints)
+        scheduler.set_post_sync_hook(state.flush)
+        messages = list(scheduler.sync(TestClient(), [CursorResolver(state, "next")]))
+    finally:
+        scheduler.shutdown()
+    cursors = [
+        checkpoint_rows(m)["cursor"]
+        for m in messages
+        if isinstance(m, SyncCheckpointMessage)
+    ]
+    assert cursors
+    assert all(cursor.startswith("next-") for cursor in cursors)

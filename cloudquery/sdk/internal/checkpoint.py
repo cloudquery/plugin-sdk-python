@@ -30,8 +30,10 @@ class Scope:
     spawned is finished.
     """
 
-    def __init__(self, parent: Optional[Scope]):
+    def __init__(self, parent: Optional[Scope], sync: Optional[object]):
         self.parent = parent
+        # the sync the scope belongs to, so that resolvers still running after it ended cannot checkpoint into the next one
+        self.sync = sync
         # child scopes that are not finished yet
         self.open_children: Set[Scope] = set()
         self.resolving = True
@@ -45,9 +47,10 @@ class Scope:
 class _Pending:
     """A checkpoint waiting for scopes to finish and for earlier checkpoints of its keys to be sent."""
 
-    def __init__(self, msg: SyncCheckpointMessage, keys: List[str]):
+    def __init__(self, msg: SyncCheckpointMessage, keys: List[str], sync: object):
         self.msg = msg
         self.keys = keys
+        self.sync = sync
         self.blockers = 0
         self.dependents: List[_Pending] = []
 
@@ -68,22 +71,25 @@ class Checkpoints:
         self._res: Optional[queue.Queue] = None
         # newest unsent checkpoint of each key
         self._unsent: Dict[str, _Pending] = {}
+        self._sync: Optional[object] = None
 
     def start(self, res: queue.Queue) -> None:
         """Sends later checkpoints on res. Called by the scheduler when a sync starts."""
         with self._lock:
             self._res = res
+            self._sync = object()
             self._unsent = {}
 
     def stop(self) -> None:
         """Drops unsent checkpoints and rejects later ones. Called by the scheduler when a sync ends."""
         with self._lock:
             self._res = None
+            self._sync = None
             self._unsent = {}
 
     def new_scope(self, parent: Optional[Scope]) -> Scope:
         """Returns a scope for a table resolver call, before the call is submitted."""
-        scope = Scope(parent)
+        scope = Scope(parent, parent.sync if parent is not None else self._sync)
         if parent is not None:
             with self._lock:
                 parent.open_children.add(scope)
@@ -145,6 +151,11 @@ class Checkpoints:
                     "state checkpoints can only be flushed while the scheduler syncs, "
                     "e.g. from a table resolver or the post-sync hook"
                 )
+            for scopes, _, _ in checkpoints:
+                if any(s is not None and s.sync is not self._sync for s in scopes):
+                    raise RuntimeError(
+                        "state checkpoints of a table resolver can only be flushed during its own sync"
+                    )
             for scopes, keys, msg in checkpoints:
                 self._schedule(scopes, keys, msg)
 
@@ -154,7 +165,7 @@ class Checkpoints:
         keys: List[str],
         msg: SyncCheckpointMessage,
     ) -> None:
-        pending = _Pending(msg, keys)
+        pending = _Pending(msg, keys, self._sync)
         for scope in {s for s in scopes if s is not None}:
             # the scope's own resources are on the queue already: resolvers put each
             # resource on it before they resume, so only its relations can be in flight
@@ -176,7 +187,7 @@ class Checkpoints:
         """Puts ready checkpoints on the queue, then the ones that only waited for them. Called with the lock held."""
         while ready:
             pending = ready.pop()
-            if self._res is not None:
+            if pending.sync is self._sync:
                 self._res.put(pending.msg)
             for key in pending.keys:
                 if self._unsent.get(key) is pending:
