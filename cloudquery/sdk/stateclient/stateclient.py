@@ -120,9 +120,18 @@ class StateClient(ABC):
         groups: Dict[FrozenSet[Optional[Scope]], List[str]] = {}
         for key, scopes in changes.items():
             groups.setdefault(frozenset(scopes), []).append(key)
-        for scopes, keys in groups.items():
-            record = self.table.record([(key, values[key]) for key in keys])
-            self.checkpoints.schedule(scopes, keys, SyncCheckpointMessage(record))
+        self.checkpoints.schedule(
+            [
+                (
+                    scopes,
+                    keys,
+                    SyncCheckpointMessage(
+                        self.table.record([(key, values[key]) for key in keys])
+                    ),
+                )
+                for scopes, keys in groups.items()
+            ]
+        )
 
     @abstractmethod
     def migrate_state_table(self):

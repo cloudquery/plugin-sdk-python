@@ -31,3 +31,7 @@ def test_tables_clients_and_partitions_never_share_a_key():
         state_key("t", a=1, b=2),
     ]
     assert len(set(keys)) == len(keys)
+
+
+def test_client_id_that_is_not_a_string():
+    assert state_key("t", client_id=123) == "t|client_id=123"

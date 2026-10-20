@@ -13,10 +13,11 @@ the queue once those resources are on it is ordered after them on the stream.
 
 from __future__ import annotations
 
+import contextvars
 import queue
 import threading
 from contextlib import contextmanager
-from typing import Dict, Iterable, Iterator, List, Optional, Set
+from typing import Dict, Iterable, Iterator, List, Optional, Set, Tuple
 
 from cloudquery.sdk.message import SyncCheckpointMessage
 
@@ -49,7 +50,6 @@ class _Pending:
         self.keys = keys
         self.blockers = 0
         self.dependents: List[_Pending] = []
-        self.sent = False
 
 
 class Checkpoints:
@@ -62,7 +62,9 @@ class Checkpoints:
 
     def __init__(self):
         self._lock = threading.Lock()
-        self._local = threading.local()
+        self._scope: contextvars.ContextVar[Optional[Scope]] = contextvars.ContextVar(
+            "cloudquery_checkpoint_scope", default=None
+        )
         self._res: Optional[queue.Queue] = None
         # newest unsent checkpoint of each key
         self._unsent: Dict[str, _Pending] = {}
@@ -89,17 +91,20 @@ class Checkpoints:
 
     @contextmanager
     def entered(self, scope: Scope) -> Iterator[None]:
-        """Makes scope the current one on this thread, for the state changes its resolver makes."""
-        previous = getattr(self._local, "scope", None)
-        self._local.scope = scope
+        """
+        Makes scope the current one in this context, for the state changes its resolver makes.
+        To change state from other threads, run them in a copy of the context, e.g. with
+        ``contextvars.copy_context().run``; asyncio tasks copy it already.
+        """
+        token = self._scope.set(scope)
         try:
             yield
         finally:
-            self._local.scope = previous
+            self._scope.reset(token)
 
     def current_scope(self) -> Optional[Scope]:
-        """Returns the scope of the table resolver running on this thread, or None outside table resolvers."""
-        return getattr(self._local, "scope", None)
+        """Returns the scope of the table resolver running in this context, or None outside table resolvers."""
+        return self._scope.get()
 
     def resolver_finished(self, scope: Scope) -> None:
         """
@@ -121,17 +126,18 @@ class Checkpoints:
 
     def schedule(
         self,
-        scopes: Iterable[Optional[Scope]],
-        keys: List[str],
-        msg: SyncCheckpointMessage,
+        checkpoints: List[
+            Tuple[Iterable[Optional[Scope]], List[str], SyncCheckpointMessage]
+        ],
     ) -> None:
         """
-        Sends msg once every resource the scopes produced so far is on the queue, including
-        the relations spawned from them, and after every earlier unsent checkpoint of keys.
-        A None scope stands for changes made outside table resolvers, which wait for nothing.
+        Sends each (scopes, keys, msg) once every resource the scopes produced so far is on the
+        queue, including the relations spawned from them, and after every earlier unsent
+        checkpoint of keys. A None scope stands for changes made outside table resolvers, which
+        wait for nothing. Schedules all of them or, if it raises, none of them.
 
         Raises:
-            RuntimeError: if no sync is running, as the checkpoint could not be sent.
+            RuntimeError: if no sync is running, as the checkpoints could not be sent.
         """
         with self._lock:
             if self._res is None:
@@ -139,29 +145,37 @@ class Checkpoints:
                     "state checkpoints can only be flushed while the scheduler syncs, "
                     "e.g. from a table resolver or the post-sync hook"
                 )
-            pending = _Pending(msg, keys)
-            for scope in {s for s in scopes if s is not None}:
-                # the scope's own resources are on the queue already: resolvers put each
-                # resource on it before they resume, so only its relations can be in flight
-                for child in scope.open_children:
-                    child.waiters.append(pending)
-                    pending.blockers += 1
-            earlier = set()
-            for key in keys:
-                previous = self._unsent.get(key)
-                if previous is not None and previous not in earlier:
-                    earlier.add(previous)
-                    previous.dependents.append(pending)
-                    pending.blockers += 1
-                self._unsent[key] = pending
-            if pending.blockers == 0:
-                self._send([pending])
+            for scopes, keys, msg in checkpoints:
+                self._schedule(scopes, keys, msg)
+
+    def _schedule(
+        self,
+        scopes: Iterable[Optional[Scope]],
+        keys: List[str],
+        msg: SyncCheckpointMessage,
+    ) -> None:
+        pending = _Pending(msg, keys)
+        for scope in {s for s in scopes if s is not None}:
+            # the scope's own resources are on the queue already: resolvers put each
+            # resource on it before they resume, so only its relations can be in flight
+            for child in scope.open_children:
+                child.waiters.append(pending)
+                pending.blockers += 1
+        earlier = set()
+        for key in keys:
+            previous = self._unsent.get(key)
+            if previous is not None and previous not in earlier:
+                earlier.add(previous)
+                previous.dependents.append(pending)
+                pending.blockers += 1
+            self._unsent[key] = pending
+        if pending.blockers == 0:
+            self._send([pending])
 
     def _send(self, ready: List[_Pending]) -> None:
         """Puts ready checkpoints on the queue, then the ones that only waited for them. Called with the lock held."""
         while ready:
             pending = ready.pop()
-            pending.sent = True
             if self._res is not None:
                 self._res.put(pending.msg)
             for key in pending.keys:

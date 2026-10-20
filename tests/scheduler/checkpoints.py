@@ -1,6 +1,8 @@
+import contextvars
 import random
 import threading
 import time
+from concurrent import futures
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
 import pyarrow as pa
@@ -300,3 +302,53 @@ def test_builder_uses_checkpoints_only_when_the_cli_supports_them(monkeypatch):
     assert supported.checkpoints is scheduler.checkpoints
     assert unsupported.checkpoints is None
     assert not_requested.checkpoints is None
+
+
+class SingleItemResolver(TableResolver):
+    def __init__(self, name: str, multiplex_delay: float = 0):
+        super().__init__(Table(name, [Column("id", pa.int64())]))
+        self._multiplex_delay = multiplex_delay
+
+    def multiplex(self, client):
+        time.sleep(self._multiplex_delay)
+        return [client]
+
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+        yield {"id": 1}
+
+
+def test_sync_waits_for_resolvers_submitted_after_earlier_ones_finished():
+    scheduler = Scheduler(1)
+    resolvers = [
+        SingleItemResolver("fast"),
+        SingleItemResolver("slow_to_multiplex", multiplex_delay=0.2),
+    ]
+    try:
+        messages = list(scheduler.sync(TestClient(), resolvers))
+    finally:
+        scheduler.shutdown()
+    inserts = [m for m in messages if isinstance(m, SyncInsertMessage)]
+    assert len(inserts) == len(resolvers)
+
+
+def test_scope_follows_copied_context_into_other_threads():
+    scheduler = Scheduler(1)
+    scopes = []
+
+    class Resolver(TableResolver):
+        def __init__(self):
+            super().__init__(Table("items", [Column("id", pa.int64())]))
+
+        def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+            with futures.ThreadPoolExecutor(1) as pool:
+                ctx = contextvars.copy_context()
+                scopes.append(
+                    pool.submit(ctx.run, scheduler.checkpoints.current_scope).result()
+                )
+            yield {"id": 1}
+
+    try:
+        list(scheduler.sync(TestClient(), [Resolver()]))
+    finally:
+        scheduler.shutdown()
+    assert scopes[0] is not None

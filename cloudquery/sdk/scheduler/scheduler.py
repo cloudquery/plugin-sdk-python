@@ -9,7 +9,6 @@ from cloudquery.sdk.message import (
     SyncInsertMessage,
     SyncMigrateTableMessage,
     SyncErrorMessage,
-    SyncCheckpointMessage,
 )
 from cloudquery.sdk.internal.checkpoint import Checkpoints, Scope
 from cloudquery.sdk.schema import Resource
@@ -31,6 +30,11 @@ class TableResolverStarted:
 
 
 class TableResolverFinished:
+    def __init__(self) -> None:
+        pass
+
+
+class TableResolversSubmitted:
     def __init__(self) -> None:
         pass
 
@@ -95,8 +99,7 @@ class Scheduler:
         res: queue.Queue,
         scope: Optional[Scope] = None,
     ):
-        if scope is None:
-            scope = self.checkpoints.new_scope(None)
+        scope = scope or self.checkpoints.new_scope(None)
         try:
             with self.checkpoints.entered(scope):
                 self._resolve_table(resolver, depth, client, parent_item, res, scope)
@@ -197,19 +200,16 @@ class Scheduler:
         res: queue.Queue,
         deterministic_cq_id=False,
     ):
-        for resolver in resolvers:
-            clients = resolver.multiplex(client)
-            for client in clients:
-                res.put(TableResolverStarted())
-                self._pools[0].submit(
-                    self.resolve_table,
-                    resolver,
-                    0,
-                    client,
-                    None,
-                    res,
-                    self.checkpoints.new_scope(None),
-                )
+        try:
+            for resolver in resolvers:
+                clients = resolver.multiplex(client)
+                for client in clients:
+                    res.put(TableResolverStarted())
+                    self._pools[0].submit(
+                        self.resolve_table, resolver, 0, client, None, res
+                    )
+        finally:
+            res.put(TableResolversSubmitted())
 
     def sync(
         self, client, resolvers: List[TableResolver], deterministic_cq_id=False
@@ -221,31 +221,24 @@ class Scheduler:
         try:
             thread = futures.ThreadPoolExecutor()
             thread.submit(self._sync, client, resolvers, res, deterministic_cq_id)
+            submitted = False
             total_table_resolvers = 0
             finished_table_resolvers = 0
-            while True:
+            while not (submitted and total_table_resolvers == finished_table_resolvers):
                 message = res.get()
-                if isinstance(message, TableResolverStarted):
+                if isinstance(message, TableResolversSubmitted):
+                    submitted = True
+                elif isinstance(message, TableResolverStarted):
                     total_table_resolvers += 1
-                    if total_table_resolvers == finished_table_resolvers:
-                        break
-                    continue
-                if isinstance(message, TableResolverFinished):
+                elif isinstance(message, TableResolverFinished):
                     finished_table_resolvers += 1
-                    if total_table_resolvers == finished_table_resolvers:
-                        break
-                    continue
-                yield message
+                else:
+                    yield message
 
             self._post_sync_hook()
             # checkpoints the post-sync hook flushed, after every resource
-            while True:
-                try:
-                    message = res.get_nowait()
-                except queue.Empty:
-                    break
-                if isinstance(message, SyncCheckpointMessage):
-                    yield message
+            while not res.empty():
+                yield res.get_nowait()
             thread.shutdown(wait=True)
         finally:
             self.checkpoints.stop()

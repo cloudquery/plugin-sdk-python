@@ -18,7 +18,7 @@ def _escape(part: str) -> str:
 def state_key(
     table: str,
     *,
-    client_id: Optional[str] = None,
+    client_id: Optional[Union[str, int]] = None,
     **partition: Union[str, int],
 ) -> str:
     """
@@ -38,7 +38,7 @@ def state_key(
     """
     parts = [_escape(table)]
     if client_id is not None:
-        parts.append(f"client_id{_ASSIGN}{_escape(client_id)}")
+        parts.append(f"client_id{_ASSIGN}{_escape(str(client_id))}")
     for name in sorted(partition):
         parts.append(f"{_escape(name)}{_ASSIGN}{_escape(str(partition[name]))}")
     return _SEPARATOR.join(parts)
