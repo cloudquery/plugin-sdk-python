@@ -53,7 +53,7 @@ class Scheduler:
         )
         self._pools: List[ThreadPoolExecutorWithQueueSizeLimit] = []
         current_depth_concurrency = concurrency
-        current_depth_queue_size = queue_size
+        current_depth_queue_size = self._queue_size
         for _ in range(max_depth + 1):
             self._pools.append(
                 ThreadPoolExecutorWithQueueSizeLimit(
