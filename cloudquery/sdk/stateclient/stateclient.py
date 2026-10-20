@@ -87,6 +87,11 @@ class StateClient(ABC):
     def set_key(self, key: str, value: str) -> None:
         scope = self.checkpoints.current_scope() if self.checkpoints else None
         with self._lock:
+            if self.mem.get(key) == value:
+                # a pending change of the key summarizes this caller's resources too
+                if key in self.changes:
+                    self.changes[key].add(scope)
+                return
             self.mem[key] = value
             self.changes.setdefault(key, set()).add(scope)
 
@@ -95,6 +100,10 @@ class StateClient(ABC):
         Persists the keys changed since the last flush: writes them to the backend, or, with
         checkpoints, sends them on the sync stream after the resources they cover.
         If that fails, the keys stay changed, so a later flush retries them.
+
+        Raises:
+            SyncNotRunningError: with checkpoints, if the sync is not running, e.g. once
+                Scheduler.sync returned. Flush in the scheduler's post-sync hook instead.
         """
         with self._flush_lock:
             with self._lock:

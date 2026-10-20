@@ -18,6 +18,7 @@ from cloudquery.sdk.scheduler import Scheduler, TableResolver
 from cloudquery.sdk.schema import Column
 from cloudquery.sdk.schema.arrow import METADATA_TABLE_NAME
 from cloudquery.sdk.schema.table import Table
+from cloudquery.sdk.stateclient import SyncNotRunningError
 from cloudquery.sdk.stateclient.stateclient import (
     ConnectedStateClient,
     StateClient,
@@ -223,6 +224,31 @@ def test_flush_writes_to_the_backend_without_checkpoints():
     assert state.writes[-1] == [("a", "3")]
 
 
+def test_setting_an_unchanged_value_is_not_a_change():
+    state = MemoryStateClient(checkpoints=None)
+    state.backend["a"] = "1"
+    state.read_all_state()
+    state.set_key("a", "1")
+    state.flush()
+    assert state.writes == []
+
+    state.set_key("a", "2")
+    state.set_key("a", "2")
+    state.flush()
+    assert state.writes == [[("a", "2")]]
+
+
+def test_setting_an_unchanged_value_adds_the_caller_to_the_pending_change():
+    scheduler = Scheduler(1)
+    state = MemoryStateClient(checkpoints=scheduler.checkpoints)
+    state.set_key("a", "1")
+    scope = scheduler.checkpoints.new_scope(None)
+    with scheduler.checkpoints.entered(scope):
+        state.set_key("a", "1")
+    scheduler.shutdown()
+    assert state.changes["a"] == {None, scope}
+
+
 def test_failed_flush_keeps_the_changes():
     state = MemoryStateClient(checkpoints=None, fail_writes=True)
     state.set_key("a", "1")
@@ -238,7 +264,7 @@ def test_checkpoint_flush_outside_a_sync_fails_and_keeps_the_changes():
     scheduler = Scheduler(1)
     state = MemoryStateClient(checkpoints=scheduler.checkpoints)
     state.set_key("a", "1")
-    with pytest.raises(RuntimeError):
+    with pytest.raises(SyncNotRunningError):
         state.flush()
     assert "a" in state.changes
     assert state.writes == []

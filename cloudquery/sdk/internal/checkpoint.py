@@ -22,6 +22,14 @@ from typing import Dict, Iterable, Iterator, List, Optional, Set, Tuple
 from cloudquery.sdk.message import SyncCheckpointMessage
 
 
+class SyncNotRunningError(RuntimeError):
+    """
+    Raised when state checkpoints are flushed while their sync is not running, so they cannot be
+    sent: before or after Scheduler.sync, or from a resolver of an ended sync. Flush state that
+    summarizes the whole sync in the scheduler's post-sync hook instead.
+    """
+
+
 class Scope:
     """
     A table resolver call and the relations its resources spawn.
@@ -170,17 +178,17 @@ class Checkpoints:
         wait for nothing. Schedules all of them or, if it raises, none of them.
 
         Raises:
-            RuntimeError: if no sync is running, as the checkpoints could not be sent.
+            SyncNotRunningError: if the sync of the checkpoints is not running.
         """
         with self._lock:
             if self._res is None:
-                raise RuntimeError(
+                raise SyncNotRunningError(
                     "state checkpoints can only be flushed while the scheduler syncs, "
                     "e.g. from a table resolver or the post-sync hook"
                 )
             for scopes, _, _ in checkpoints:
                 if any(s is not None and s.sync is not self._sync for s in scopes):
-                    raise RuntimeError(
+                    raise SyncNotRunningError(
                         "state checkpoints of a table resolver can only be flushed during its own sync"
                     )
             for scopes, keys, msg in checkpoints:
