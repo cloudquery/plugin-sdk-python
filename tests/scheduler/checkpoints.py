@@ -1,4 +1,5 @@
 import contextvars
+import queue
 import random
 import threading
 import time
@@ -247,6 +248,37 @@ def test_setting_an_unchanged_value_adds_the_caller_to_the_pending_change():
         state.set_key("a", "1")
     scheduler.shutdown()
     assert state.changes["a"] == {None, scope}
+
+
+def test_unchanged_values_order_later_checkpoints_after_the_callers_resources():
+    scheduler = Scheduler(1)
+    checkpoints = scheduler.checkpoints
+    res = queue.Queue()
+    checkpoints.start(res)
+    state = MemoryStateClient(checkpoints=checkpoints)
+    first, unfinished, last = (checkpoints.new_scope(None) for _ in range(3))
+    child = checkpoints.new_scope(unfinished)
+
+    def flush_in(scope, value):
+        with checkpoints.entered(scope):
+            state.set_key("cursor", value)
+            state.flush()
+
+    def sent():
+        return [checkpoint_rows(res.get_nowait())["cursor"] for _ in range(res.qsize())]
+
+    try:
+        flush_in(first, "1")
+        assert sent() == ["1"]
+        # the same value, but it also covers the resources of a resolver whose relations still run
+        flush_in(unfinished, "1")
+        flush_in(last, "2")
+        assert sent() == [], "a later value must not overtake the relations it follows"
+        checkpoints.resolver_finished(child)
+        assert sent() == ["1", "2"]
+    finally:
+        checkpoints.stop()
+        scheduler.shutdown()
 
 
 def test_failed_flush_keeps_the_changes():

@@ -91,10 +91,9 @@ class StateClient(ABC):
         if self.checkpoints and self.checkpoints.superseded(scope):
             return
         with self._lock:
-            if self.mem.get(key) == value:
-                # a pending change of the key summarizes this caller's resources too
-                if key in self.changes:
-                    self.changes[key].add(scope)
+            # with checkpoints, the value also covers the caller's resources, so later checkpoints
+            # of the key must still follow them even if it is unchanged
+            if self.checkpoints is None and self.mem.get(key) == value:
                 return
             self.mem[key] = value
             self.changes.setdefault(key, set()).add(scope)
