@@ -18,6 +18,8 @@ class TableOptions:
 class BackendOptions:
     connection: str = None
     table_name: str = None
+    # set when the CLI persists state sent as checkpoints on the sync stream
+    supports_checkpoints: bool = False
 
 
 @dataclass

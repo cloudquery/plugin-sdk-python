@@ -3,6 +3,7 @@ from .sync import (
     SyncInsertMessage,
     SyncMigrateTableMessage,
     SyncErrorMessage,
+    SyncCheckpointMessage,
 )
 from .write import (
     WriteMessage,

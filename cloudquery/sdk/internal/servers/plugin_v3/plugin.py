@@ -8,12 +8,18 @@ from cloudquery.sdk.message import (
     SyncInsertMessage,
     SyncMigrateTableMessage,
     SyncErrorMessage,
+    SyncCheckpointMessage,
     WriteInsertMessage,
     WriteMigrateTableMessage,
     WriteMessage,
     WriteDeleteStale,
 )
-from cloudquery.sdk.plugin.plugin import Plugin, SyncOptions, TableOptions
+from cloudquery.sdk.plugin.plugin import (
+    BackendOptions,
+    Plugin,
+    SyncOptions,
+    TableOptions,
+)
 from cloudquery.sdk.schema import tables_to_arrow_schemas, Table
 from cloudquery.sdk.schema.table import flatten_tables
 
@@ -64,7 +70,11 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
             skip_dependent_tables=request.skip_dependent_tables,
             skip_tables=request.skip_tables,
             tables=request.tables,
-            backend_options=request.backend,
+            backend_options=BackendOptions(
+                connection=request.backend.connection,
+                table_name=request.backend.table_name,
+                supports_checkpoints=request.supports_checkpoints,
+            ),
         )
 
         for msg in self._plugin.sync(options):
@@ -77,6 +87,16 @@ class PluginServicer(plugin_pb2_grpc.PluginServicer):
                 buf = arrow.schema_to_bytes(msg.table)
                 yield plugin_pb2.Sync.Response(
                     migrate_table=plugin_pb2.Sync.MessageMigrateTable(table=buf)
+                )
+            elif isinstance(msg, SyncCheckpointMessage):
+                if not request.supports_checkpoints:
+                    # the state would be lost, as the CLI does not persist checkpoints
+                    raise RuntimeError(
+                        "plugin sent a state checkpoint, but the CLI does not support checkpoints"
+                    )
+                buf = arrow.record_to_bytes(msg.record)
+                yield plugin_pb2.Sync.Response(
+                    checkpoint=plugin_pb2.Sync.MessageCheckpoint(record=buf)
                 )
             elif isinstance(msg, SyncErrorMessage) and request.withErrorMessages:
                 yield plugin_pb2.Sync.Response(
