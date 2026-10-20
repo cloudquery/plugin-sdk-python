@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.56](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.55...v0.1.56) (2026-10-20)
+
+
+### Bug Fixes
+
+* Reject state changes from resolvers of an ended sync ([#417](https://github.com/cloudquery/plugin-sdk-python/issues/417)) ([bbd5b2e](https://github.com/cloudquery/plugin-sdk-python/commit/bbd5b2e573b00a141a4aeb21ba7f3ed27d532f99))
+* Send checkpoints from resource hooks after their resources ([#419](https://github.com/cloudquery/plugin-sdk-python/issues/419)) ([fe8cc8f](https://github.com/cloudquery/plugin-sdk-python/commit/fe8cc8f72d6fbef382399e079b263ae647604e69))
+* Use the computed queue size for child resolver pools ([#416](https://github.com/cloudquery/plugin-sdk-python/issues/416)) ([0a4b408](https://github.com/cloudquery/plugin-sdk-python/commit/0a4b4085570d9bb75c36bb44311337130b7b7cf3))
+
 ## [0.1.55](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.54...v0.1.55) (2026-10-20)
 
 
