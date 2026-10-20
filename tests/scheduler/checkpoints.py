@@ -30,8 +30,8 @@ STATE_TABLE = "cq_state_test"
 class MemoryStateClient(StateClient):
     """A state client whose backend is a dict."""
 
-    def __init__(self, checkpoints=None, fail_writes=False):
-        self.backend: Dict[str, str] = {}
+    def __init__(self, checkpoints=None, fail_writes=False, backend=None):
+        self.backend: Dict[str, str] = dict(backend or {})
         self.writes: List[List[Tuple[str, str]]] = []
         self.fail_writes = fail_writes
         super().__init__(
@@ -398,8 +398,7 @@ def test_resolvers_of_an_ended_sync_do_not_checkpoint_into_the_next_one():
 
 
 def test_resolvers_of_an_ended_sync_cannot_change_the_state_of_the_next_one():
-    # the plugin keeps the current sync's state client on an attribute that resolvers read
-    shared: Dict[str, StateClient] = {}
+    plugin_attributes: Dict[str, StateClient] = {}
     next_started, leftover_done = threading.Event(), threading.Event()
     leftover_errors: List[Exception] = []
 
@@ -409,10 +408,10 @@ def test_resolvers_of_an_ended_sync_cannot_change_the_state_of_the_next_one():
 
         def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
             yield {"id": 1}
-            next_started.wait(5)
             try:
-                shared["state"].set_key("leftover_cursor", "ended")
-            except RuntimeError as e:
+                assert next_started.wait(5), "the next sync did not start"
+                plugin_attributes["state"].set_key("leftover_cursor", "ended")
+            except Exception as e:
                 leftover_errors.append(e)
             finally:
                 leftover_done.set()
@@ -420,7 +419,7 @@ def test_resolvers_of_an_ended_sync_cannot_change_the_state_of_the_next_one():
     class NextResolver(CursorResolver):
         def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
             next_started.set()
-            leftover_done.wait(5)
+            assert leftover_done.wait(5), "the leftover resolver did not finish"
             yield from super().resolve(client, parent_resource)
 
     scheduler = Scheduler(4)
@@ -430,16 +429,69 @@ def test_resolvers_of_an_ended_sync_cannot_change_the_state_of_the_next_one():
             pass
         ended.close()
 
-        shared["state"] = MemoryStateClient(checkpoints=scheduler.checkpoints)
-        scheduler.set_post_sync_hook(shared["state"].flush)
+        plugin_attributes["state"] = MemoryStateClient(
+            checkpoints=scheduler.checkpoints
+        )
+        scheduler.set_post_sync_hook(plugin_attributes["state"].flush)
         messages = list(
-            scheduler.sync(TestClient(), [NextResolver(shared["state"], "next")])
+            scheduler.sync(
+                TestClient(), [NextResolver(plugin_attributes["state"], "next")]
+            )
         )
     finally:
         scheduler.shutdown()
-    assert len(leftover_errors) == 1
-    assert "leftover_cursor" not in shared["state"].mem
+    assert leftover_errors == []
+    assert plugin_attributes["state"].get_key("leftover_cursor") is None
     checkpoints = [
         checkpoint_rows(m) for m in messages if isinstance(m, SyncCheckpointMessage)
     ]
     assert [c["cursor"] for c in checkpoints] == [f"next-{i}" for i in range(1, 30)]
+
+
+class SetKeyThenWait(TableResolver):
+    def __init__(self, state: StateClient, release: threading.Event):
+        super().__init__(Table("set_then_wait", [Column("id", pa.int64())]))
+        self._state = state
+        self._release = release
+
+    def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+        self._state.set_key("cursor", "ended")
+        yield {"id": 1}
+        self._release.wait(5)
+
+
+def test_a_state_client_reused_across_syncs_drops_unflushed_changes_of_an_ended_sync():
+    release = threading.Event()
+    scheduler = Scheduler(4)
+    try:
+        state = MemoryStateClient(
+            checkpoints=scheduler.checkpoints, backend={"cursor": "flushed"}
+        )
+        ended = scheduler.sync(TestClient(), [SetKeyThenWait(state, release)])
+        while not isinstance(next(ended), SyncInsertMessage):
+            pass
+        ended.close()
+        release.set()
+
+        scheduler.set_post_sync_hook(state.flush)
+        cursors_seen: List[Optional[str]] = []
+
+        class ReadCursor(TableResolver):
+            def __init__(self):
+                super().__init__(Table("read_cursor", [Column("id", pa.int64())]))
+
+            def resolve(self, client, parent_resource) -> Generator[Any, None, None]:
+                cursors_seen.append(state.get_key("cursor"))
+                yield {"id": 1}
+                state.set_key("other", "next")
+
+        messages = list(scheduler.sync(TestClient(), [ReadCursor()]))
+        list(scheduler.sync(TestClient(), [ReadCursor()]))
+    finally:
+        release.set()
+        scheduler.shutdown()
+    assert cursors_seen == ["flushed", "flushed"]
+    checkpoints = [
+        checkpoint_rows(m) for m in messages if isinstance(m, SyncCheckpointMessage)
+    ]
+    assert checkpoints == [{"other": "next"}]

@@ -79,16 +79,17 @@ class StateClient(ABC):
 
         self.migrate_state_table()
         self.read_all_state()
+        self._flushed = dict(self.mem)
 
     def get_key(self, key: str) -> Optional[str]:
         with self._lock:
+            self._forget_changes_of_ended_syncs(key)
             return self.mem.get(key)
 
     def set_key(self, key: str, value: str) -> None:
-        scope = None
-        if self.checkpoints:
-            scope = self.checkpoints.current_scope()
-            self.checkpoints.check_scope(scope)
+        scope = self.checkpoints.current_scope() if self.checkpoints else None
+        if self.checkpoints and self.checkpoints.superseded(scope):
+            return
         with self._lock:
             self.mem[key] = value
             self.changes.setdefault(key, set()).add(scope)
@@ -98,9 +99,13 @@ class StateClient(ABC):
         Persists the keys changed since the last flush: writes them to the backend, or, with
         checkpoints, sends them on the sync stream after the resources they cover.
         If that fails, the keys stay changed, so a later flush retries them.
+        Changes made by table resolvers of an ended sync are dropped once another sync runs,
+        as the resources they cover may never have been committed.
         """
         with self._flush_lock:
             with self._lock:
+                for key in list(self.changes):
+                    self._forget_changes_of_ended_syncs(key)
                 if not self.changes:
                     return
                 changes, self.changes = self.changes, {}
@@ -115,6 +120,21 @@ class StateClient(ABC):
                     for key, scopes in changes.items():
                         self.changes.setdefault(key, set()).update(scopes)
                 raise
+            with self._lock:
+                self._flushed.update(values)
+
+    def _forget_changes_of_ended_syncs(self, key: str) -> None:
+        if self.checkpoints is None or key not in self.changes:
+            return
+        scopes = {s for s in self.changes[key] if not self.checkpoints.superseded(s)}
+        if scopes:
+            self.changes[key] = scopes
+            return
+        del self.changes[key]
+        if key in self._flushed:
+            self.mem[key] = self._flushed[key]
+        else:
+            self.mem.pop(key, None)
 
     def _send_checkpoints(
         self, changes: Dict[str, Set[Optional[Scope]]], values: Dict[str, str]
