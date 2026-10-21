@@ -1,3 +1,5 @@
+import pytest
+
 from cloudquery.sdk.scalar import String, Bool, List
 
 
@@ -41,3 +43,23 @@ def test_list_eq_invalid():
     l2.set([String(False)])
 
     assert l1 == l2
+
+
+@pytest.mark.parametrize("empty", [[], ()])
+@pytest.mark.parametrize("previous", [None, ["old value"]])
+def test_empty_list_is_valid_independent_of_previous_value(empty, previous):
+    scalar = List(String)
+    if previous is not None:
+        scalar.set(previous)
+    scalar.set(empty)
+    assert scalar.is_valid
+    assert len(scalar) == 0
+    assert str(scalar) == "[]"
+
+    scalar.set(None)
+    assert not scalar.is_valid
+    assert str(scalar) == "null"
+
+    scalar.set(empty)
+    assert scalar.is_valid
+    assert str(scalar) == "[]"

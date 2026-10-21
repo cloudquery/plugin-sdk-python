@@ -42,7 +42,7 @@ class List(Scalar):
                 scalar = self._type()
                 scalar.set(item)
                 self._value.append(scalar)
-                self._valid = True
+            self._valid = True
             return
 
         raise ScalarInvalidTypeError(f"Invalid type {type(value)} for List")
