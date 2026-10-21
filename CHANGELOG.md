@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.57](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.56...v0.1.57) (2026-10-21)
+
+
+### Bug Fixes
+
+* Require certifi 2026.10.19 or later ([#421](https://github.com/cloudquery/plugin-sdk-python/issues/421)) ([c810667](https://github.com/cloudquery/plugin-sdk-python/commit/c8106678759cada903d5bc19e10b744c3de61a74))
+
 ## [0.1.56](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.55...v0.1.56) (2026-10-20)
 
 
