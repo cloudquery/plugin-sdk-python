@@ -23,6 +23,7 @@ classifiers = [
     "Topic :: Internet",
 ]
 dependencies = [
+    "certifi>=2026.10.19",
     "cloudquery-plugin-pb>=0.0.55",
     "grpcio>=1.78.0",
     "grpcio-tools>=1.78.0",
@@ -61,4 +62,4 @@ python_files = "tests/*.py"
 
 [tool.uv]
 exclude-newer = "1 week"
-exclude-newer-package = { cloudquery-plugin-pb = false }
+exclude-newer-package = { cloudquery-plugin-pb = false, certifi = false }
