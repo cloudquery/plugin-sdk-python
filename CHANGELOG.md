@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.58](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.57...v0.1.58) (2026-11-01)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency black to v26.10.1 [SECURITY] ([#425](https://github.com/cloudquery/plugin-sdk-python/issues/425)) ([8bb8428](https://github.com/cloudquery/plugin-sdk-python/commit/8bb842837e11c294dc18d7864ed668d5f8d9beda))
+* **deps:** Update ghcr.io/astral-sh/uv Docker tag to v0.13.6 ([#428](https://github.com/cloudquery/plugin-sdk-python/issues/428)) ([0ba5b2c](https://github.com/cloudquery/plugin-sdk-python/commit/0ba5b2c2f8f35eb6d9dafdceecaad87ac9e45989))
+
 ## [0.1.57](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.56...v0.1.57) (2026-10-21)
 
 
