@@ -29,6 +29,7 @@ from cloudquery.sdk.schema import table
 _IS_WINDOWS = sys.platform == "win32"
 _STOP_GRACE_SECONDS = 5
 _FORCED_EXIT_DELAY_SECONDS = 5
+_FORCED_EXIT_FLUSH_TIMEOUT_SECONDS = 1
 
 try:
     import colorama
@@ -432,6 +433,15 @@ class PluginCommand:
 
 
 def _exit_now():
-    sys.stdout.flush()
-    sys.stderr.flush()
+    flusher = threading.Thread(target=_flush_output_streams, daemon=True)
+    flusher.start()
+    flusher.join(_FORCED_EXIT_FLUSH_TIMEOUT_SECONDS)
     os._exit(0)
+
+
+def _flush_output_streams():
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.flush()
+        except Exception:
+            pass

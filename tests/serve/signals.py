@@ -29,6 +29,32 @@ class BlockedInitPlugin(Plugin):
 serve.PluginCommand(BlockedInitPlugin("test", "v0.0.1")).run(["serve", "--address", sys.argv[1]])
 """
 
+SERVE_PLUGIN_WITH_INIT_FLOODING_STDOUT = """
+import sys
+from cloudquery.sdk import serve
+from cloudquery.sdk.plugin import Plugin
+
+class FloodingInitPlugin(Plugin):
+    def init(self, spec, no_connection=False):
+        while True:
+            sys.stdout.write("x" * 1024)
+
+serve.PluginCommand(FloodingInitPlugin("test", "v0.0.1")).run(["serve", "--address", sys.argv[1]])
+"""
+
+SERVE_PLUGIN_WITH_INIT_BLOCKED_ON_BUFFERED_STDOUT = """
+import sys, threading
+from cloudquery.sdk import serve
+from cloudquery.sdk.plugin import Plugin
+
+class BufferedInitPlugin(Plugin):
+    def init(self, spec, no_connection=False):
+        sys.stdout.write("buffered and never flushed")
+        threading.Event().wait()
+
+serve.PluginCommand(BufferedInitPlugin("test", "v0.0.1")).run(["serve", "--address", sys.argv[1]])
+"""
+
 SIGTERM_DURING_LOCK_RESTORE = """
 import os, signal, sys, threading
 from cloudquery.sdk import serve
@@ -94,9 +120,9 @@ def free_address():
         return "127.0.0.1:%d" % sock.getsockname()[1]
 
 
-def start_plugin_with_blocked_init(tmp_path):
+def start_plugin_with_blocked_init(tmp_path, source=SERVE_PLUGIN_WITH_BLOCKED_INIT):
     address = free_address()
-    process = start_plugin(tmp_path, SERVE_PLUGIN_WITH_BLOCKED_INIT, address)
+    process = start_plugin(tmp_path, source, address)
     wait_until_serving(process)
     channel = grpc.insecure_channel(address)
     init_call = plugin_pb2_grpc.PluginStub(channel).Init.future(
@@ -126,6 +152,44 @@ def test_second_signal_with_blocked_handler_exits_zero_immediately(tmp_path):
         process.send_signal(signal.SIGINT)
         output, _ = process.communicate(timeout=3)
         assert process.returncode == 0, output
+    finally:
+        init_call.cancel()
+        channel.close()
+        process.kill()
+
+
+def send_termination_signals(process, second_signal):
+    process.send_signal(signal.SIGTERM)
+    if second_signal:
+        time.sleep(0.5)
+        process.send_signal(signal.SIGINT)
+        return 3
+    return 20
+
+
+@pytest.mark.parametrize("second_signal", [False, True])
+def test_forced_exit_with_full_stdout_pipe_exits_zero(tmp_path, second_signal):
+    process, channel, init_call = start_plugin_with_blocked_init(
+        tmp_path, SERVE_PLUGIN_WITH_INIT_FLOODING_STDOUT
+    )
+    try:
+        timeout = send_termination_signals(process, second_signal)
+        assert process.wait(timeout=timeout) == 0
+    finally:
+        init_call.cancel()
+        channel.close()
+        process.kill()
+
+
+@pytest.mark.parametrize("second_signal", [False, True])
+def test_forced_exit_with_closed_stdout_pipe_exits_zero(tmp_path, second_signal):
+    process, channel, init_call = start_plugin_with_blocked_init(
+        tmp_path, SERVE_PLUGIN_WITH_INIT_BLOCKED_ON_BUFFERED_STDOUT
+    )
+    try:
+        process.stdout.close()
+        timeout = send_termination_signals(process, second_signal)
+        assert process.wait(timeout=timeout) == 0
     finally:
         init_call.cancel()
         channel.close()
