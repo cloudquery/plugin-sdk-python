@@ -96,7 +96,7 @@ wheels = [
 
 [[package]]
 name = "cloudquery-plugin-sdk"
-version = "0.1.58"
+version = "0.1.60"
 source = { editable = "." }
 dependencies = [
     { name = "certifi" },
