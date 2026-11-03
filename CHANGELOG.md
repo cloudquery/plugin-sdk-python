@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.59](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.58...v0.1.59) (2026-11-03)
+
+
+### Bug Fixes
+
+* Exit 0 on SIGTERM while serving ([#430](https://github.com/cloudquery/plugin-sdk-python/issues/430)) ([b733e64](https://github.com/cloudquery/plugin-sdk-python/commit/b733e641aaebf3792ee028d495005efb71910bcf))
+
 ## [0.1.58](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.57...v0.1.58) (2026-11-02)
 
 
