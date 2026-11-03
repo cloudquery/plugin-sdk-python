@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.61](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.60...v0.1.61) (2026-11-03)
+
+
+### Bug Fixes
+
+* Bump Pygments and setuptools to patched versions ([#434](https://github.com/cloudquery/plugin-sdk-python/issues/434)) ([dee6e3a](https://github.com/cloudquery/plugin-sdk-python/commit/dee6e3ac89a595e6ca4ee953b5dae227dd207914))
+* **deps:** Update dependency setuptools to v84 [SECURITY] ([#433](https://github.com/cloudquery/plugin-sdk-python/issues/433)) ([a51a5b8](https://github.com/cloudquery/plugin-sdk-python/commit/a51a5b83f2c1099f6a633e97e732eda37ead03e6))
+
 ## [0.1.60](https://github.com/cloudquery/plugin-sdk-python/compare/v0.1.59...v0.1.60) (2026-11-03)
 
 
