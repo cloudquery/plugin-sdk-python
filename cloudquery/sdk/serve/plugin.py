@@ -4,8 +4,10 @@ import json
 import logging
 import os
 import shutil
+import signal
 import subprocess
 import tarfile
+import threading
 from concurrent import futures
 from pathlib import Path
 
@@ -401,7 +403,17 @@ class PluginCommand:
         self._server.add_insecure_port(args.address)
         logger.info("Starting server", address=args.address)
         self._server.start()
+        self._stop_on_termination_signals()
         self._server.wait_for_termination()
+
+    def _stop_on_termination_signals(self):
+        if threading.current_thread() is not threading.main_thread():
+            return
+        for signum in (signal.SIGTERM, signal.SIGINT):
+            signal.signal(signum, self._stop_in_background)
+
+    def _stop_in_background(self, signum, frame):
+        threading.Thread(target=self.stop, daemon=True).start()
 
     def stop(self):
         self._server.stop(5)
