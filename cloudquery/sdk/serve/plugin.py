@@ -8,6 +8,7 @@ import signal
 import subprocess
 import tarfile
 import threading
+import time
 from concurrent import futures
 from pathlib import Path
 
@@ -26,6 +27,8 @@ from cloudquery.sdk.plugin.plugin import Plugin
 from cloudquery.sdk.schema import table
 
 _IS_WINDOWS = sys.platform == "win32"
+_STOP_GRACE_SECONDS = 5
+_FORCED_EXIT_DELAY_SECONDS = 5
 
 try:
     import colorama
@@ -409,11 +412,26 @@ class PluginCommand:
     def _stop_on_termination_signals(self):
         if threading.current_thread() is not threading.main_thread():
             return
+        self._termination_requested = False
         for signum in (signal.SIGTERM, signal.SIGINT):
-            signal.signal(signum, self._stop_in_background)
+            signal.signal(signum, self._on_termination_signal)
 
-    def _stop_in_background(self, signum, frame):
-        threading.Thread(target=self.stop, daemon=True).start()
+    def _on_termination_signal(self, signum, frame):
+        if self._termination_requested:
+            _exit_now()
+        self._termination_requested = True
+        threading.Thread(target=self._stop_then_force_exit, daemon=True).start()
+
+    def _stop_then_force_exit(self):
+        self.stop().wait()
+        time.sleep(_FORCED_EXIT_DELAY_SECONDS)
+        _exit_now()
 
     def stop(self):
-        self._server.stop(5)
+        return self._server.stop(_STOP_GRACE_SECONDS)
+
+
+def _exit_now():
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(0)
