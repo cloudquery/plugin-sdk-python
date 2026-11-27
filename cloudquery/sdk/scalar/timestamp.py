@@ -18,6 +18,7 @@ class Timestamp(Scalar):
 
     def set(self, value: Any):
         if value is None:
+            self._valid = False
             return
 
         if isinstance(value, Timestamp):

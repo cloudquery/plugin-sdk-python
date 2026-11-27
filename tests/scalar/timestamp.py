@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime
+from datetime import datetime, time
 from cloudquery.sdk.scalar import Timestamp
 import pandas as pd
 
@@ -56,3 +56,30 @@ def test_timestamp_set(input_value, expected_scalar):
     b = Timestamp()
     b.set(input_value)
     assert b == expected_scalar, f"{b} and {expected_scalar} are not equal"
+
+
+@pytest.mark.parametrize(
+    "input_value",
+    [
+        "2026-10-21T10:00:00Z",
+        datetime(2026, 10, 21, 10),
+        pd.Timestamp("2026-10-21T10:00:00Z"),
+        time(10, 30),
+    ],
+)
+def test_timestamp_set_none_invalidates_and_can_be_reused(input_value):
+    scalar = Timestamp()
+    assert not scalar.is_valid
+    scalar.set(input_value)
+    assert scalar.is_valid
+
+    scalar.set(None)
+    assert not scalar.is_valid
+    assert str(scalar) == "null"
+
+    scalar.set(None)
+    assert not scalar.is_valid
+
+    scalar.set(input_value)
+    assert scalar.is_valid
+    assert scalar == Timestamp(True, input_value)
